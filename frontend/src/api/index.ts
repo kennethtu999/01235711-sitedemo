@@ -33,7 +33,10 @@ api.interceptors.response.use(
       // Token 過期或無效，清除本地存儲並重定向到登入頁
       localStorage.removeItem('token')
       localStorage.removeItem('user')
-      window.location.href = '/login'
+      // 使用 router 進行導航，避免頁面刷新
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login'
+      }
     }
     return Promise.reject(error)
   }

@@ -43,20 +43,35 @@ router.beforeEach((to, from, next) => {
   const userStr = localStorage.getItem('user')
   const user = userStr ? JSON.parse(userStr) : null
   
+  console.log('路由守衛檢查:', {
+    to: to.path,
+    requiresAuth: to.meta.requiresAuth,
+    requiresAdmin: to.meta.requiresAdmin,
+    user: user,
+    token: !!token
+  })
+  
   // 如果路由需要認證但用戶未登入，重定向到登入頁
   if (to.meta.requiresAuth && !token) {
+    console.log('需要認證但未登入，重定向到登入頁')
+    // 清除可能存在的無效token
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
     next('/login')
   }
   // 如果路由需要管理員權限但用戶不是管理員，重定向到儀表板
   else if (to.meta.requiresAdmin && (!user || user.role !== 'admin')) {
+    console.log('需要管理員權限但用戶不是管理員，重定向到儀表板')
     next('/dashboard')
   }
   // 如果用戶已登入但訪問登入頁，重定向到儀表板
   else if (to.name === 'login' && token) {
+    console.log('已登入但訪問登入頁，重定向到儀表板')
     next('/dashboard')
   }
   // 其他情況正常導航
   else {
+    console.log('正常導航到:', to.path)
     next()
   }
 })

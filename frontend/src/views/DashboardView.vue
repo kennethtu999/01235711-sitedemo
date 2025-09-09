@@ -2,51 +2,19 @@
   <div class="dashboard-container">
     <n-layout>
       <n-layout-header class="dashboard-header">
-        <n-space justify="space-between" align="center">
-          <n-h1 style="margin: 0">網站管理</n-h1>
-          <n-space align="center">
-            <n-text>歡迎，{{ user?.username || '使用者' }}</n-text>
-            <n-button type="error" @click="handleLogout">登出</n-button>
-          </n-space>
-        </n-space>
+        <n-h1 style="margin: 0">儀表板</n-h1>
       </n-layout-header>
       
       <n-layout-content class="dashboard-main">
         <n-space vertical size="large">
           <n-card>
             <template #header>
-              <n-h2 style="margin: 0; text-align: center">Site Management</n-h2>
+              <n-h2 style="margin: 0; text-align: center">我的專案</n-h2>
             </template>
             <n-p style="text-align: center; margin: 0">
-              階段基礎架構。
+              您有權限訪問的專案列表
             </n-p>
           </n-card>
-          
-          <n-grid :cols="2" :x-gap="20" :y-gap="20" responsive="screen">
-            <n-grid-item>
-              <n-card hoverable>
-                <template #header>
-                  <n-h3 style="margin: 0">使用者管理</n-h3>
-                </template>
-                <n-p style="margin-bottom: 16px">管理系統使用者帳號和權限</n-p>
-                <n-button type="primary" block @click="navigateToUserManagement">
-                  進入管理
-                </n-button>
-              </n-card>
-            </n-grid-item>
-            
-            <n-grid-item>
-              <n-card hoverable>
-                <template #header>
-                  <n-h3 style="margin: 0">專案管理</n-h3>
-                </template>
-                <n-p style="margin-bottom: 16px">管理 GitHub 專案、Demo 配置和專案用戶權限</n-p>
-                <n-button type="primary" block @click="navigateToProjectManagement">
-                  進入管理
-                </n-button>
-              </n-card>
-            </n-grid-item>
-          </n-grid>
 
           <n-card>
             <template #header>
@@ -122,7 +90,7 @@
 </template>
 
 <script setup lang="ts">
-import { apiService, type Project, type User } from '@/api'
+import { apiService, type Project } from '@/api'
 import {
   NButton,
   NCard,
@@ -147,7 +115,6 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 
 // 狀態管理
-const user = ref<User | null>(null)
 const backendStatus = ref(false)
 const apiVersion = ref('')
 const lastCheckTime = ref('')
@@ -158,11 +125,10 @@ const isLoadingProjects = ref(false)
 // 組件掛載時檢查用戶登入狀態
 onMounted(() => {
   const storedUser = localStorage.getItem('user')
-  if (storedUser) {
-    user.value = JSON.parse(storedUser)
-  } else {
+  if (!storedUser) {
     // 如果沒有用戶信息，重定向到登入頁
     router.push('/login')
+    return
   }
   
   // 自動檢查後端狀態
@@ -191,32 +157,7 @@ const checkBackendStatus = async () => {
   }
 }
 
-// 處理登出
-const handleLogout = async () => {
-  try {
-    // 調用後端登出 API
-    await apiService.logout()
-  } catch (error) {
-    console.error('登出 API 調用失敗:', error)
-    // 即使 API 調用失敗，也要清除本地存儲
-  } finally {
-    // 清除本地存儲
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    // 重定向到登入頁
-    router.push('/login')
-  }
-}
 
-// 導航到使用者管理頁面
-const navigateToUserManagement = () => {
-  router.push('/admin/users')
-}
-
-// 導航到專案管理頁面
-const navigateToProjectManagement = () => {
-  router.push('/admin/projects')
-}
 
 // 載入用戶專案資料
 const loadUserProjects = async () => {

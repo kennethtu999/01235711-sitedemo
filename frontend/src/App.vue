@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { RouterView } from 'vue-router'
-import { NConfigProvider, NMessageProvider, NNotificationProvider, NDialogProvider, darkTheme, lightTheme } from 'naive-ui'
+import { RouterView, useRoute } from 'vue-router'
+import { NConfigProvider, NMessageProvider, NNotificationProvider, NDialogProvider, NLayout, NLayoutContent, darkTheme, lightTheme } from 'naive-ui'
 import { computed } from 'vue'
+import SidebarMenu from './components/SidebarMenu.vue'
 
 // OS theme detection
 const isDark = computed(() => {
@@ -12,6 +13,12 @@ const isDark = computed(() => {
 })
 
 const theme = computed(() => isDark.value ? darkTheme : lightTheme)
+
+// 檢查是否需要顯示側邊欄
+const route = useRoute()
+const showSidebar = computed(() => {
+  return route.name !== 'login' && route.name !== 'home'
+})
 </script>
 
 <template>
@@ -20,7 +27,13 @@ const theme = computed(() => isDark.value ? darkTheme : lightTheme)
       <NNotificationProvider>
         <NDialogProvider>
           <div id="app">
-            <RouterView />
+            <NLayout v-if="showSidebar" has-sider>
+              <SidebarMenu />
+              <NLayoutContent>
+                <RouterView />
+              </NLayoutContent>
+            </NLayout>
+            <RouterView v-else />
           </div>
         </NDialogProvider>
       </NNotificationProvider>
