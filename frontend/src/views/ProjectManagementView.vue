@@ -150,21 +150,22 @@
             <input
               id="githubRepoUrl"
               v-model="projectFormData.githubRepoUrl"
-              type="url"
+              type="text"
               required
               placeholder="https://github.com/username/repository"
             />
           </div>
 
           <div class="form-group">
-            <label for="githubRepoName">GitHub 倉庫名稱</label>
+            <label for="githubRepoName">GitHub 倉庫名稱 *</label>
             <input
               id="githubRepoName"
               v-model="projectFormData.githubRepoName"
               type="text"
+              required
               placeholder="例如: my-awesome-project"
             />
-            <small class="form-help-text">如果留空，將自動從 URL 中提取</small>
+            <small class="form-help-text">請手動輸入 GitHub 倉庫名稱</small>
           </div>
 
           <div v-if="showEditProjectModal" class="form-group">

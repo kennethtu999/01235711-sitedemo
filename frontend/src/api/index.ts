@@ -130,7 +130,7 @@ export interface CreateProjectData {
   name: string
   description?: string
   githubRepoUrl: string
-  githubRepoName?: string
+  githubRepoName: string
 }
 
 export interface UpdateProjectData {

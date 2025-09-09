@@ -224,14 +224,15 @@ const getAllProjects = async (req, res) => {
 // 創建新專案
 const createProject = async (req, res) => {
   try {
-    const { name, description, githubRepoUrl } = req.body;
+    const { name, description, githubRepoUrl, githubRepoName } = req.body;
 
     // 驗證必填欄位
-    if (!name || !githubRepoUrl) {
+    if (!name || !githubRepoUrl || !githubRepoName) {
       return res.status(400).json({
         success: false,
         error: "Validation error",
-        message: "Name and GitHub repository URL are required",
+        message:
+          "Name, GitHub repository URL, and GitHub repository name are required",
       });
     }
 
@@ -244,10 +245,6 @@ const createProject = async (req, res) => {
         message: "Project name already exists",
       });
     }
-
-    // 從 GitHub URL 提取倉庫名稱
-    const urlParts = githubRepoUrl.split("/");
-    const githubRepoName = urlParts[urlParts.length - 1].replace(".git", "");
 
     // 創建新專案
     const newProject = await Project.create({
@@ -276,7 +273,8 @@ const createProject = async (req, res) => {
 const updateProject = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, description, githubRepoUrl, isActive } = req.body;
+    const { name, description, githubRepoUrl, githubRepoName, isActive } =
+      req.body;
 
     const project = await Project.findByPk(id);
     if (!project) {
@@ -306,6 +304,8 @@ const updateProject = async (req, res) => {
     if (name !== undefined) updateData.name = name;
     if (description !== undefined) updateData.description = description;
     if (githubRepoUrl !== undefined) updateData.githubRepoUrl = githubRepoUrl;
+    if (githubRepoName !== undefined)
+      updateData.githubRepoName = githubRepoName;
     if (isActive !== undefined) updateData.isActive = isActive;
 
     await project.update(updateData);

@@ -46,28 +46,6 @@ const Project = sequelize.define(
   {
     tableName: "projects",
     timestamps: true,
-    hooks: {
-      beforeCreate: async (project) => {
-        // 從 GitHub URL 提取倉庫名稱
-        if (project.githubRepoUrl && !project.githubRepoName) {
-          const urlParts = project.githubRepoUrl.split("/");
-          project.githubRepoName = urlParts[urlParts.length - 1].replace(
-            ".git",
-            ""
-          );
-        }
-      },
-      beforeUpdate: async (project) => {
-        // 如果 GitHub URL 更新，重新提取倉庫名稱
-        if (project.changed("githubRepoUrl")) {
-          const urlParts = project.githubRepoUrl.split("/");
-          project.githubRepoName = urlParts[urlParts.length - 1].replace(
-            ".git",
-            ""
-          );
-        }
-      },
-    },
   }
 );
 
