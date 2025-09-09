@@ -14,6 +14,7 @@ router.get("/status", (req, res) => {
 router.use("/auth", require("./auth"));
 router.use("/admin", require("./admin"));
 router.use("/webhook", require("./webhook"));
+router.use("/hook-logs", require("./hookLog"));
 // router.use('/user', require('./user'));
 
 module.exports = router;

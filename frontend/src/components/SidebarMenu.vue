@@ -104,6 +104,12 @@ const ProjectIcon = () => h(NIcon, null, {
   ])
 })
 
+const HookLogIcon = () => h(NIcon, null, {
+  default: () => h('svg', { viewBox: '0 0 24 24' }, [
+    h('path', { fill: 'currentColor', d: 'M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z' })
+  ])
+})
+
 // 選單選項 - 根據用戶權限動態生成
 const menuOptions = computed(() => {
   const baseOptions: MenuOption[] = [
@@ -126,6 +132,11 @@ const menuOptions = computed(() => {
         label: '專案管理',
         key: 'projectManagement',
         icon: ProjectIcon
+      },
+      {
+        label: 'Hook Log 管理',
+        key: 'hookLogManagement',
+        icon: HookLogIcon
       }
     )
   }
@@ -146,6 +157,9 @@ const handleMenuSelect = (key: string) => {
   } else if (key === 'projectManagement') {
     console.log('導航到專案管理')
     router.push('/admin/projects')
+  } else if (key === 'hookLogManagement') {
+    console.log('導航到 Hook Log 管理')
+    router.push('/admin/hook-logs')
   }
 }
 

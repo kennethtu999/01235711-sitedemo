@@ -34,6 +34,12 @@ const router = createRouter({
       component: () => import('../views/ProjectManagementView.vue'),
       meta: { requiresAuth: true, requiresAdmin: true }
     },
+    {
+      path: '/admin/hook-logs',
+      name: 'hookLogManagement',
+      component: () => import('../views/HookLogManagementView.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
   ],
 })
 

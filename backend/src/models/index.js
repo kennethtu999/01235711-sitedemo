@@ -3,6 +3,7 @@ const Project = require("./Project");
 const DemoConfig = require("./DemoConfig");
 const DemoConfigUser = require("./DemoConfigUser");
 const ProjectUser = require("./ProjectUser");
+const HookLog = require("./HookLog");
 
 // 定義模型關聯
 
@@ -75,6 +76,18 @@ DemoConfigUser.belongsTo(User, {
   as: "granter",
 });
 
+// Project 和 HookLog 的一對多關聯
+Project.hasMany(HookLog, {
+  foreignKey: "projectId",
+  as: "hookLogs",
+  onDelete: "CASCADE",
+});
+
+HookLog.belongsTo(Project, {
+  foreignKey: "projectId",
+  as: "project",
+});
+
 // 導出所有模型
 module.exports = {
   User,
@@ -82,4 +95,5 @@ module.exports = {
   DemoConfig,
   DemoConfigUser,
   ProjectUser,
+  HookLog,
 };

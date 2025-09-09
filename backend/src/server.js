@@ -1,6 +1,12 @@
 const app = require("./app");
 const sequelize = require("./config/database");
-const { User, Project, DemoConfig, DemoConfigUser } = require("./models");
+const {
+  User,
+  Project,
+  DemoConfig,
+  DemoConfigUser,
+  HookLog,
+} = require("./models");
 const path = require("path");
 
 const PORT = process.env.PORT || 3000;
@@ -26,7 +32,7 @@ async function createDefaultAdmin() {
       // 創建預設管理員帳號
       const demoUser = await User.create({
         username: "demo",
-        password: "demo123", // 密碼會在 hook 中自動雜湊
+        password: "demo123456", // 密碼會在 hook 中自動雜湊
         role: "user",
         email: "demo@example.com",
         isActive: true,
@@ -38,7 +44,7 @@ async function createDefaultAdmin() {
       console.log(`   Email: ${adminUser.email}`);
       console.log("✅ Default demo account created:");
       console.log(`   Username: ${demoUser.username}`);
-      console.log(`   Password: demo123`);
+      console.log(`   Password: demo123456`);
       console.log(`   Email: ${demoUser.email}`);
       console.log("⚠️  Please change the default password after first login!");
     } else {
@@ -74,13 +80,24 @@ async function createDefaultProject() {
       });
       console.log("✅ Default demo config created:", newDemoConfig);
 
-      const newDemoConfigUser = await DemoConfigUser.create({
-        demoConfigId: newDemoConfig.id,
-        userId: 2,
-        grantedAt: new Date(),
-        grantedBy: 1,
+      // Find the demo user to get their ID
+      const demoUser = await User.findOne({
+        where: { username: "demo" },
       });
-      console.log("✅ Default demo config user created:", newDemoConfigUser);
+
+      if (demoUser) {
+        const newDemoConfigUser = await DemoConfigUser.create({
+          demoConfigId: newDemoConfig.id,
+          userId: demoUser.id,
+          grantedAt: new Date(),
+          grantedBy: 1,
+        });
+        console.log("✅ Default demo config user created:", newDemoConfigUser);
+      } else {
+        console.log(
+          "⚠️  Demo user not found, skipping demo config user creation"
+        );
+      }
     } else {
       console.log("✅ Project already exists.");
     }
@@ -105,9 +122,9 @@ async function startServer() {
     await sequelize.authenticate();
     console.log("✅ Database connection established successfully.");
 
-    // 同步資料庫 (開發階段使用 force: true 確保每次重啟都清空重建)
+    // 同步資料庫 (只在表格不存在時創建)
     // 生產環境請使用 alter: true 或 migrate
-    await sequelize.sync({ force: process.env.NODE_ENV === "development" });
+    await sequelize.sync({ force: false });
     console.log("✅ Database synchronized successfully.");
 
     // 創建預設管理員帳號

@@ -170,6 +170,57 @@ export interface UpdateProjectUserRoleData {
   role: 'viewer' | 'editor' | 'admin'
 }
 
+export interface HookLog {
+  id: number
+  projectId: number
+  projectName: string
+  githubRepoName: string
+  branch: string
+  startDateTime: string
+  endDateTime?: string
+  status: 'pending' | 'success' | 'failed'
+  webhookEventType?: string
+  repositoryFullName?: string
+  errorMessage?: string
+  deploymentResults?: any
+  processingTimeMs?: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface HookLogStats {
+  total: number
+  success: number
+  failed: number
+  pending: number
+  successRate: string
+  avgProcessingTimeMs: number
+  period: string
+}
+
+export interface HookLogsResponse {
+  success: boolean
+  data: {
+    hookLogs: HookLog[]
+    pagination: {
+      total: number
+      page: number
+      limit: number
+      totalPages: number
+    }
+  }
+}
+
+export interface HookLogResponse {
+  success: boolean
+  data: HookLog
+}
+
+export interface HookLogStatsResponse {
+  success: boolean
+  data: HookLogStats
+}
+
 // API 方法
 export const apiService = {
   // 狀態檢查
@@ -207,6 +258,16 @@ export const apiService = {
     api.put(`/admin/projects/${projectId}/users/${userId}`, data),
   removeProjectUser: (projectId: number, userId: number) => 
     api.delete(`/admin/projects/${projectId}/users/${userId}`),
+  
+  // Hook Log 管理
+  getHookLogs: (params?: { page?: number; limit?: number; status?: string; projectId?: number }) => 
+    api.get('/hook-logs', { params }),
+  getHookLogById: (hookLogId: number) => 
+    api.get(`/hook-logs/${hookLogId}`),
+  getHookLogStats: (params?: { projectId?: number; days?: number }) => 
+    api.get('/hook-logs/stats', { params }),
+  reExecuteHookLog: (hookLogId: number) => 
+    api.post(`/hook-logs/${hookLogId}/re-execute`),
 }
 
 export default api
