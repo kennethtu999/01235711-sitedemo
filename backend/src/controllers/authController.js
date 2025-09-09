@@ -29,6 +29,14 @@ const login = async (req, res) => {
       });
     }
 
+    // 驗證密碼長度
+    if (password.length < 10) {
+      return res.status(400).json({
+        error: "Validation error",
+        message: "Password must be at least 10 characters long",
+      });
+    }
+
     // 查找使用者
     const user = await User.findOne({
       where: { username },

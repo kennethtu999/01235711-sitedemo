@@ -17,7 +17,7 @@ async function createDefaultAdmin() {
       // 創建預設管理員帳號
       const adminUser = await User.create({
         username: "admin",
-        password: "admin123", // 密碼會在 hook 中自動雜湊
+        password: "admin123456", // 密碼會在 hook 中自動雜湊
         role: "admin",
         email: "admin@example.com",
         isActive: true,
@@ -34,7 +34,7 @@ async function createDefaultAdmin() {
 
       console.log("✅ Default admin account created:");
       console.log(`   Username: ${adminUser.username}`);
-      console.log(`   Password: admin123`);
+      console.log(`   Password: admin123456`);
       console.log(`   Email: ${adminUser.email}`);
       console.log("✅ Default demo account created:");
       console.log(`   Username: ${demoUser.username}`);

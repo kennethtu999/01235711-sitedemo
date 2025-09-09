@@ -19,14 +19,20 @@
           />
         </n-form-item>
         
-        <n-form-item label="密碼" required>
+        <n-form-item 
+          label="密碼" 
+          required
+          :validation-status="passwordValidationStatus"
+          :feedback="passwordFeedback"
+        >
           <n-input
             v-model:value="loginForm.password"
             type="password"
-            placeholder="請輸入密碼"
+            placeholder="請輸入密碼（至少10個字符）"
             size="large"
             :disabled="isLoading"
             show-password-on="click"
+            @input="validatePassword"
           />
         </n-form-item>
         
@@ -94,6 +100,28 @@ const isTestingApi = ref(false)
 const errorMessage = ref('')
 const apiTestResult = ref('')
 
+// 密碼驗證狀態
+const passwordValidationStatus = ref<'error' | 'warning' | 'success' | undefined>(undefined)
+const passwordFeedback = ref('')
+
+// 密碼驗證函數
+const validatePassword = () => {
+  const password = loginForm.password
+  if (!password) {
+    passwordValidationStatus.value = undefined
+    passwordFeedback.value = ''
+    return
+  }
+  
+  if (password.length < 10) {
+    passwordValidationStatus.value = 'error'
+    passwordFeedback.value = `密碼長度不足，還需要 ${10 - password.length} 個字符`
+  } else {
+    passwordValidationStatus.value = 'success'
+    passwordFeedback.value = '密碼長度符合要求'
+  }
+}
+
 // 處理登入
 const handleLogin = async () => {
   isLoading.value = true
@@ -103,6 +131,14 @@ const handleLogin = async () => {
     // 驗證輸入
     if (!loginForm.username.trim() || !loginForm.password.trim()) {
       errorMessage.value = '請輸入使用者名稱和密碼'
+      return
+    }
+
+    // 驗證密碼長度
+    if (loginForm.password.length < 10) {
+      errorMessage.value = '密碼必須至少10個字符'
+      passwordValidationStatus.value = 'error'
+      passwordFeedback.value = '密碼長度不足'
       return
     }
 
@@ -129,16 +165,21 @@ const handleLogin = async () => {
     
     // 跳轉到儀表板
     router.push('/dashboard')
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('登入失敗:', error)
     
     // 處理錯誤訊息
-    if (error.response?.data?.message) {
-      errorMessage.value = error.response.data.message
-    } else if (error.response?.status === 401) {
-      errorMessage.value = '使用者名稱或密碼錯誤'
-    } else if (error.response?.status === 0 || !error.response) {
-      errorMessage.value = '無法連接到後端服務，請檢查服務是否正常運行'
+    if (error && typeof error === 'object' && 'response' in error) {
+      const axiosError = error as { response?: { data?: { message?: string }, status?: number } }
+      if (axiosError.response?.data?.message) {
+        errorMessage.value = axiosError.response.data.message
+      } else if (axiosError.response?.status === 401) {
+        errorMessage.value = '使用者名稱或密碼錯誤'
+      } else if (axiosError.response?.status === 0 || !axiosError.response) {
+        errorMessage.value = '無法連接到後端服務，請檢查服務是否正常運行'
+      } else {
+        errorMessage.value = '登入失敗，請稍後再試'
+      }
     } else {
       errorMessage.value = '登入失敗，請稍後再試'
     }

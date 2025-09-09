@@ -69,7 +69,7 @@ npm run dev
 
 ### 預設管理員帳號
 - 用戶名: `admin`
-- 密碼: `admin123`
+- 密碼: `admin123456`
 
 ## API 端點
 
