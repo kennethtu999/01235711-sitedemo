@@ -1,0 +1,8 @@
+node_modules
+.env
+dist
+test_hook.sh
+backend/static_demos
+.DS_Store
+hook_test.sh
+backend/data/database.sqlite
