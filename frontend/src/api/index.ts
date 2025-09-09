@@ -80,6 +80,17 @@ export interface Project {
   createdAt: string
   updatedAt: string
   demoConfigs?: DemoConfig[]
+  authorizedUsers?: ProjectUser[]
+}
+
+export interface ProjectUser {
+  id: number
+  projectId: number
+  userId: number
+  grantedAt: string
+  grantedBy: number
+  role: 'viewer' | 'editor' | 'admin'
+  user?: User
 }
 
 export interface DemoConfig {
@@ -87,6 +98,7 @@ export interface DemoConfig {
   projectId: number
   branchName: string
   demoPath: string
+  subSiteFolders?: string
   displayName: string
   description: string
   deploymentStatus: 'pending' | 'deploying' | 'success' | 'failed'
@@ -95,7 +107,8 @@ export interface DemoConfig {
   isActive: boolean
   createdAt: string
   updatedAt: string
-  authorizedUsers?: User[]
+  demoUrl?: string
+  demoUrls?: Array<{ name: string; url: string }>
 }
 
 export interface CreateUserData {
@@ -117,18 +130,21 @@ export interface CreateProjectData {
   name: string
   description?: string
   githubRepoUrl: string
+  githubRepoName?: string
 }
 
 export interface UpdateProjectData {
   name?: string
   description?: string
   githubRepoUrl?: string
+  githubRepoName?: string
   isActive?: boolean
 }
 
 export interface CreateDemoConfigData {
   branchName: string
   demoPath?: string
+  subSiteFolders?: string
   displayName?: string
   description?: string
 }
@@ -136,9 +152,19 @@ export interface CreateDemoConfigData {
 export interface UpdateDemoConfigData {
   branchName?: string
   demoPath?: string
+  subSiteFolders?: string
   displayName?: string
   description?: string
   isActive?: boolean
+}
+
+export interface AddProjectUsersData {
+  userIds: number[]
+  role?: 'viewer' | 'editor' | 'admin'
+}
+
+export interface UpdateProjectUserRoleData {
+  role: 'viewer' | 'editor' | 'admin'
 }
 
 // API 方法
@@ -150,6 +176,7 @@ export const apiService = {
   login: (credentials: LoginCredentials) => api.post('/auth/login', credentials),
   logout: () => api.post('/auth/logout'),
   getCurrentUser: () => api.get('/auth/me'),
+  getUserProjects: () => api.get('/auth/projects'),
   
   // 使用者管理
   getUsers: () => api.get('/admin/users'),
@@ -170,11 +197,13 @@ export const apiService = {
     api.put(`/admin/democonfigs/${id}`, demoConfigData),
   deleteDemoConfig: (id: number) => api.delete(`/admin/democonfigs/${id}`),
   
-  // Demo 配置授權管理
-  addDemoConfigUsers: (demoConfigId: number, userIds: number[]) => 
-    api.post(`/admin/democonfigs/${demoConfigId}/users`, { userIds }),
-  removeDemoConfigUser: (demoConfigId: number, userId: number) => 
-    api.delete(`/admin/democonfigs/${demoConfigId}/users/${userId}`),
+  // 專案授權管理
+  addProjectUsers: (projectId: number, data: AddProjectUsersData) => 
+    api.post(`/admin/projects/${projectId}/users`, data),
+  updateProjectUserRole: (projectId: number, userId: number, data: UpdateProjectUserRoleData) => 
+    api.put(`/admin/projects/${projectId}/users/${userId}`, data),
+  removeProjectUser: (projectId: number, userId: number) => 
+    api.delete(`/admin/projects/${projectId}/users/${userId}`),
 }
 
 export default api

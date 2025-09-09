@@ -13,8 +13,9 @@ const {
   createDemoConfig,
   updateDemoConfig,
   deleteDemoConfig,
-  addDemoConfigUsers,
-  removeDemoConfigUser,
+  addProjectUsers,
+  updateProjectUserRole,
+  removeProjectUser,
 } = require("../controllers/adminController");
 
 // 所有管理員路由都需要認證和授權
@@ -38,8 +39,9 @@ router.post("/projects/:projectId/democonfigs", createDemoConfig);
 router.put("/democonfigs/:id", updateDemoConfig);
 router.delete("/democonfigs/:id", deleteDemoConfig);
 
-// Demo 配置授權管理路由
-router.post("/democonfigs/:demoConfigId/users", addDemoConfigUsers);
-router.delete("/democonfigs/:demoConfigId/users/:userId", removeDemoConfigUser);
+// 專案授權管理路由
+router.post("/projects/:projectId/users", addProjectUsers);
+router.put("/projects/:projectId/users/:userId", updateProjectUserRole);
+router.delete("/projects/:projectId/users/:userId", removeProjectUser);
 
 module.exports = router;

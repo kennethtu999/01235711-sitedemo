@@ -45,12 +45,16 @@
                 <p class="project-description">{{ project.description || '無描述' }}</p>
                 <div class="project-meta">
                   <span class="github-url">{{ project.githubRepoUrl }}</span>
+                  <span v-if="project.githubRepoName" class="github-repo-name">{{ project.githubRepoName }}</span>
                   <span :class="['status-badge', project.isActive ? 'active' : 'inactive']">
                     {{ project.isActive ? '啟用' : '停用' }}
                   </span>
                 </div>
               </div>
               <div class="project-actions">
+                <button @click="manageProjectUsers(project)" class="manage-users-button" title="管理專案用戶">
+                  管理用戶
+                </button>
                 <button @click="editProject(project)" class="edit-button" title="編輯專案">
                   編輯
                 </button>
@@ -85,6 +89,7 @@
                     <div class="demo-config-details">
                       <p><strong>分支:</strong> {{ demoConfig.branchName }}</p>
                       <p><strong>路徑:</strong> {{ demoConfig.demoPath }}</p>
+                      <p v-if="demoConfig.subSiteFolders"><strong>子站點資料夾:</strong> {{ demoConfig.subSiteFolders }}</p>
                       <p v-if="demoConfig.description"><strong>描述:</strong> {{ demoConfig.description }}</p>
                       <p v-if="demoConfig.lastDeploymentTime">
                         <strong>最後部署:</strong> {{ formatDate(demoConfig.lastDeploymentTime) }}
@@ -93,22 +98,7 @@
                   </div>
 
                   <div class="demo-config-actions">
-                    <div class="authorized-users">
-                      <h6>授權使用者 ({{ demoConfig.authorizedUsers?.length || 0 }})</h6>
-                      <div v-if="demoConfig.authorizedUsers && demoConfig.authorizedUsers.length > 0" class="users-list">
-                        <span v-for="user in demoConfig.authorizedUsers" :key="user.id" class="user-badge">
-                          {{ user.username }}
-                        </span>
-                      </div>
-                      <div v-else class="no-users">
-                        <p>無授權使用者</p>
-                      </div>
-                    </div>
-
                     <div class="demo-config-buttons">
-                      <button @click="manageDemoConfigUsers(demoConfig)" class="manage-users-button">
-                        管理授權
-                      </button>
                       <button @click="editDemoConfig(demoConfig)" class="edit-demo-button">
                         編輯
                       </button>
@@ -166,6 +156,17 @@
             />
           </div>
 
+          <div class="form-group">
+            <label for="githubRepoName">GitHub 倉庫名稱</label>
+            <input
+              id="githubRepoName"
+              v-model="projectFormData.githubRepoName"
+              type="text"
+              placeholder="例如: my-awesome-project"
+            />
+            <small class="form-help-text">如果留空，將自動從 URL 中提取</small>
+          </div>
+
           <div v-if="showEditProjectModal" class="form-group">
             <label class="checkbox-label">
               <input
@@ -219,6 +220,17 @@
           </div>
 
           <div class="form-group">
+            <label for="subSiteFolders">子站點資料夾</label>
+            <input
+              id="subSiteFolders"
+              v-model="demoConfigFormData.subSiteFolders"
+              type="text"
+              placeholder="例如: rc1,rc2 或 main,develop"
+            />
+            <small class="form-help-text">多個資料夾請用逗號分隔</small>
+          </div>
+
+          <div class="form-group">
             <label for="displayName">顯示名稱</label>
             <input
               id="displayName"
@@ -260,39 +272,80 @@
       </div>
     </div>
 
-    <!-- 管理 Demo 配置授權使用者模態框 -->
-    <div v-if="showManageUsersModal" class="modal-overlay" @click="closeManageUsersModal">
+    <!-- 管理專案用戶模態框 -->
+    <div v-if="showManageProjectUsersModal" class="modal-overlay" @click="closeManageProjectUsersModal">
       <div class="modal-content large-modal" @click.stop>
         <div class="modal-header">
-          <h3>管理授權使用者 - {{ currentDemoConfig?.displayName || currentDemoConfig?.branchName }}</h3>
-          <button @click="closeManageUsersModal" class="close-button">×</button>
+          <h3>管理專案用戶 - {{ currentProject?.name }}</h3>
+          <button @click="closeManageProjectUsersModal" class="close-button">×</button>
         </div>
         
         <div class="modal-body">
-          <div class="users-selection">
-            <h4>選擇授權使用者</h4>
-            <div class="users-checkboxes">
-              <label v-for="user in allUsers" :key="user.id" class="user-checkbox-label">
-                <input
-                  v-model="selectedUserIds"
-                  :value="user.id"
-                  type="checkbox"
-                />
-                <span class="user-info">
-                  <span class="username">{{ user.username }}</span>
-                  <span class="user-role">({{ user.role === 'admin' ? '管理員' : '使用者' }})</span>
-                </span>
-              </label>
+          <!-- 現有用戶列表 -->
+          <div class="current-users-section">
+            <h4>現有用戶 ({{ currentProject?.authorizedUsers?.length || 0 }})</h4>
+            <div v-if="currentProject?.authorizedUsers && currentProject.authorizedUsers.length > 0" class="current-users-list">
+              <div v-for="projectUser in currentProject.authorizedUsers" :key="projectUser.id" class="current-user-item">
+                <div class="user-info">
+                  <span class="username">{{ projectUser.user?.username || 'Unknown' }}</span>
+                  <span class="user-role">({{ projectUser.user?.role === 'admin' ? '管理員' : '使用者' }})</span>
+                </div>
+                <div class="user-actions">
+                  <select 
+                    v-model="projectUser.role" 
+                    @change="updateUserRole(projectUser.userId, projectUser.role)"
+                    class="role-select"
+                  >
+                    <option value="viewer">查看者</option>
+                    <option value="editor">編輯者</option>
+                    <option value="admin">管理員</option>
+                  </select>
+                  <button @click="removeProjectUser(projectUser.userId)" class="remove-user-button">
+                    移除
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div v-else class="no-users">
+              <p>此專案尚無授權用戶</p>
+            </div>
+          </div>
+
+          <!-- 添加新用戶 -->
+          <div class="add-users-section">
+            <h4>添加新用戶</h4>
+            <div class="users-selection">
+              <div class="users-checkboxes">
+                <label v-for="user in availableUsers" :key="user.id" class="user-checkbox-label">
+                  <input
+                    v-model="selectedUserIds"
+                    :value="user.id"
+                    type="checkbox"
+                  />
+                  <span class="user-info">
+                    <span class="username">{{ user.username }}</span>
+                    <span class="user-role">({{ user.role === 'admin' ? '管理員' : '使用者' }})</span>
+                  </span>
+                </label>
+              </div>
+              <div class="role-selection">
+                <label for="newUserRole">角色:</label>
+                <select id="newUserRole" v-model="newUserRole">
+                  <option value="viewer">查看者</option>
+                  <option value="editor">編輯者</option>
+                  <option value="admin">管理員</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
 
         <div class="form-actions">
-          <button @click="closeManageUsersModal" class="cancel-button">
+          <button @click="closeManageProjectUsersModal" class="cancel-button">
             取消
           </button>
-          <button @click="saveUserAuthorizations" :disabled="isSubmitting" class="submit-button">
-            {{ isSubmitting ? '處理中...' : '儲存授權' }}
+          <button @click="addSelectedUsers" :disabled="isSubmitting || selectedUserIds.length === 0" class="submit-button">
+            {{ isSubmitting ? '處理中...' : '添加用戶' }}
           </button>
         </div>
       </div>
@@ -307,7 +360,11 @@
         </div>
         
         <div class="modal-body">
-          <p>您確定要刪除{{ deleteType === 'project' ? '專案' : 'Demo 配置'}} <strong>{{ itemToDelete?.name || itemToDelete?.displayName || itemToDelete?.branchName }}</strong> 嗎？</p>
+          <p>您確定要刪除{{ deleteType === 'project' ? '專案' : 'Demo 配置'}} <strong>{{ 
+            deleteType === 'project' 
+              ? (itemToDelete as Project)?.name 
+              : (itemToDelete as DemoConfig)?.displayName || (itemToDelete as DemoConfig)?.branchName 
+          }}</strong> 嗎？</p>
           <p class="warning-text">此操作無法復原。</p>
         </div>
 
@@ -335,7 +392,8 @@ import {
   type CreateProjectData, 
   type UpdateProjectData,
   type CreateDemoConfigData,
-  type UpdateDemoConfigData
+  type UpdateDemoConfigData,
+  type AddProjectUsersData
 } from '@/api'
 
 const router = useRouter()
@@ -352,20 +410,22 @@ const showCreateProjectModal = ref(false)
 const showEditProjectModal = ref(false)
 const showCreateDemoConfigModal = ref(false)
 const showEditDemoConfigModal = ref(false)
-const showManageUsersModal = ref(false)
+const showManageProjectUsersModal = ref(false)
 const showDeleteModal = ref(false)
 
 // 表單數據
-const projectFormData = ref<CreateProjectData & UpdateProjectData & { isActive: boolean }>({
+const projectFormData = ref<CreateProjectData & UpdateProjectData & { isActive: boolean; githubRepoName: string }>({
   name: '',
   description: '',
   githubRepoUrl: '',
+  githubRepoName: '',
   isActive: true
 })
 
-const demoConfigFormData = ref<CreateDemoConfigData & UpdateDemoConfigData & { isActive: boolean }>({
+const demoConfigFormData = ref<CreateDemoConfigData & UpdateDemoConfigData & { isActive: boolean; subSiteFolders: string }>({
   branchName: '',
   demoPath: '/',
+  subSiteFolders: '',
   displayName: '',
   description: '',
   isActive: true
@@ -377,8 +437,16 @@ const currentDemoConfig = ref<DemoConfig | null>(null)
 const itemToDelete = ref<Project | DemoConfig | null>(null)
 const deleteType = ref<'project' | 'demoConfig'>('project')
 
-// 授權使用者選擇
+// 專案用戶管理
 const selectedUserIds = ref<number[]>([])
+const newUserRole = ref<'viewer' | 'editor' | 'admin'>('viewer')
+
+// 計算可用用戶（排除已經在專案中的用戶）
+const availableUsers = computed(() => {
+  if (!currentProject.value) return allUsers.value
+  const currentUserIds = currentProject.value.authorizedUsers?.map(pu => pu.userId) || []
+  return allUsers.value.filter(user => !currentUserIds.includes(user.id))
+})
 
 // 組件掛載時載入數據
 onMounted(() => {
@@ -419,6 +487,7 @@ const editProject = (project: Project) => {
     name: project.name,
     description: project.description || '',
     githubRepoUrl: project.githubRepoUrl,
+    githubRepoName: project.githubRepoName || '',
     isActive: project.isActive
   }
   currentProject.value = project
@@ -436,11 +505,20 @@ const openCreateDemoConfigModal = (project: Project) => {
   showCreateDemoConfigModal.value = true
 }
 
+// 專案用戶管理
+const manageProjectUsers = (project: Project) => {
+  currentProject.value = project
+  selectedUserIds.value = []
+  newUserRole.value = 'viewer'
+  showManageProjectUsersModal.value = true
+}
+
 // Demo 配置相關操作
 const editDemoConfig = (demoConfig: DemoConfig) => {
   demoConfigFormData.value = {
     branchName: demoConfig.branchName,
     demoPath: demoConfig.demoPath,
+    subSiteFolders: demoConfig.subSiteFolders || '',
     displayName: demoConfig.displayName || '',
     description: demoConfig.description || '',
     isActive: demoConfig.isActive
@@ -455,10 +533,65 @@ const deleteDemoConfig = (demoConfig: DemoConfig) => {
   showDeleteModal.value = true
 }
 
-const manageDemoConfigUsers = (demoConfig: DemoConfig) => {
-  currentDemoConfig.value = demoConfig
-  selectedUserIds.value = demoConfig.authorizedUsers?.map(user => user.id) || []
-  showManageUsersModal.value = true
+// 更新用戶角色
+const updateUserRole = async (userId: number, role: string) => {
+  if (!currentProject.value) return
+  
+  isSubmitting.value = true
+  try {
+    await apiService.updateProjectUserRole(currentProject.value.id, userId, { role: role as 'viewer' | 'editor' | 'admin' })
+    alert('用戶角色更新成功')
+    loadData()
+  } catch (error: any) {
+    console.error('更新用戶角色失敗:', error)
+    const message = error.response?.data?.message || '更新失敗，請稍後再試'
+    alert(message)
+  } finally {
+    isSubmitting.value = false
+  }
+}
+
+// 移除專案用戶
+const removeProjectUser = async (userId: number) => {
+  if (!currentProject.value) return
+  
+  if (!confirm('確定要移除此用戶嗎？')) return
+  
+  isSubmitting.value = true
+  try {
+    await apiService.removeProjectUser(currentProject.value.id, userId)
+    alert('用戶移除成功')
+    loadData()
+  } catch (error: any) {
+    console.error('移除用戶失敗:', error)
+    const message = error.response?.data?.message || '移除失敗，請稍後再試'
+    alert(message)
+  } finally {
+    isSubmitting.value = false
+  }
+}
+
+// 添加選中的用戶
+const addSelectedUsers = async () => {
+  if (!currentProject.value || selectedUserIds.value.length === 0) return
+  
+  isSubmitting.value = true
+  try {
+    const data: AddProjectUsersData = {
+      userIds: selectedUserIds.value,
+      role: newUserRole.value
+    }
+    await apiService.addProjectUsers(currentProject.value.id, data)
+    alert('用戶添加成功')
+    selectedUserIds.value = []
+    loadData()
+  } catch (error: any) {
+    console.error('添加用戶失敗:', error)
+    const message = error.response?.data?.message || '添加失敗，請稍後再試'
+    alert(message)
+  } finally {
+    isSubmitting.value = false
+  }
 }
 
 // 關閉模態框
@@ -474,10 +607,11 @@ const closeDemoConfigModal = () => {
   resetDemoConfigForm()
 }
 
-const closeManageUsersModal = () => {
-  showManageUsersModal.value = false
-  currentDemoConfig.value = null
+const closeManageProjectUsersModal = () => {
+  showManageProjectUsersModal.value = false
+  currentProject.value = null
   selectedUserIds.value = []
+  newUserRole.value = 'viewer'
 }
 
 const closeDeleteModal = () => {
@@ -491,6 +625,7 @@ const resetProjectForm = () => {
     name: '',
     description: '',
     githubRepoUrl: '',
+    githubRepoName: '',
     isActive: true
   }
   currentProject.value = null
@@ -500,6 +635,7 @@ const resetDemoConfigForm = () => {
   demoConfigFormData.value = {
     branchName: '',
     demoPath: '/',
+    subSiteFolders: '',
     displayName: '',
     description: '',
     isActive: true
@@ -519,6 +655,7 @@ const submitProjectForm = async () => {
         name: projectFormData.value.name,
         description: projectFormData.value.description,
         githubRepoUrl: projectFormData.value.githubRepoUrl,
+        githubRepoName: projectFormData.value.githubRepoName,
         isActive: projectFormData.value.isActive
       }
       await apiService.updateProject(currentProject.value.id, updateData)
@@ -547,6 +684,7 @@ const submitDemoConfigForm = async () => {
       const updateData: UpdateDemoConfigData = {
         branchName: demoConfigFormData.value.branchName,
         demoPath: demoConfigFormData.value.demoPath,
+        subSiteFolders: demoConfigFormData.value.subSiteFolders,
         displayName: demoConfigFormData.value.displayName,
         description: demoConfigFormData.value.description,
         isActive: demoConfigFormData.value.isActive
@@ -566,34 +704,6 @@ const submitDemoConfigForm = async () => {
   }
 }
 
-// 儲存使用者授權
-const saveUserAuthorizations = async () => {
-  if (!currentDemoConfig.value) return
-  
-  isSubmitting.value = true
-  try {
-    // 先移除所有現有授權
-    const currentUserIds = currentDemoConfig.value.authorizedUsers?.map(user => user.id) || []
-    for (const userId of currentUserIds) {
-      await apiService.removeDemoConfigUser(currentDemoConfig.value.id, userId)
-    }
-    
-    // 添加新的授權
-    if (selectedUserIds.value.length > 0) {
-      await apiService.addDemoConfigUsers(currentDemoConfig.value.id, selectedUserIds.value)
-    }
-    
-    alert('授權更新成功')
-    closeManageUsersModal()
-    loadData()
-  } catch (error: any) {
-    console.error('授權更新失敗:', error)
-    const message = error.response?.data?.message || '授權更新失敗，請稍後再試'
-    alert(message)
-  } finally {
-    isSubmitting.value = false
-  }
-}
 
 // 確認刪除
 const confirmDelete = async () => {
@@ -831,6 +941,15 @@ const formatDate = (dateString: string) => {
   font-family: monospace;
 }
 
+.github-repo-name {
+  color: #28a745;
+  font-size: 12px;
+  font-weight: 500;
+  background: #d4edda;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
 .status-badge {
   padding: 4px 8px;
   border-radius: 4px;
@@ -1043,6 +1162,12 @@ const formatDate = (dateString: string) => {
 .manage-users-button {
   background: #6f42c1;
   color: white;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 .manage-users-button:hover {
@@ -1179,6 +1304,14 @@ const formatDate = (dateString: string) => {
   margin: 0;
 }
 
+.form-help-text {
+  display: block;
+  margin-top: 4px;
+  color: #6c757d;
+  font-size: 12px;
+  font-style: italic;
+}
+
 .users-selection h4 {
   margin: 0 0 16px 0;
   color: #333;
@@ -1227,6 +1360,101 @@ const formatDate = (dateString: string) => {
 .user-role {
   color: #666;
   font-size: 12px;
+}
+
+/* 專案用戶管理樣式 */
+.current-users-section,
+.add-users-section {
+  margin-bottom: 24px;
+}
+
+.current-users-section h4,
+.add-users-section h4 {
+  margin: 0 0 16px 0;
+  color: #333;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.current-users-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.current-user-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  border: 1px solid #e9ecef;
+}
+
+.current-user-item .user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.current-user-item .user-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.role-select {
+  padding: 4px 8px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 12px;
+  background: white;
+}
+
+.remove-user-button {
+  padding: 4px 8px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.remove-user-button:hover {
+  background: #c82333;
+}
+
+.role-selection {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+}
+
+.role-selection label {
+  margin: 0;
+  font-weight: 500;
+  color: #333;
+  font-size: 14px;
+}
+
+.role-selection select {
+  padding: 6px 10px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 14px;
+  background: white;
 }
 
 .form-actions {

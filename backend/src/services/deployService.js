@@ -4,7 +4,9 @@ const path = require("path");
 const { DemoConfig, Project } = require("../models");
 
 // 靜態網站服務目錄
-const STATIC_DEMOS_DIR = path.join(__dirname, "../../static_demos");
+const STATIC_DEMOS_DIR = process.env.DATA_PATH
+  ? path.join(process.env.DATA_PATH, "static_demos")
+  : path.join(__dirname, "../../data/static_demos");
 
 /**
  * 部署專案 Demo
@@ -214,6 +216,17 @@ async function copyDemoContent(sourceDir, demoPath, targetDir) {
   try {
     // 檢查源路徑是否存在
     await fs.access(sourcePath);
+
+    // 如果目標目錄存在，先清空它
+    const targetDirExists = await fs
+      .access(targetDir, fs.constants.F_OK)
+      .then(() => true)
+      .catch(() => false);
+
+    if (targetDirExists) {
+      console.log(`清空目標目錄: ${targetDir}`);
+      await fs.rm(targetDir, { recursive: true, force: true });
+    }
 
     // 確保目標目錄存在
     await fs.mkdir(targetDir, { recursive: true });

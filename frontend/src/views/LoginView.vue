@@ -3,7 +3,7 @@
     <n-card class="login-card" :bordered="false">
       <template #header>
         <div class="login-header">
-          <h1 class="login-title">靜態網站 Demo 管理平台</h1>
+          <h1 class="login-title">網站管理</h1>
           <p class="login-subtitle">請登入以繼續</p>
         </div>
       </template>

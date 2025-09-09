@@ -6,3 +6,13 @@ backend/static_demos
 .DS_Store
 hook_test.sh
 backend/data/database.sqlite
+STEP.md
+
+# 前端构建文件
+frontend/dist/
+
+# 后端静态文件 (由构建脚本生成)
+backend/public/
+
+# Docker 相关
+.docker/

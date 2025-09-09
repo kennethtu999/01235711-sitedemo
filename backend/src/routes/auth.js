@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const authController = require("../controllers/authController");
 const { authenticateJWT } = require("../middleware/auth");
+const { getUserAccessibleProjects } = require("../controllers/adminController");
 
 // 登入路由
 router.post("/login", authController.login);
@@ -14,5 +15,8 @@ router.get("/me", authenticateJWT, authController.getCurrentUser);
 
 // 登出路由
 router.post("/logout", authenticateJWT, authController.logout);
+
+// 獲取用戶可訪問的專案和 Demo 配置
+router.get("/projects", authenticateJWT, getUserAccessibleProjects);
 
 module.exports = router;

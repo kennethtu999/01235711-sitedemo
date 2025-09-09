@@ -1,4 +1,10 @@
-const { User, Project, DemoConfig, DemoConfigUser } = require("../models");
+const {
+  User,
+  Project,
+  DemoConfig,
+  DemoConfigUser,
+  ProjectUser,
+} = require("../models");
 const { Op } = require("sequelize");
 
 // ==================== 使用者管理 ====================
@@ -188,16 +194,14 @@ const getAllProjects = async (req, res) => {
         {
           model: DemoConfig,
           as: "demoConfigs",
-          include: [
-            {
-              model: User,
-              as: "authorizedUsers",
-              attributes: ["id", "username", "email"],
-              through: {
-                attributes: ["grantedAt", "grantedBy"],
-              },
-            },
-          ],
+        },
+        {
+          model: User,
+          as: "authorizedUsers",
+          attributes: ["id", "username", "email"],
+          through: {
+            attributes: ["grantedAt", "grantedBy", "role"],
+          },
         },
       ],
       order: [["createdAt", "DESC"]],
@@ -358,7 +362,13 @@ const deleteProject = async (req, res) => {
 const createDemoConfig = async (req, res) => {
   try {
     const { projectId } = req.params;
-    const { branchName, demoPath = "/", displayName, description } = req.body;
+    const {
+      branchName,
+      demoPath = "/",
+      subSiteFolders,
+      displayName,
+      description,
+    } = req.body;
 
     // 驗證必填欄位
     if (!branchName) {
@@ -396,6 +406,7 @@ const createDemoConfig = async (req, res) => {
       projectId,
       branchName,
       demoPath,
+      subSiteFolders,
       displayName,
       description,
     });
@@ -419,8 +430,14 @@ const createDemoConfig = async (req, res) => {
 const updateDemoConfig = async (req, res) => {
   try {
     const { id } = req.params;
-    const { branchName, demoPath, displayName, description, isActive } =
-      req.body;
+    const {
+      branchName,
+      demoPath,
+      subSiteFolders,
+      displayName,
+      description,
+      isActive,
+    } = req.body;
 
     const demoConfig = await DemoConfig.findByPk(id);
     if (!demoConfig) {
@@ -453,6 +470,8 @@ const updateDemoConfig = async (req, res) => {
     const updateData = {};
     if (branchName !== undefined) updateData.branchName = branchName;
     if (demoPath !== undefined) updateData.demoPath = demoPath;
+    if (subSiteFolders !== undefined)
+      updateData.subSiteFolders = subSiteFolders;
     if (displayName !== undefined) updateData.displayName = displayName;
     if (description !== undefined) updateData.description = description;
     if (isActive !== undefined) updateData.isActive = isActive;
@@ -505,13 +524,13 @@ const deleteDemoConfig = async (req, res) => {
   }
 };
 
-// ==================== Demo 配置授權管理 ====================
+// ==================== 專案授權管理 ====================
 
-// 為指定 Demo 配置添加授權使用者
-const addDemoConfigUsers = async (req, res) => {
+// 為指定專案添加授權使用者
+const addProjectUsers = async (req, res) => {
   try {
-    const { demoConfigId } = req.params;
-    const { userIds } = req.body;
+    const { projectId } = req.params;
+    const { userIds, role = "viewer" } = req.body;
 
     // 驗證必填欄位
     if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
@@ -522,13 +541,13 @@ const addDemoConfigUsers = async (req, res) => {
       });
     }
 
-    // 檢查 Demo 配置是否存在
-    const demoConfig = await DemoConfig.findByPk(demoConfigId);
-    if (!demoConfig) {
+    // 檢查專案是否存在
+    const project = await Project.findByPk(projectId);
+    if (!project) {
       return res.status(404).json({
         success: false,
-        error: "Demo configuration not found",
-        message: "The specified demo configuration does not exist",
+        error: "Project not found",
+        message: "The specified project does not exist",
       });
     }
 
@@ -548,12 +567,13 @@ const addDemoConfigUsers = async (req, res) => {
     // 批量創建授權關聯
     const grantedBy = req.user.id;
     const authorizationData = userIds.map((userId) => ({
-      demoConfigId: parseInt(demoConfigId),
+      projectId: parseInt(projectId),
       userId: parseInt(userId),
       grantedBy,
+      role,
     }));
 
-    await DemoConfigUser.bulkCreate(authorizationData, {
+    await ProjectUser.bulkCreate(authorizationData, {
       ignoreDuplicates: true, // 忽略重複的授權
     });
 
@@ -562,7 +582,7 @@ const addDemoConfigUsers = async (req, res) => {
       message: "Users authorized successfully",
     });
   } catch (error) {
-    console.error("Error adding demo config users:", error);
+    console.error("Error adding project users:", error);
     res.status(500).json({
       success: false,
       error: "Failed to authorize users",
@@ -571,15 +591,63 @@ const addDemoConfigUsers = async (req, res) => {
   }
 };
 
-// 移除指定 Demo 配置的授權使用者
-const removeDemoConfigUser = async (req, res) => {
+// 更新專案使用者的角色
+const updateProjectUserRole = async (req, res) => {
   try {
-    const { demoConfigId, userId } = req.params;
+    const { projectId, userId } = req.params;
+    const { role } = req.body;
+
+    // 驗證角色
+    if (!role || !["viewer", "editor", "admin"].includes(role)) {
+      return res.status(400).json({
+        success: false,
+        error: "Validation error",
+        message: "Valid role (viewer, editor, admin) is required",
+      });
+    }
 
     // 檢查授權關聯是否存在
-    const authorization = await DemoConfigUser.findOne({
+    const authorization = await ProjectUser.findOne({
       where: {
-        demoConfigId: parseInt(demoConfigId),
+        projectId: parseInt(projectId),
+        userId: parseInt(userId),
+      },
+    });
+
+    if (!authorization) {
+      return res.status(404).json({
+        success: false,
+        error: "Authorization not found",
+        message: "The specified authorization does not exist",
+      });
+    }
+
+    // 更新角色
+    await authorization.update({ role });
+
+    res.json({
+      success: true,
+      message: "User role updated successfully",
+    });
+  } catch (error) {
+    console.error("Error updating project user role:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to update user role",
+      message: error.message,
+    });
+  }
+};
+
+// 移除指定專案的授權使用者
+const removeProjectUser = async (req, res) => {
+  try {
+    const { projectId, userId } = req.params;
+
+    // 檢查授權關聯是否存在
+    const authorization = await ProjectUser.findOne({
+      where: {
+        projectId: parseInt(projectId),
         userId: parseInt(userId),
       },
     });
@@ -600,10 +668,99 @@ const removeDemoConfigUser = async (req, res) => {
       message: "User authorization removed successfully",
     });
   } catch (error) {
-    console.error("Error removing demo config user:", error);
+    console.error("Error removing project user:", error);
     res.status(500).json({
       success: false,
       error: "Failed to remove user authorization",
+      message: error.message,
+    });
+  }
+};
+
+// 取得當前用戶可訪問的專案和 Demo 配置
+const getUserAccessibleProjects = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const userRole = req.user.role;
+
+    let projects;
+
+    if (userRole === "admin") {
+      // 管理員可以訪問所有專案
+      projects = await Project.findAll({
+        where: { isActive: true },
+        include: [
+          {
+            model: DemoConfig,
+            as: "demoConfigs",
+            where: { isActive: true },
+            required: false,
+          },
+        ],
+        order: [["createdAt", "DESC"]],
+      });
+    } else {
+      // 一般用戶只能訪問被授權的專案
+      projects = await Project.findAll({
+        where: { isActive: true },
+        include: [
+          {
+            model: User,
+            as: "authorizedUsers",
+            where: { id: userId },
+            required: true,
+          },
+          {
+            model: DemoConfig,
+            as: "demoConfigs",
+            where: { isActive: true },
+            required: false,
+          },
+        ],
+        order: [["createdAt", "DESC"]],
+      });
+    }
+
+    // 為每個專案添加 Demo URL
+    const projectsWithUrls = projects.map((project) => {
+      const projectWithUrls = project.toJSON();
+      projectWithUrls.demoConfigs = projectWithUrls.demoConfigs.map(
+        (demoConfig) => {
+          const baseUrl = `/demo/${project.name}/${demoConfig.branchName}`;
+          const demoUrl = `${baseUrl}${demoConfig.demoPath}`;
+
+          // 處理 subSiteFolders
+          let demoUrls = [];
+          if (demoConfig.subSiteFolders && demoConfig.subSiteFolders.trim()) {
+            const folders = demoConfig.subSiteFolders
+              .split(",")
+              .map((folder) => folder.trim())
+              .filter((folder) => folder);
+            demoUrls = folders.map((folder) => ({
+              name: folder,
+              url: `${baseUrl}/${folder}${demoConfig.demoPath}`,
+            }));
+          }
+
+          return {
+            ...demoConfig,
+            demoUrl,
+            demoUrls,
+          };
+        }
+      );
+      return projectWithUrls;
+    });
+
+    res.json({
+      success: true,
+      data: projectsWithUrls,
+    });
+  } catch (error) {
+    console.error("Error fetching user accessible projects:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch accessible projects",
       message: error.message,
     });
   }
@@ -621,6 +778,8 @@ module.exports = {
   createDemoConfig,
   updateDemoConfig,
   deleteDemoConfig,
-  addDemoConfigUsers,
-  removeDemoConfigUser,
+  addProjectUsers,
+  updateProjectUserRole,
+  removeProjectUser,
+  getUserAccessibleProjects,
 };

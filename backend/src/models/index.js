@@ -2,12 +2,35 @@ const User = require("./User");
 const Project = require("./Project");
 const DemoConfig = require("./DemoConfig");
 const DemoConfigUser = require("./DemoConfigUser");
+const ProjectUser = require("./ProjectUser");
 
 // 定義模型關聯
 
 // User 和 Project 的多對多關聯 (通過 ProjectUser 表)
-// 注意：這裡我們暫時不創建 ProjectUser 表，因為需求中沒有明確提到
-// 如果需要，可以在後續階段添加
+User.belongsToMany(Project, {
+  through: ProjectUser,
+  foreignKey: "userId",
+  otherKey: "projectId",
+  as: "authorizedProjects",
+});
+
+Project.belongsToMany(User, {
+  through: ProjectUser,
+  foreignKey: "projectId",
+  otherKey: "userId",
+  as: "authorizedUsers",
+});
+
+// ProjectUser 的直接關聯
+ProjectUser.belongsTo(User, {
+  foreignKey: "userId",
+  as: "user",
+});
+
+ProjectUser.belongsTo(Project, {
+  foreignKey: "projectId",
+  as: "project",
+});
 
 // Project 和 DemoConfig 的一對多關聯
 Project.hasMany(DemoConfig, {
@@ -58,4 +81,5 @@ module.exports = {
   Project,
   DemoConfig,
   DemoConfigUser,
+  ProjectUser,
 };

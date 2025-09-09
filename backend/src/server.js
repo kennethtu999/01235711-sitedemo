@@ -66,9 +66,10 @@ async function createDefaultProject() {
       const newDemoConfig = await DemoConfig.create({
         projectId: newProject.id,
         branchName: "main",
-        demoPath: "/rc1",
+        demoPath: "/",
         displayName: "webhooktest",
         description: "webhooktest",
+        subSiteFolders: "rc1,rc2",
         isActive: 1,
       });
       console.log("✅ Default demo config created:", newDemoConfig);

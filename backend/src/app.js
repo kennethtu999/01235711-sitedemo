@@ -30,6 +30,9 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
 
+// 靜態文件服務 (前端打包文件)
+app.use(express.static(path.join(__dirname, "../public")));
+
 // Demo 路由 (直接掛在根路徑下)
 app.use("/demo", require("./routes/demo"));
 
@@ -45,12 +48,18 @@ app.get("/health", (req, res) => {
   });
 });
 
-// 404 處理
-app.use((req, res) => {
-  res.status(404).json({
-    error: "Not Found",
-    message: `Route ${req.originalUrl} not found`,
-  });
+// 前端路由處理 (SPA 路由) - 使用中间件处理所有未匹配的请求
+app.use((req, res, next) => {
+  // 如果是 API 請求，返回 404
+  if (req.path.startsWith("/api/")) {
+    return res.status(404).json({
+      error: "Not Found",
+      message: `API Route ${req.originalUrl} not found`,
+    });
+  }
+
+  // 其他請求返回前端 index.html (SPA 路由)
+  res.sendFile(path.join(__dirname, "../public/index.html"));
 });
 
 // 錯誤處理中間件

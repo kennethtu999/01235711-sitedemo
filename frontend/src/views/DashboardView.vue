@@ -3,7 +3,7 @@
     <n-layout>
       <n-layout-header class="dashboard-header">
         <n-space justify="space-between" align="center">
-          <n-h1 style="margin: 0">靜態網站 Demo 管理平台</n-h1>
+          <n-h1 style="margin: 0">網站管理</n-h1>
           <n-space align="center">
             <n-text>歡迎，{{ user?.username || '使用者' }}</n-text>
             <n-button type="error" @click="handleLogout">登出</n-button>
@@ -40,7 +40,7 @@
                 <template #header>
                   <n-h3 style="margin: 0">專案管理</n-h3>
                 </template>
-                <n-p style="margin-bottom: 16px">管理 GitHub 專案和 Demo 配置</n-p>
+                <n-p style="margin-bottom: 16px">管理 GitHub 專案、Demo 配置和專案用戶權限</n-p>
                 <n-button type="primary" block @click="navigateToProjectManagement">
                   進入管理
                 </n-button>
@@ -68,34 +68,77 @@
             </n-grid-item>
           </n-grid>
           
+          
+
           <n-card>
             <template #header>
-              <n-h3 style="margin: 0">系統狀態</n-h3>
+              <n-h3 style="margin: 0">可訪問的專案與 Demo</n-h3>
             </template>
             <n-space vertical>
-              <n-descriptions :column="1" bordered>
-                <n-descriptions-item label="後端狀態">
-                  <n-tag :type="backendStatus ? 'success' : 'error'">
-                    {{ backendStatus ? '正常' : '離線' }}
-                  </n-tag>
-                </n-descriptions-item>
-                <n-descriptions-item label="API 版本">
-                  {{ apiVersion || '未知' }}
-                </n-descriptions-item>
-                <n-descriptions-item label="最後檢查">
-                  {{ lastCheckTime || '未檢查' }}
-                </n-descriptions-item>
-              </n-descriptions>
-              <n-button 
-                type="primary" 
-                block 
-                :loading="isCheckingStatus"
-                @click="checkBackendStatus"
-              >
-                {{ isCheckingStatus ? '檢查中...' : '檢查後端狀態' }}
-              </n-button>
+              <div v-if="userProjects.length === 0 && !isLoadingProjects">
+                <n-empty description="暫無可訪問的專案" />
+              </div>
+              
+              <div v-else>
+                <n-grid :cols="2" :x-gap="20" :y-gap="20" responsive="screen">
+                  <n-grid-item v-for="project in userProjects" :key="project.id">
+                    <n-card hoverable>
+                      <n-space justify="space-between" align="center">
+                        <n-h4 style="margin: 0">{{ project.name }}</n-h4>
+                      </n-space>
+                      
+                      <n-space vertical size="small">
+                        <n-text depth="3">{{ project.description }}</n-text>
+                        <!-- Demo 配置列表 -->
+                        <div v-if="project.demoConfigs && project.demoConfigs.length > 0" style="margin-top: 12px;">
+                          <n-divider style="margin: 8px 0;" />
+                          <n-space vertical size="small">
+                            <div v-for="demo in project.demoConfigs" :key="demo.id" style="padding: 8px; border: 1px solid var(--n-border-color); border-radius: 6px;">
+                              <n-space justify="space-between" align="center">
+                                <n-space vertical size="small">
+                                  <n-text depth="3" style="font-size: 12px;">
+                                    分支: {{ demo.branchName }} | 路徑: {{ demo.demoPath }}
+                                  </n-text>
+                                </n-space>
+                                
+                                <n-space vertical size="small" align="end">
+                                  
+                                  <n-space v-if="demo.demoUrls && demo.demoUrls.length > 0" vertical size="small">
+                                    <n-space size="small" wrap>
+                                        <n-button 
+                                      type="info" 
+                                      size="small" 
+                                      :disabled="!demo.demoUrl"
+                                      @click="demo.demoUrl && openDemo(demo.demoUrl)"
+                                    >
+                                      開啟主要 Demo
+                                    </n-button>
+                                      
+                                      <n-button 
+                                        v-for="subSite in demo.demoUrls" 
+                                        :key="subSite.name"
+                                        type="info" 
+                                        size="small" 
+                                        @click="openDemo(subSite.url)"
+                                      >
+                                        {{ subSite.name }}
+                                      </n-button>
+                                    </n-space>
+                                  </n-space>
+                                </n-space>
+                              </n-space>
+                            </div>
+                          </n-space>
+                        </div>
+                      </n-space>
+                    </n-card>
+                  </n-grid-item>
+                </n-grid>
+              </div>
             </n-space>
           </n-card>
+
+          
         </n-space>
       </n-layout-content>
     </n-layout>
@@ -103,27 +146,27 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { 
-  NLayout, 
-  NLayoutHeader, 
-  NLayoutContent, 
-  NSpace, 
-  NH1, 
-  NH2, 
-  NH3, 
-  NText, 
-  NButton, 
-  NCard, 
-  NP, 
-  NGrid, 
-  NGridItem, 
-  NDescriptions, 
-  NDescriptionsItem, 
-  NTag 
+import { apiService, type Project, type User } from '@/api'
+import {
+  NButton,
+  NCard,
+  NDivider,
+  NEmpty,
+  NGrid,
+  NGridItem,
+  NH1,
+  NH2,
+  NH3,
+  NH4,
+  NLayout,
+  NLayoutContent,
+  NLayoutHeader,
+  NP,
+  NSpace,
+  NText
 } from 'naive-ui'
-import { apiService, type User } from '@/api'
+import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
@@ -133,6 +176,8 @@ const backendStatus = ref(false)
 const apiVersion = ref('')
 const lastCheckTime = ref('')
 const isCheckingStatus = ref(false)
+const userProjects = ref<Project[]>([])
+const isLoadingProjects = ref(false)
 
 // 組件掛載時檢查用戶登入狀態
 onMounted(() => {
@@ -146,6 +191,9 @@ onMounted(() => {
   
   // 自動檢查後端狀態
   checkBackendStatus()
+  
+  // 載入用戶專案
+  loadUserProjects()
 })
 
 // 檢查後端狀態
@@ -192,6 +240,26 @@ const navigateToUserManagement = () => {
 // 導航到專案管理頁面
 const navigateToProjectManagement = () => {
   router.push('/admin/projects')
+}
+
+// 載入用戶專案資料
+const loadUserProjects = async () => {
+  isLoadingProjects.value = true
+  try {
+    const response = await apiService.getUserProjects()
+    userProjects.value = response.data.data || []
+  } catch (error) {
+    console.error('載入專案資料失敗:', error)
+    userProjects.value = []
+  } finally {
+    isLoadingProjects.value = false
+  }
+}
+
+// 開啟 Demo 網站
+const openDemo = (demoUrl: string) => {
+  const fullUrl = `${window.location.origin}${demoUrl}`
+  window.open(fullUrl, '_blank', 'noopener,noreferrer')
 }
 </script>
 

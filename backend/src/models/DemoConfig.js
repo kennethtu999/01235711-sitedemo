@@ -35,6 +35,12 @@ const DemoConfig = sequelize.define(
         notEmpty: true,
       },
     },
+    subSiteFolders: {
+      type: DataTypes.STRING(500),
+      allowNull: true,
+      defaultValue: "",
+      validate: {},
+    },
     displayName: {
       type: DataTypes.STRING(200),
       allowNull: true,
