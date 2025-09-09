@@ -1,35 +1,35 @@
-# 简化的 Dockerfile - 只打包 backend
+# 簡化的 Dockerfile - 只打包後端
 FROM node:20-alpine
 
-# 安装必要的系统依赖
+# 安裝必要的系統依賴
 RUN apk add --no-cache \
     git \
     openssh-client
 
-# 创建应用目录
+# 建立應用程式目錄
 WORKDIR /app
 
-# 复制 package 文件
+# 複製 package 檔案
 COPY backend/package*.json ./
 
-# 安装依赖
+# 安裝依賴
 RUN npm ci --only=production
 
-# 复制后端源代码
+# 複製後端原始碼
 COPY backend/src ./src
-COPY backend/migrations ./migrations
+COPY frontend/dist backend/public
 COPY backend/public ./public
 
-# 创建数据目录
+# 建立資料目錄
 RUN mkdir -p /app/data
 
-# 暴露端口
+# 暴露連接埠
 EXPOSE 3000
 
-# 设置环境变量
+# 設定環境變數
 ENV NODE_ENV=production
 ENV DATA_PATH=/app/data
 ENV PORT=3000
 
-# 启动应用
+# 啟動應用程式
 CMD ["node", "src/server.js"]

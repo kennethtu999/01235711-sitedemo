@@ -33,6 +33,7 @@
             :disabled="isLoading"
             show-password-on="click"
             @input="validatePassword"
+            @keyup.enter="handleLogin"
           />
         </n-form-item>
         

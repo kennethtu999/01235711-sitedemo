@@ -15,14 +15,14 @@
         <n-space vertical size="large">
           <n-card>
             <template #header>
-              <n-h2 style="margin: 0; text-align: center">歡迎使用 Demo 管理平台</n-h2>
+              <n-h2 style="margin: 0; text-align: center">Site Management</n-h2>
             </template>
             <n-p style="text-align: center; margin: 0">
-              這是階段一的基礎架構展示。後續階段將實現完整的管理功能。
+              階段基礎架構。
             </n-p>
           </n-card>
           
-          <n-grid :cols="4" :x-gap="20" :y-gap="20" responsive="screen">
+          <n-grid :cols="2" :x-gap="20" :y-gap="20" responsive="screen">
             <n-grid-item>
               <n-card hoverable>
                 <template #header>
@@ -33,9 +33,9 @@
                   進入管理
                 </n-button>
               </n-card>
-            </n-grid-item>
-            
-            <n-grid-item>
+              
+              <br />
+
               <n-card hoverable>
                 <template #header>
                   <n-h3 style="margin: 0">專案管理</n-h3>
@@ -48,97 +48,75 @@
             </n-grid-item>
             
             <n-grid-item>
-              <n-card hoverable>
+              <n-card>
                 <template #header>
-                  <n-h3 style="margin: 0">Demo 部署</n-h3>
+                  <n-h3 style="margin: 0">可訪問的專案</n-h3>
                 </template>
-                <n-p style="margin-bottom: 16px">自動部署靜態網站 Demo</n-p>
-                <n-button block disabled>即將推出</n-button>
-              </n-card>
-            </n-grid-item>
-            
-            <n-grid-item>
-              <n-card hoverable>
-                <template #header>
-                  <n-h3 style="margin: 0">兩步驟驗證</n-h3>
-                </template>
-                <n-p style="margin-bottom: 16px">Google OTP 安全驗證</n-p>
-                <n-button block disabled>即將推出</n-button>
-              </n-card>
-            </n-grid-item>
-          </n-grid>
-          
-          
-
-          <n-card>
-            <template #header>
-              <n-h3 style="margin: 0">可訪問的專案與 Demo</n-h3>
-            </template>
-            <n-space vertical>
-              <div v-if="userProjects.length === 0 && !isLoadingProjects">
-                <n-empty description="暫無可訪問的專案" />
-              </div>
-              
-              <div v-else>
-                <n-grid :cols="2" :x-gap="20" :y-gap="20" responsive="screen">
-                  <n-grid-item v-for="project in userProjects" :key="project.id">
-                    <n-card hoverable>
-                      <n-space justify="space-between" align="center">
-                        <n-h4 style="margin: 0">{{ project.name }}</n-h4>
-                      </n-space>
-                      
-                      <n-space vertical size="small">
-                        <n-text depth="3">{{ project.description }}</n-text>
-                        <!-- Demo 配置列表 -->
-                        <div v-if="project.demoConfigs && project.demoConfigs.length > 0" style="margin-top: 12px;">
-                          <n-divider style="margin: 8px 0;" />
+                <n-space vertical>
+                  <div v-if="userProjects.length === 0 && !isLoadingProjects">
+                    <n-empty description="暫無可訪問的專案" />
+                  </div>
+                  
+                  <div v-else>
+                    <n-grid :cols="2" :x-gap="20" :y-gap="20" responsive="screen">
+                      <n-grid-item v-for="project in userProjects" :key="project.id">
+                        <n-card hoverable>
+                          <n-space justify="space-between" align="center">
+                            <n-h4 style="margin: 0">{{ project.name }}</n-h4>
+                          </n-space>
+                          
                           <n-space vertical size="small">
-                            <div v-for="demo in project.demoConfigs" :key="demo.id" style="padding: 8px; border: 1px solid var(--n-border-color); border-radius: 6px;">
-                              <n-space justify="space-between" align="center">
-                                <n-space vertical size="small">
-                                  <n-text depth="3" style="font-size: 12px;">
-                                    分支: {{ demo.branchName }} | 路徑: {{ demo.demoPath }}
-                                  </n-text>
-                                </n-space>
-                                
-                                <n-space vertical size="small" align="end">
-                                  
-                                  <n-space v-if="demo.demoUrls && demo.demoUrls.length > 0" vertical size="small">
-                                    <n-space size="small" wrap>
-                                        <n-button 
-                                      type="info" 
-                                      size="small" 
-                                      :disabled="!demo.demoUrl"
-                                      @click="demo.demoUrl && openDemo(demo.demoUrl)"
-                                    >
-                                      開啟主要 Demo
-                                    </n-button>
+                            <n-text depth="3">{{ project.description }}</n-text>
+                            <!-- Demo 配置列表 -->
+                            <div v-if="project.demoConfigs && project.demoConfigs.length > 0" style="margin-top: 12px;">
+                              <n-divider style="margin: 8px 0;" />
+                              <n-space vertical size="small">
+                                <div v-for="demo in project.demoConfigs" :key="demo.id" style="padding: 8px; border: 1px solid var(--n-border-color); border-radius: 6px;">
+                                  <n-space justify="space-between" align="center">
+                                    <n-space vertical size="small">
+                                      <n-text depth="3" style="font-size: 12px;">
+                                        分支: {{ demo.branchName }} | 路徑: {{ demo.demoPath }}
+                                      </n-text>
+                                    </n-space>
+                                    
+                                    <n-space vertical size="small" align="end">
                                       
-                                      <n-button 
-                                        v-for="subSite in demo.demoUrls" 
-                                        :key="subSite.name"
-                                        type="info" 
-                                        size="small" 
-                                        @click="openDemo(subSite.url)"
-                                      >
-                                        {{ subSite.name }}
-                                      </n-button>
+                                      <n-space v-if="demo.demoUrls && demo.demoUrls.length > 0" vertical size="small">
+                                        <n-space size="small" wrap>
+                                            <n-button 
+                                          type="info" 
+                                          size="small" 
+                                          :disabled="!demo.demoUrl"
+                                          @click="demo.demoUrl && openDemo(demo.demoUrl)"
+                                        >
+                                          開啟主要 Demo
+                                        </n-button>
+                                          
+                                          <n-button 
+                                            v-for="subSite in demo.demoUrls" 
+                                            :key="subSite.name"
+                                            type="info" 
+                                            size="small" 
+                                            @click="openDemo(subSite.url)"
+                                          >
+                                            {{ subSite.name }}
+                                          </n-button>
+                                        </n-space>
+                                      </n-space>
                                     </n-space>
                                   </n-space>
-                                </n-space>
+                                </div>
                               </n-space>
                             </div>
                           </n-space>
-                        </div>
-                      </n-space>
-                    </n-card>
-                  </n-grid-item>
-                </n-grid>
-              </div>
-            </n-space>
-          </n-card>
-
-          
+                        </n-card>
+                      </n-grid-item>
+                    </n-grid>
+                  </div>
+                </n-space>
+              </n-card>
+            </n-grid-item>
+          </n-grid>
         </n-space>
       </n-layout-content>
     </n-layout>
