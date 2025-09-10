@@ -22,6 +22,13 @@ Project.belongsToMany(User, {
   as: "authorizedUsers",
 });
 
+// Project 和 ProjectUser 的一對多關聯
+Project.hasMany(ProjectUser, {
+  foreignKey: "projectId",
+  as: "projectUsers",
+  onDelete: "CASCADE",
+});
+
 // ProjectUser 的直接關聯
 ProjectUser.belongsTo(User, {
   foreignKey: "userId",

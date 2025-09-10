@@ -1,4 +1,5 @@
-const { DemoConfig, Project, ProjectUser } = require("../models");
+const { DemoConfig, Project, ProjectUser, User } = require("../models");
+const authorizeDemoService = require("../services/authorizeDemoService");
 
 /**
  * Demo 存取授權中間件
@@ -40,12 +41,15 @@ async function authorizeDemoAccess(req, res, next) {
           as: "project",
           include: [
             {
-              model: ProjectUser,
+              model: User,
               as: "authorizedUsers",
               where: {
-                userId: req.user.id,
+                id: req.user.id,
               },
               required: false,
+              through: {
+                attributes: [],
+              },
             },
           ],
         },
@@ -150,16 +154,6 @@ async function authorizeDemoAccessByProjectAndBranch(req, res, next) {
             name: projectName,
             isActive: true,
           },
-          include: [
-            {
-              model: ProjectUser,
-              as: "authorizedUsers",
-              where: {
-                userId: req.user.id,
-              },
-              required: false,
-            },
-          ],
         },
       ],
     });
@@ -173,10 +167,57 @@ async function authorizeDemoAccessByProjectAndBranch(req, res, next) {
       });
     }
 
+    const projectId = demoConfig.project.id;
+    const userId = req.user.id;
+
+    // 先檢查緩存
+    const cachedPermission = authorizeDemoService.checkPermission(
+      projectId,
+      userId
+    );
+
+    if (cachedPermission !== null) {
+      // 緩存命中
+      if (!cachedPermission) {
+        return res.status(403).json({
+          error: "Forbidden",
+          message: "You do not have access to this project",
+          projectName,
+          branchName,
+          projectId,
+          demoConfigId: demoConfig.id,
+        });
+      }
+
+      // 有權限，將 Demo 配置資訊添加到請求對象
+      req.demoConfig = demoConfig;
+      return next();
+    }
+
+    // 緩存未命中，查詢數據庫
+    const projectWithUsers = await Project.findByPk(projectId, {
+      include: [
+        {
+          model: User,
+          as: "authorizedUsers",
+          where: {
+            id: userId,
+          },
+          required: false,
+          through: {
+            attributes: [],
+          },
+        },
+      ],
+    });
+
     // 檢查使用者是否有 Project 的授權
     const hasAccess =
-      demoConfig.project.authorizedUsers &&
-      demoConfig.project.authorizedUsers.length > 0;
+      projectWithUsers.authorizedUsers &&
+      projectWithUsers.authorizedUsers.length > 0;
+
+    // 將結果存入緩存
+    authorizeDemoService.setPermission(projectId, userId, hasAccess);
 
     if (!hasAccess) {
       return res.status(403).json({
@@ -184,7 +225,7 @@ async function authorizeDemoAccessByProjectAndBranch(req, res, next) {
         message: "You do not have access to this project",
         projectName,
         branchName,
-        projectId: demoConfig.project.id,
+        projectId,
         demoConfigId: demoConfig.id,
       });
     }

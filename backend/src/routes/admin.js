@@ -16,6 +16,9 @@ const {
   addProjectUsers,
   updateProjectUserRole,
   removeProjectUser,
+  removeAllProjectUsers,
+  getCacheStats,
+  clearCache,
 } = require("../controllers/adminController");
 const { triggerProjectHook } = require("../controllers/webhookController");
 
@@ -44,8 +47,13 @@ router.delete("/democonfigs/:id", deleteDemoConfig);
 router.post("/projects/:projectId/users", addProjectUsers);
 router.put("/projects/:projectId/users/:userId", updateProjectUserRole);
 router.delete("/projects/:projectId/users/:userId", removeProjectUser);
+router.delete("/projects/:projectId/users", removeAllProjectUsers);
 
 // 專案 Hook 執行路由
 router.post("/projects/:projectId/trigger-hook", triggerProjectHook);
+
+// 緩存管理路由
+router.get("/cache/stats", getCacheStats);
+router.delete("/cache", clearCache);
 
 module.exports = router;

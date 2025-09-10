@@ -6,6 +6,7 @@ const {
   ProjectUser,
 } = require("../models");
 const { Op } = require("sequelize");
+const authorizeDemoService = require("../services/authorizeDemoService");
 
 // ==================== 使用者管理 ====================
 
@@ -196,20 +197,39 @@ const getAllProjects = async (req, res) => {
           as: "demoConfigs",
         },
         {
-          model: User,
-          as: "authorizedUsers",
-          attributes: ["id", "username", "email"],
-          through: {
-            attributes: ["grantedAt", "grantedBy", "role"],
-          },
+          model: ProjectUser,
+          as: "projectUsers",
+          include: [
+            {
+              model: User,
+              as: "user",
+              attributes: ["id", "username", "email", "role"],
+            },
+          ],
+          attributes: [
+            "id",
+            "projectId",
+            "userId",
+            "grantedAt",
+            "grantedBy",
+            "role",
+          ],
         },
       ],
       order: [["createdAt", "DESC"]],
     });
 
+    // 將 projectUsers 重新命名為 authorizedUsers 以保持前端兼容性
+    const projectsWithRenamedUsers = projects.map((project) => {
+      const projectData = project.toJSON();
+      projectData.authorizedUsers = projectData.projectUsers || [];
+      delete projectData.projectUsers;
+      return projectData;
+    });
+
     res.json({
       success: true,
-      data: projects,
+      data: projectsWithRenamedUsers,
     });
   } catch (error) {
     console.error("Error fetching projects:", error);
@@ -577,6 +597,9 @@ const addProjectUsers = async (req, res) => {
       ignoreDuplicates: true, // 忽略重複的授權
     });
 
+    // 清除該專案的所有權限緩存
+    authorizeDemoService.removeProjectPermissions(parseInt(projectId));
+
     res.json({
       success: true,
       message: "Users authorized successfully",
@@ -625,6 +648,9 @@ const updateProjectUserRole = async (req, res) => {
     // 更新角色
     await authorization.update({ role });
 
+    // 清除該專案的所有權限緩存
+    authorizeDemoService.removeProjectPermissions(parseInt(projectId));
+
     res.json({
       success: true,
       message: "User role updated successfully",
@@ -663,6 +689,9 @@ const removeProjectUser = async (req, res) => {
     // 刪除授權關聯
     await authorization.destroy();
 
+    // 清除該專案的所有權限緩存
+    authorizeDemoService.removeProjectPermissions(parseInt(projectId));
+
     res.json({
       success: true,
       message: "User authorization removed successfully",
@@ -672,6 +701,46 @@ const removeProjectUser = async (req, res) => {
     res.status(500).json({
       success: false,
       error: "Failed to remove user authorization",
+      message: error.message,
+    });
+  }
+};
+
+// 移除指定專案的所有授權使用者
+const removeAllProjectUsers = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+
+    // 檢查專案是否存在
+    const project = await Project.findByPk(projectId);
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        error: "Project not found",
+        message: "The specified project does not exist",
+      });
+    }
+
+    // 刪除該專案的所有授權關聯
+    const deletedCount = await ProjectUser.destroy({
+      where: {
+        projectId: parseInt(projectId),
+      },
+    });
+
+    // 清除該專案的所有權限緩存
+    authorizeDemoService.removeProjectPermissions(parseInt(projectId));
+
+    res.json({
+      success: true,
+      message: `Removed ${deletedCount} user authorizations successfully`,
+      data: { removedCount: deletedCount },
+    });
+  } catch (error) {
+    console.error("Error removing all project users:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to remove all user authorizations",
       message: error.message,
     });
   }
@@ -781,5 +850,47 @@ module.exports = {
   addProjectUsers,
   updateProjectUserRole,
   removeProjectUser,
+  removeAllProjectUsers,
   getUserAccessibleProjects,
+
+  // 緩存管理
+  getCacheStats: async (req, res) => {
+    try {
+      const stats = authorizeDemoService.getStats();
+      const permissions = authorizeDemoService.getAllPermissions();
+
+      res.json({
+        success: true,
+        data: {
+          stats,
+          permissions,
+        },
+      });
+    } catch (error) {
+      console.error("Error getting cache stats:", error);
+      res.status(500).json({
+        success: false,
+        error: "Failed to get cache stats",
+        message: error.message,
+      });
+    }
+  },
+
+  clearCache: async (req, res) => {
+    try {
+      authorizeDemoService.clearAll();
+
+      res.json({
+        success: true,
+        message: "Cache cleared successfully",
+      });
+    } catch (error) {
+      console.error("Error clearing cache:", error);
+      res.status(500).json({
+        success: false,
+        error: "Failed to clear cache",
+        message: error.message,
+      });
+    }
+  },
 };

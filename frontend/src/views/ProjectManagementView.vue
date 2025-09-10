@@ -287,7 +287,17 @@
         <div class="modal-body">
           <!-- 現有用戶列表 -->
           <div class="current-users-section">
-            <h4>現有用戶 ({{ currentProject?.authorizedUsers?.length || 0 }})</h4>
+            <div class="current-users-header">
+              <h4>現有用戶 ({{ currentProject?.authorizedUsers?.length || 0 }})</h4>
+              <button 
+                v-if="currentProject?.authorizedUsers && currentProject.authorizedUsers.length > 0"
+                @click="removeAllProjectUsers" 
+                class="remove-all-users-button"
+                :disabled="isSubmitting"
+              >
+                移除所有人權限
+              </button>
+            </div>
             <div v-if="currentProject?.authorizedUsers && currentProject.authorizedUsers.length > 0" class="current-users-list">
               <div v-for="projectUser in currentProject.authorizedUsers" :key="projectUser.id" class="current-user-item">
                 <div class="user-info">
@@ -528,6 +538,17 @@ const refreshProjects = () => {
   loadData()
 }
 
+// 更新當前專案數據
+const updateCurrentProject = () => {
+  if (!currentProject.value) return
+  
+  // 從重新載入的專案列表中找到對應的專案
+  const updatedProject = projects.value.find(p => p.id === currentProject.value!.id)
+  if (updatedProject) {
+    currentProject.value = updatedProject
+  }
+}
+
 // 返回儀表板
 const goBack = () => {
   router.push('/dashboard')
@@ -604,7 +625,9 @@ const updateUserRole = async (userId: number, role: string) => {
   try {
     await apiService.updateProjectUserRole(currentProject.value.id, userId, { role: role as 'viewer' | 'editor' | 'admin' })
     alert('用戶角色更新成功')
-    loadData()
+    // 重新載入數據並更新當前專案
+    await loadData()
+    updateCurrentProject()
   } catch (error: any) {
     console.error('更新用戶角色失敗:', error)
     const message = error.response?.data?.message || '更新失敗，請稍後再試'
@@ -624,9 +647,36 @@ const removeProjectUser = async (userId: number) => {
   try {
     await apiService.removeProjectUser(currentProject.value.id, userId)
     alert('用戶移除成功')
-    loadData()
+    // 重新載入數據並更新當前專案
+    await loadData()
+    updateCurrentProject()
   } catch (error: any) {
     console.error('移除用戶失敗:', error)
+    const message = error.response?.data?.message || '移除失敗，請稍後再試'
+    alert(message)
+  } finally {
+    isSubmitting.value = false
+  }
+}
+
+// 移除所有專案用戶
+const removeAllProjectUsers = async () => {
+  if (!currentProject.value) return
+  
+  const userCount = currentProject.value.authorizedUsers?.length || 0
+  if (userCount === 0) return
+  
+  if (!confirm(`確定要移除所有 ${userCount} 個用戶的權限嗎？此操作無法復原。`)) return
+  
+  isSubmitting.value = true
+  try {
+    await apiService.removeAllProjectUsers(currentProject.value.id)
+    alert(`已成功移除 ${userCount} 個用戶的權限`)
+    // 重新載入數據並更新當前專案
+    await loadData()
+    updateCurrentProject()
+  } catch (error: any) {
+    console.error('移除所有用戶失敗:', error)
     const message = error.response?.data?.message || '移除失敗，請稍後再試'
     alert(message)
   } finally {
@@ -647,7 +697,9 @@ const addSelectedUsers = async () => {
     await apiService.addProjectUsers(currentProject.value.id, data)
     alert('用戶添加成功')
     selectedUserIds.value = []
-    loadData()
+    // 重新載入數據並更新當前專案
+    await loadData()
+    updateCurrentProject()
   } catch (error: any) {
     console.error('添加用戶失敗:', error)
     const message = error.response?.data?.message || '添加失敗，請稍後再試'
@@ -1478,12 +1530,40 @@ const formatDate = (dateString: string) => {
   margin-bottom: 24px;
 }
 
+.current-users-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
 .current-users-section h4,
 .add-users-section h4 {
-  margin: 0 0 16px 0;
+  margin: 0;
   color: #333;
   font-size: 16px;
   font-weight: 600;
+}
+
+.remove-all-users-button {
+  padding: 6px 12px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.remove-all-users-button:hover:not(:disabled) {
+  background: #c82333;
+}
+
+.remove-all-users-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .current-users-list {

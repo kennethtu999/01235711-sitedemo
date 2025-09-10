@@ -258,6 +258,8 @@ export const apiService = {
     api.put(`/admin/projects/${projectId}/users/${userId}`, data),
   removeProjectUser: (projectId: number, userId: number) => 
     api.delete(`/admin/projects/${projectId}/users/${userId}`),
+  removeAllProjectUsers: (projectId: number) => 
+    api.delete(`/admin/projects/${projectId}/users`),
   
   // Hook Log 管理
   getHookLogs: (params?: { page?: number; limit?: number; status?: string; projectId?: number }) => 
