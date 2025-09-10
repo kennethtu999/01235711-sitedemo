@@ -268,6 +268,10 @@ export const apiService = {
     api.get('/hook-logs/stats', { params }),
   reExecuteHookLog: (hookLogId: number) => 
     api.post(`/hook-logs/${hookLogId}/re-execute`),
+  
+  // 專案 Hook 執行
+  triggerProjectHook: (projectId: number, branch?: string) => 
+    api.post(`/admin/projects/${projectId}/trigger-hook`, { branch }),
 }
 
 export default api

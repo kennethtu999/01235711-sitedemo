@@ -52,6 +52,9 @@
                 </div>
               </div>
               <div class="project-actions">
+                <button @click="triggerProjectHook(project)" class="trigger-hook-button" title="執行 Hook" :disabled="!project.isActive || isTriggeringHook">
+                  {{ isTriggeringHook ? '執行中...' : '執行 Hook' }}
+                </button>
                 <button @click="manageProjectUsers(project)" class="manage-users-button" title="管理專案用戶">
                   管理用戶
                 </button>
@@ -352,6 +355,48 @@
       </div>
     </div>
 
+    <!-- 執行 Hook 模態框 -->
+    <div v-if="showTriggerHookModal" class="modal-overlay" @click="closeTriggerHookModal">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>執行專案 Hook</h3>
+          <button @click="closeTriggerHookModal" class="close-button">×</button>
+        </div>
+        
+        <form @submit.prevent="submitTriggerHook" class="modal-form">
+          <div class="form-group">
+            <label for="hookBranch">分支名稱</label>
+            <input
+              id="hookBranch"
+              v-model="hookFormData.branch"
+              type="text"
+              placeholder="例如: main, develop, feature/xxx"
+            />
+            <small class="form-help-text">留空將使用 main 分支</small>
+          </div>
+
+          <div class="form-group">
+            <p class="hook-info">
+              <strong>專案:</strong> {{ currentProject?.name }}<br>
+              <strong>倉庫:</strong> {{ currentProject?.githubRepoName }}
+            </p>
+            <p class="hook-warning">
+              此操作將觸發專案的所有匹配 Demo 配置進行部署。
+            </p>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" @click="closeTriggerHookModal" class="cancel-button">
+              取消
+            </button>
+            <button type="submit" :disabled="isTriggeringHook" class="submit-button">
+              {{ isTriggeringHook ? '執行中...' : '執行 Hook' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <!-- 刪除確認模態框 -->
     <div v-if="showDeleteModal" class="modal-overlay" @click="closeDeleteModal">
       <div class="modal-content delete-modal" @click.stop>
@@ -405,6 +450,7 @@ const allUsers = ref<User[]>([])
 const isLoading = ref(false)
 const isSubmitting = ref(false)
 const isDeleting = ref(false)
+const isTriggeringHook = ref(false)
 
 // 模態框狀態
 const showCreateProjectModal = ref(false)
@@ -412,6 +458,7 @@ const showEditProjectModal = ref(false)
 const showCreateDemoConfigModal = ref(false)
 const showEditDemoConfigModal = ref(false)
 const showManageProjectUsersModal = ref(false)
+const showTriggerHookModal = ref(false)
 const showDeleteModal = ref(false)
 
 // 表單數據
@@ -430,6 +477,10 @@ const demoConfigFormData = ref<CreateDemoConfigData & UpdateDemoConfigData & { i
   displayName: '',
   description: '',
   isActive: true
+})
+
+const hookFormData = ref<{ branch: string }>({
+  branch: ''
 })
 
 // 當前操作的項目
@@ -504,6 +555,17 @@ const deleteProject = (project: Project) => {
 const openCreateDemoConfigModal = (project: Project) => {
   currentProject.value = project
   showCreateDemoConfigModal.value = true
+}
+
+// 觸發專案 Hook
+const triggerProjectHook = (project: Project) => {
+  if (!project.isActive) {
+    alert('專案未啟用，無法執行 Hook')
+    return
+  }
+  currentProject.value = project
+  hookFormData.value.branch = ''
+  showTriggerHookModal.value = true
 }
 
 // 專案用戶管理
@@ -615,6 +677,12 @@ const closeManageProjectUsersModal = () => {
   newUserRole.value = 'viewer'
 }
 
+const closeTriggerHookModal = () => {
+  showTriggerHookModal.value = false
+  currentProject.value = null
+  hookFormData.value.branch = ''
+}
+
 const closeDeleteModal = () => {
   showDeleteModal.value = false
   itemToDelete.value = null
@@ -705,6 +773,26 @@ const submitDemoConfigForm = async () => {
   }
 }
 
+
+// 提交觸發 Hook
+const submitTriggerHook = async () => {
+  if (!currentProject.value) return
+  
+  isTriggeringHook.value = true
+  try {
+    const branch = hookFormData.value.branch.trim() || undefined
+    await apiService.triggerProjectHook(currentProject.value.id, branch)
+    alert('Hook 執行已開始，請查看 Hook Log 了解執行狀態')
+    closeTriggerHookModal()
+    loadData()
+  } catch (error: any) {
+    console.error('觸發 Hook 失敗:', error)
+    const message = error.response?.data?.message || '觸發 Hook 失敗，請稍後再試'
+    alert(message)
+  } finally {
+    isTriggeringHook.value = false
+  }
+}
 
 // 確認刪除
 const confirmDelete = async () => {
@@ -1149,6 +1237,7 @@ const formatDate = (dateString: string) => {
   flex-wrap: wrap;
 }
 
+.trigger-hook-button,
 .manage-users-button,
 .edit-demo-button,
 .delete-demo-button {
@@ -1158,6 +1247,26 @@ const formatDate = (dateString: string) => {
   font-size: 10px;
   cursor: pointer;
   transition: background-color 0.2s ease;
+}
+
+.trigger-hook-button {
+  background: #17a2b8;
+  color: white;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.trigger-hook-button:hover:not(:disabled) {
+  background: #138496;
+}
+
+.trigger-hook-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .manage-users-button {
@@ -1512,6 +1621,25 @@ const formatDate = (dateString: string) => {
 .warning-text {
   color: #dc3545;
   font-weight: 500;
+}
+
+.hook-info {
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 6px;
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.hook-warning {
+  background: #fff3cd;
+  color: #856404;
+  padding: 12px;
+  border-radius: 6px;
+  margin: 0;
+  font-size: 14px;
+  border: 1px solid #ffeaa7;
 }
 
 .delete-modal .delete-button {

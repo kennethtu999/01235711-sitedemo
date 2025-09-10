@@ -50,6 +50,9 @@
         />
         <n-button @click="applyFilters" type="primary">篩選</n-button>
         <n-button @click="clearFilters">清除</n-button>
+        <n-button @click="showTriggerHookModal = true" type="success" v-if="projects.length > 0">
+          觸發 Hook
+        </n-button>
       </n-space>
 
       <!-- Hook Log 表格 -->
@@ -64,6 +67,56 @@
         :max-height="600"
       />
     </n-card>
+
+    <!-- 觸發 Hook 模態框 -->
+    <n-modal v-model:show="showTriggerHookModal" preset="card" title="觸發專案 Hook" style="width: 500px">
+      <n-form :model="triggerHookForm" ref="triggerHookFormRef">
+        <n-form-item label="選擇專案" path="projectId" :rule="{ required: true, message: '請選擇專案' }">
+          <n-select
+            v-model:value="triggerHookForm.projectId"
+            placeholder="請選擇專案"
+            :options="projectOptions.filter(p => p.value !== '')"
+            @update:value="onProjectChange"
+          />
+        </n-form-item>
+        <n-form-item label="分支名稱" path="branch">
+          <n-input
+            v-model:value="triggerHookForm.branch"
+            placeholder="例如: main, develop, feature/xxx"
+          />
+          <template #feedback>
+            留空將使用 main 分支
+          </template>
+        </n-form-item>
+        <n-form-item v-if="selectedProject">
+          <n-alert type="info" title="專案資訊">
+            <template #header>
+              <strong>專案:</strong> {{ selectedProject.name }}<br>
+              <strong>倉庫:</strong> {{ selectedProject.githubRepoName }}
+            </template>
+          </n-alert>
+        </n-form-item>
+        <n-form-item>
+          <n-alert type="warning" title="注意事項">
+            此操作將觸發專案的所有匹配 Demo 配置進行部署。
+          </n-alert>
+        </n-form-item>
+      </n-form>
+      
+      <template #action>
+        <n-space>
+          <n-button @click="closeTriggerHookModal">取消</n-button>
+          <n-button 
+            @click="submitTriggerHook" 
+            type="primary" 
+            :loading="isTriggeringHook"
+            :disabled="!triggerHookForm.projectId"
+          >
+            {{ isTriggeringHook ? '執行中...' : '執行 Hook' }}
+          </n-button>
+        </n-space>
+      </template>
+    </n-modal>
 
     <!-- Hook Log 詳情模態框 -->
     <n-modal v-model:show="showDetailModal" preset="card" title="Hook Log 詳情" style="width: 80%; max-width: 1000px">
@@ -101,7 +154,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed, h } from 'vue'
-import { NCard, NButton, NSpace, NGrid, NGridItem, NStatistic, NSelect, NDataTable, NModal, NDescriptions, NDescriptionsItem, NTag, NText, NDivider, NCode, NIcon, useMessage } from 'naive-ui'
+import { NCard, NButton, NSpace, NGrid, NGridItem, NStatistic, NSelect, NDataTable, NModal, NDescriptions, NDescriptionsItem, NTag, NText, NDivider, NCode, NIcon, NForm, NFormItem, NInput, NAlert, useMessage } from 'naive-ui'
 // import { Refresh } from '@vicons/ionicons5'
 import { apiService, type HookLog, type HookLogStats, type Project } from '@/api'
 
@@ -120,11 +173,20 @@ const stats = ref<HookLogStats>({
 const projects = ref<Project[]>([])
 const showDetailModal = ref(false)
 const selectedHookLog = ref<HookLog | null>(null)
+const showTriggerHookModal = ref(false)
+const isTriggeringHook = ref(false)
+const selectedProject = ref<Project | null>(null)
 
 // 篩選器
 const filters = reactive({
   status: '' as string,
   projectId: '' as string,
+})
+
+// 觸發 Hook 表單
+const triggerHookForm = reactive({
+  projectId: '' as string,
+  branch: '' as string,
 })
 
 // 分頁
@@ -360,6 +422,55 @@ const reExecute = async (hookLogId: number) => {
     message.error('重新執行失敗')
   } finally {
     reExecutingIds.value = reExecutingIds.value.filter(id => id !== hookLogId)
+  }
+}
+
+// 觸發 Hook 相關方法
+const onProjectChange = (projectId: string) => {
+  const project = projects.value.find(p => p.id.toString() === projectId)
+  selectedProject.value = project || null
+}
+
+const closeTriggerHookModal = () => {
+  showTriggerHookModal.value = false
+  triggerHookForm.projectId = ''
+  triggerHookForm.branch = ''
+  selectedProject.value = null
+}
+
+const submitTriggerHook = async () => {
+  if (!triggerHookForm.projectId) {
+    message.error('請選擇專案')
+    return
+  }
+
+  const project = projects.value.find(p => p.id.toString() === triggerHookForm.projectId)
+  if (!project) {
+    message.error('專案不存在')
+    return
+  }
+
+  if (!project.isActive) {
+    message.error('專案未啟用，無法執行 Hook')
+    return
+  }
+
+  isTriggeringHook.value = true
+  try {
+    const branch = triggerHookForm.branch.trim() || undefined
+    await apiService.triggerProjectHook(project.id, branch)
+    message.success('Hook 執行已開始，請查看下方列表了解執行狀態')
+    closeTriggerHookModal()
+    // 延遲刷新數據，讓用戶看到新的記錄
+    setTimeout(() => {
+      refreshData()
+    }, 1000)
+  } catch (error: any) {
+    console.error('觸發 Hook 失敗:', error)
+    const errorMessage = error.response?.data?.message || '觸發 Hook 失敗，請稍後再試'
+    message.error(errorMessage)
+  } finally {
+    isTriggeringHook.value = false
   }
 }
 

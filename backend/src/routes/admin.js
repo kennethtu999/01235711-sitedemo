@@ -17,6 +17,7 @@ const {
   updateProjectUserRole,
   removeProjectUser,
 } = require("../controllers/adminController");
+const { triggerProjectHook } = require("../controllers/webhookController");
 
 // 所有管理員路由都需要認證和授權
 router.use(authenticateJWT);
@@ -43,5 +44,8 @@ router.delete("/democonfigs/:id", deleteDemoConfig);
 router.post("/projects/:projectId/users", addProjectUsers);
 router.put("/projects/:projectId/users/:userId", updateProjectUserRole);
 router.delete("/projects/:projectId/users/:userId", removeProjectUser);
+
+// 專案 Hook 執行路由
+router.post("/projects/:projectId/trigger-hook", triggerProjectHook);
 
 module.exports = router;

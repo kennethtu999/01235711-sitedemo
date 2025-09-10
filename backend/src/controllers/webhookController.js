@@ -4,6 +4,7 @@ const {
   deployProjectDemo,
 } = require("../services/deployService");
 const { HookLog, Project } = require("../models");
+const hookExecutionService = require("../services/hookExecutionService");
 
 /**
  * 驗證 GitHub Webhook 簽名
@@ -240,125 +241,22 @@ async function reExecuteHookLog(req, res) {
   try {
     const { hookLogId } = req.params;
 
-    // 查找 Hook Log
-    const hookLog = await HookLog.findByPk(hookLogId, {
-      include: [{ model: Project, as: "project" }],
-    });
+    const result = await hookExecutionService.reExecuteHookLog(
+      parseInt(hookLogId)
+    );
 
-    if (!hookLog) {
-      return res.status(404).json({
-        error: "Not Found",
-        message: "Hook log not found",
+    if (result.success) {
+      res.status(200).json({
+        message: "Hook log re-execution started",
+        newHookLogId: result.newHookLogId,
+        originalHookLogId: result.originalHookLogId,
       });
-    }
-
-    if (!hookLog.project) {
-      return res.status(400).json({
+    } else {
+      res.status(400).json({
         error: "Bad Request",
-        message: "Associated project not found",
+        message: result.error,
       });
     }
-
-    // 創建新的 Hook Log 記錄
-    const newHookLog = await HookLog.create({
-      projectId: hookLog.projectId,
-      branch: hookLog.branch,
-      startDateTime: new Date(),
-      status: "pending",
-      webhookEventType: hookLog.webhookEventType,
-      repositoryFullName: hookLog.repositoryFullName,
-    });
-
-    // 異步執行重新部署
-    setImmediate(async () => {
-      try {
-        // 查找匹配的 Demo 配置
-        const demoConfigs = await findDemoConfigsByRepoAndBranch(
-          hookLog.repositoryFullName,
-          hookLog.branch
-        );
-
-        if (demoConfigs.length === 0) {
-          await newHookLog.markAsSuccess({
-            message: "No matching demo configurations found",
-            totalConfigs: 0,
-            successCount: 0,
-            failureCount: 0,
-            results: [],
-          });
-          return;
-        }
-
-        // 異步部署所有匹配的 Demo 配置
-        const deploymentPromises = demoConfigs.map(async (demoConfig) => {
-          try {
-            console.log(`重新執行部署 Demo 配置 ID: ${demoConfig.id}`);
-            const result = await deployProjectDemo(demoConfig.id);
-            console.log(
-              `重新執行 Demo 配置 ID ${demoConfig.id} 部署結果:`,
-              result
-            );
-            return {
-              demoConfigId: demoConfig.id,
-              success: result.success,
-              message: result.message,
-              error: result.error,
-            };
-          } catch (error) {
-            console.error(
-              `重新執行 Demo 配置 ID ${demoConfig.id} 部署異常:`,
-              error
-            );
-            return {
-              demoConfigId: demoConfig.id,
-              success: false,
-              message: "Deployment failed",
-              error: error.message,
-            };
-          }
-        });
-
-        // 等待所有部署完成
-        const deploymentResults = await Promise.allSettled(deploymentPromises);
-
-        // 統計部署結果
-        const results = deploymentResults.map((result) => {
-          if (result.status === "fulfilled") {
-            return result.value;
-          } else {
-            return {
-              success: false,
-              message: "Deployment promise rejected",
-              error: result.reason?.message || "Unknown error",
-            };
-          }
-        });
-
-        const successCount = results.filter((r) => r.success).length;
-        const failureCount = results.length - successCount;
-
-        console.log(
-          `重新執行部署完成: 成功 ${successCount} 個，失敗 ${failureCount} 個`
-        );
-
-        // 更新 Hook Log 為成功狀態
-        await newHookLog.markAsSuccess({
-          totalConfigs: demoConfigs.length,
-          successCount,
-          failureCount,
-          results,
-        });
-      } catch (error) {
-        console.error("重新執行 Hook Log 時發生錯誤:", error);
-        await newHookLog.markAsFailed(error.message);
-      }
-    });
-
-    res.status(200).json({
-      message: "Hook log re-execution started",
-      newHookLogId: newHookLog.id,
-      originalHookLogId: hookLogId,
-    });
   } catch (error) {
     console.error("重新執行 Hook Log 時發生錯誤:", error);
     res.status(500).json({
@@ -369,9 +267,50 @@ async function reExecuteHookLog(req, res) {
   }
 }
 
+/**
+ * 手動觸發專案 Hook 執行
+ * @param {Object} req - Express 請求對象
+ * @param {Object} res - Express 響應對象
+ */
+async function triggerProjectHook(req, res) {
+  try {
+    const { projectId } = req.params;
+    const { branch } = req.body;
+
+    const result = await hookExecutionService.executeProjectHook(
+      parseInt(projectId),
+      branch || "main",
+      "manual_trigger"
+    );
+
+    if (result.success) {
+      res.status(200).json({
+        message: "Project hook execution started",
+        hookLogId: result.hookLogId,
+        projectId: result.projectId,
+        branch: result.branch,
+      });
+    } else {
+      res.status(400).json({
+        error: "Bad Request",
+        message: result.error,
+        hookLogId: result.hookLogId,
+      });
+    }
+  } catch (error) {
+    console.error("手動觸發專案 Hook 時發生錯誤:", error);
+    res.status(500).json({
+      error: "Internal Server Error",
+      message: "Failed to trigger project hook",
+      details: error.message,
+    });
+  }
+}
+
 module.exports = {
   handleGitHubWebhook,
   handleGitHubWebhookTest,
   verifyGitHubSignature,
   reExecuteHookLog,
+  triggerProjectHook,
 };
