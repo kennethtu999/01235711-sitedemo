@@ -1,4 +1,7 @@
 @import './base.css';
+@import './design-tokens.css';
+@import './component-styles.css';
+@import './responsive.css';
 
 /* Naive UI OS Theme Integration */
 #app {
@@ -6,6 +9,9 @@
   margin: 0 auto;
   font-weight: normal;
   min-height: 100vh;
+  font-family: var(--font-family-primary);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-primary);
 }
 
 /* Remove default padding to let Naive UI handle layout */
@@ -17,33 +23,141 @@
 a,
 .green {
   text-decoration: none;
-  color: var(--n-color-primary);
-  transition: 0.4s;
+  color: var(--color-primary);
+  transition: var(--transition-fast);
   padding: 3px;
+  border-radius: var(--radius-sm);
 }
 
 @media (hover: hover) {
   a:hover {
-    background-color: var(--n-color-primary-suppl);
+    background-color: var(--color-primary-light);
     opacity: 0.8;
   }
 }
 
-/* Responsive design for Naive UI components */
+/* 統一的頁面容器 */
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-page-md);
+}
+
+.page-header {
+  margin-bottom: var(--spacing-xl);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border-primary);
+}
+
+.page-title {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-sm) 0;
+  line-height: var(--line-height-tight);
+}
+
+.page-subtitle {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: var(--line-height-normal);
+}
+
+/* 統一的按鈕樣式覆蓋 Naive UI */
+:deep(.n-button) {
+  font-family: var(--font-family-primary);
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+:deep(.n-button--primary-type) {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+:deep(.n-button--primary-type:hover) {
+  background-color: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+:deep(.n-button--error-type) {
+  background-color: var(--color-error);
+  border-color: var(--color-error);
+}
+
+:deep(.n-button--error-type:hover) {
+  background-color: #e03131;
+  border-color: #e03131;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+/* 統一的表單樣式覆蓋 Naive UI */
+:deep(.n-input) {
+  font-family: var(--font-family-primary);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+:deep(.n-input:focus) {
+  box-shadow: 0 0 0 3px rgba(24, 160, 88, 0.1);
+}
+
+:deep(.n-form-item-label) {
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+/* 統一的卡片樣式覆蓋 Naive UI */
+:deep(.n-card) {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-normal);
+}
+
+:deep(.n-card:hover) {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+/* 統一的選單樣式覆蓋 Naive UI */
+:deep(.n-menu-item-content) {
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+:deep(.n-menu-item-content:hover) {
+  background-color: var(--color-bg-secondary);
+}
+
+/* 響應式設計優化 */
+@media (max-width: 768px) {
+  .page-container {
+    padding: var(--spacing-page-sm);
+  }
+  
+  .page-title {
+    font-size: var(--font-size-2xl);
+  }
+  
+  .page-subtitle {
+    font-size: var(--font-size-md);
+  }
+}
+
 @media (min-width: 1024px) {
-  #app {
-    max-width: 1400px;
+  .page-container {
+    padding: var(--spacing-page-lg);
   }
 }
 
 @media (min-width: 1440px) {
-  #app {
-    max-width: 1600px;
-  }
-}
-
-@media (min-width: 1920px) {
-  #app {
-    max-width: 1800px;
+  .page-container {
+    padding: var(--spacing-page-xl);
   }
 }

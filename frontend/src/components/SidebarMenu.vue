@@ -13,12 +13,12 @@
   >
     <div class="sidebar-header">
       <n-space align="center" :size="collapsed ? 0 : 12">
-        <n-icon size="24" color="#18a058">
+        <n-icon size="24" color="var(--color-primary)">
           <svg viewBox="0 0 24 24">
             <path fill="currentColor" d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
           </svg>
         </n-icon>
-        <n-text v-if="!collapsed" strong style="font-size: 18px">網站管理</n-text>
+        <n-text v-if="!collapsed" strong class="text-lg font-semibold">網站管理</n-text>
       </n-space>
     </div>
 
@@ -34,7 +34,7 @@
     <!-- 用戶信息和登出按鈕 -->
     <div class="sidebar-footer">
       <n-space vertical size="small">
-        <n-text v-if="!collapsed" depth="3" style="font-size: 14px">
+        <n-text v-if="!collapsed" class="text-sm text-secondary">
           歡迎，{{ user?.username || '使用者' }}
         </n-text>
         <n-button 
@@ -183,9 +183,9 @@ const handleLogout = async () => {
 
 <style scoped>
 .sidebar-header {
-  padding: 16px;
-  border-bottom: 1px solid var(--n-border-color);
-  margin-bottom: 8px;
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--color-border-primary);
+  margin-bottom: var(--spacing-sm);
 }
 
 .sidebar-footer {
@@ -193,15 +193,16 @@ const handleLogout = async () => {
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 16px;
-  border-top: 1px solid var(--n-border-color);
-  background: var(--n-color);
+  padding: var(--spacing-md);
+  border-top: 1px solid var(--color-border-primary);
+  background: var(--color-bg-primary);
   box-sizing: border-box;
 }
 
 :deep(.n-menu-item-content) {
-  font-size: 16px;
-  font-weight: 500;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  font-family: var(--font-family-primary);
 }
 
 :deep(.n-menu-item-content--collapsed) {
@@ -209,7 +210,7 @@ const handleLogout = async () => {
 }
 
 :deep(.n-layout-sider) {
-  background: var(--n-color);
+  background: var(--color-bg-primary);
   position: relative;
 }
 

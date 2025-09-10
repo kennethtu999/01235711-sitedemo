@@ -3,13 +3,13 @@
     <header class="page-header">
       <div class="header-content">
         <div class="header-left">
-          <button @click="goBack" class="back-button">
+          <button @click="goBack" class="btn btn-md btn-secondary">
             <span>←</span> 返回儀表板
           </button>
           <h1>專案管理</h1>
         </div>
         <div class="header-right">
-          <button @click="showCreateProjectModal = true" class="create-button">
+          <button @click="showCreateProjectModal = true" class="btn btn-md btn-primary">
             + 新增專案
           </button>
         </div>
@@ -22,7 +22,7 @@
         <div class="section-header">
           <h2>專案列表</h2>
           <div class="section-actions">
-            <button @click="refreshProjects" :disabled="isLoading" class="refresh-button">
+            <button @click="refreshProjects" :disabled="isLoading" class="btn btn-md btn-secondary">
               {{ isLoading ? '載入中...' : '重新整理' }}
             </button>
           </div>
@@ -52,16 +52,16 @@
                 </div>
               </div>
               <div class="project-actions">
-                <button @click="triggerProjectHook(project)" class="trigger-hook-button" title="執行 Hook" :disabled="!project.isActive || isTriggeringHook">
+                <button @click="triggerProjectHook(project)" class="btn btn-sm btn-outline" title="執行 Hook" :disabled="!project.isActive || isTriggeringHook">
                   {{ isTriggeringHook ? '執行中...' : '執行 Hook' }}
                 </button>
-                <button @click="manageProjectUsers(project)" class="manage-users-button" title="管理專案用戶">
+                <button @click="manageProjectUsers(project)" class="btn btn-sm btn-outline" title="管理專案用戶">
                   管理用戶
                 </button>
-                <button @click="editProject(project)" class="edit-button" title="編輯專案">
+                <button @click="editProject(project)" class="btn btn-sm btn-outline" title="編輯專案">
                   編輯
                 </button>
-                <button @click="deleteProject(project)" class="delete-button" title="刪除專案">
+                <button @click="deleteProject(project)" class="btn btn-sm btn-danger" title="刪除專案">
                   刪除
                 </button>
               </div>
@@ -71,7 +71,7 @@
             <div class="demo-configs-section">
               <div class="demo-configs-header">
                 <h4>Demo 配置</h4>
-                <button @click="openCreateDemoConfigModal(project)" class="add-demo-button">
+                <button @click="openCreateDemoConfigModal(project)" class="btn btn-sm btn-success">
                   + 新增 Demo 配置
                 </button>
               </div>
@@ -102,10 +102,10 @@
 
                   <div class="demo-config-actions">
                     <div class="demo-config-buttons">
-                      <button @click="editDemoConfig(demoConfig)" class="edit-demo-button">
+                      <button @click="editDemoConfig(demoConfig)" class="btn btn-sm btn-outline">
                         編輯
                       </button>
-                      <button @click="deleteDemoConfig(demoConfig)" class="delete-demo-button">
+                      <button @click="deleteDemoConfig(demoConfig)" class="btn btn-sm btn-danger">
                         刪除
                       </button>
                     </div>
@@ -123,7 +123,7 @@
       <div class="modal-content" @click.stop>
         <div class="modal-header">
           <h3>{{ showCreateProjectModal ? '新增專案' : '編輯專案' }}</h3>
-          <button @click="closeProjectModal" class="close-button">×</button>
+          <button @click="closeProjectModal" class="btn btn-sm btn-ghost">×</button>
         </div>
         
         <form @submit.prevent="submitProjectForm" class="modal-form">
@@ -182,10 +182,10 @@
           </div>
 
           <div class="form-actions">
-            <button type="button" @click="closeProjectModal" class="cancel-button">
+            <button type="button" @click="closeProjectModal" class="btn btn-md btn-secondary">
               取消
             </button>
-            <button type="submit" :disabled="isSubmitting" class="submit-button">
+            <button type="submit" :disabled="isSubmitting" class="btn btn-md btn-primary">
               {{ isSubmitting ? '處理中...' : (showCreateProjectModal ? '新增' : '更新') }}
             </button>
           </div>
@@ -198,7 +198,7 @@
       <div class="modal-content" @click.stop>
         <div class="modal-header">
           <h3>{{ showCreateDemoConfigModal ? '新增 Demo 配置' : '編輯 Demo 配置' }}</h3>
-          <button @click="closeDemoConfigModal" class="close-button">×</button>
+          <button @click="closeDemoConfigModal" class="btn btn-sm btn-ghost">×</button>
         </div>
         
         <form @submit.prevent="submitDemoConfigForm" class="modal-form">
@@ -265,10 +265,10 @@
           </div>
 
           <div class="form-actions">
-            <button type="button" @click="closeDemoConfigModal" class="cancel-button">
+            <button type="button" @click="closeDemoConfigModal" class="btn btn-md btn-secondary">
               取消
             </button>
-            <button type="submit" :disabled="isSubmitting" class="submit-button">
+            <button type="submit" :disabled="isSubmitting" class="btn btn-md btn-primary">
               {{ isSubmitting ? '處理中...' : (showCreateDemoConfigModal ? '新增' : '更新') }}
             </button>
           </div>
@@ -281,7 +281,7 @@
       <div class="modal-content large-modal" @click.stop>
         <div class="modal-header">
           <h3>管理專案用戶 - {{ currentProject?.name }}</h3>
-          <button @click="closeManageProjectUsersModal" class="close-button">×</button>
+          <button @click="closeManageProjectUsersModal" class="btn btn-sm btn-ghost">×</button>
         </div>
         
         <div class="modal-body">
@@ -292,7 +292,7 @@
               <button 
                 v-if="currentProject?.authorizedUsers && currentProject.authorizedUsers.length > 0"
                 @click="removeAllProjectUsers" 
-                class="remove-all-users-button"
+                class="btn btn-sm btn-danger"
                 :disabled="isSubmitting"
               >
                 移除所有人權限
@@ -314,7 +314,7 @@
                     <option value="editor">編輯者</option>
                     <option value="admin">管理員</option>
                   </select>
-                  <button @click="removeProjectUser(projectUser.userId)" class="remove-user-button">
+                  <button @click="removeProjectUser(projectUser.userId)" class="btn btn-sm btn-danger">
                     移除
                   </button>
                 </div>
@@ -355,10 +355,10 @@
         </div>
 
         <div class="form-actions">
-          <button @click="closeManageProjectUsersModal" class="cancel-button">
+          <button @click="closeManageProjectUsersModal" class="btn btn-md btn-secondary">
             取消
           </button>
-          <button @click="addSelectedUsers" :disabled="isSubmitting || selectedUserIds.length === 0" class="submit-button">
+          <button @click="addSelectedUsers" :disabled="isSubmitting || selectedUserIds.length === 0" class="btn btn-md btn-primary">
             {{ isSubmitting ? '處理中...' : '添加用戶' }}
           </button>
         </div>
@@ -370,7 +370,7 @@
       <div class="modal-content" @click.stop>
         <div class="modal-header">
           <h3>執行專案 Hook</h3>
-          <button @click="closeTriggerHookModal" class="close-button">×</button>
+          <button @click="closeTriggerHookModal" class="btn btn-sm btn-ghost">×</button>
         </div>
         
         <form @submit.prevent="submitTriggerHook" class="modal-form">
@@ -396,10 +396,10 @@
           </div>
 
           <div class="form-actions">
-            <button type="button" @click="closeTriggerHookModal" class="cancel-button">
+            <button type="button" @click="closeTriggerHookModal" class="btn btn-md btn-secondary">
               取消
             </button>
-            <button type="submit" :disabled="isTriggeringHook" class="submit-button">
+            <button type="submit" :disabled="isTriggeringHook" class="btn btn-md btn-primary">
               {{ isTriggeringHook ? '執行中...' : '執行 Hook' }}
             </button>
           </div>
@@ -412,7 +412,7 @@
       <div class="modal-content delete-modal" @click.stop>
         <div class="modal-header">
           <h3>確認刪除</h3>
-          <button @click="closeDeleteModal" class="close-button">×</button>
+          <button @click="closeDeleteModal" class="btn btn-sm btn-ghost">×</button>
         </div>
         
         <div class="modal-body">
@@ -425,10 +425,10 @@
         </div>
 
         <div class="form-actions">
-          <button @click="closeDeleteModal" class="cancel-button">
+          <button @click="closeDeleteModal" class="btn btn-md btn-secondary">
             取消
           </button>
-          <button @click="confirmDelete" :disabled="isDeleting" class="delete-button">
+          <button @click="confirmDelete" :disabled="isDeleting" class="btn btn-md btn-danger">
             {{ isDeleting ? '刪除中...' : '確認刪除' }}
           </button>
         </div>

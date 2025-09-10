@@ -3,16 +3,13 @@
     <n-card title="Hook Log 管理" class="mb-4">
       <template #header-extra>
         <n-space>
-          <n-button @click="refreshData" :loading="loading">
-            <template #icon>
-              <n-icon>
-              <svg viewBox="0 0 24 24" width="16" height="16">
-                <path fill="currentColor" d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
-              </svg>
-            </n-icon>
-            </template>
-            刷新
-          </n-button>
+          <button @click="refreshData" :disabled="loading" class="btn btn-md btn-secondary">
+            <span v-if="loading" class="loading-spinner"></span>
+            <svg v-else viewBox="0 0 24 24" width="16" height="16" style="margin-right: 8px;">
+              <path fill="currentColor" d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+            </svg>
+            {{ loading ? '載入中...' : '刷新' }}
+          </button>
         </n-space>
       </template>
 
@@ -48,11 +45,11 @@
           :options="projectOptions"
           style="width: 200px"
         />
-        <n-button @click="applyFilters" type="primary">篩選</n-button>
-        <n-button @click="clearFilters">清除</n-button>
-        <n-button @click="showTriggerHookModal = true" type="success" v-if="projects.length > 0">
+        <button @click="applyFilters" class="btn btn-md btn-primary">篩選</button>
+        <button @click="clearFilters" class="btn btn-md btn-secondary">清除</button>
+        <button @click="showTriggerHookModal = true" v-if="projects.length > 0" class="btn btn-md btn-secondary">
           觸發 Hook
-        </n-button>
+        </button>
       </n-space>
 
       <!-- Hook Log 表格 -->
@@ -105,15 +102,14 @@
       
       <template #action>
         <n-space>
-          <n-button @click="closeTriggerHookModal">取消</n-button>
-          <n-button 
+          <button @click="closeTriggerHookModal" class="btn btn-md btn-secondary">取消</button>
+          <button 
             @click="submitTriggerHook" 
-            type="primary" 
-            :loading="isTriggeringHook"
-            :disabled="!triggerHookForm.projectId"
+            :disabled="!triggerHookForm.projectId || isTriggeringHook"
+            class="btn btn-md btn-primary"
           >
             {{ isTriggeringHook ? '執行中...' : '執行 Hook' }}
-          </n-button>
+          </button>
         </n-space>
       </template>
     </n-modal>
@@ -154,8 +150,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed, h } from 'vue'
-import { NCard, NButton, NSpace, NGrid, NGridItem, NStatistic, NSelect, NDataTable, NModal, NDescriptions, NDescriptionsItem, NTag, NText, NDivider, NCode, NIcon, NForm, NFormItem, NInput, NAlert, useMessage } from 'naive-ui'
-// import { Refresh } from '@vicons/ionicons5'
+import { NCard, NSpace, NGrid, NGridItem, NStatistic, NSelect, NDataTable, NModal, NDescriptions, NDescriptionsItem, NTag, NText, NDivider, NCode, NForm, NFormItem, NInput, NAlert, useMessage } from 'naive-ui'
 import { apiService, type HookLog, type HookLogStats, type Project } from '@/api'
 
 // 響應式數據
@@ -232,17 +227,6 @@ const columns = [
     ellipsis: true,
   },
   {
-    title: '倉庫名稱',
-    key: 'githubRepoName',
-    width: 200,
-    ellipsis: true,
-  },
-  {
-    title: '分支',
-    key: 'branch',
-    width: 120,
-  },
-  {
     title: '狀態',
     key: 'status',
     width: 100,
@@ -257,12 +241,6 @@ const columns = [
     render: (row: HookLog) => formatDateTime(row.startDateTime),
   },
   {
-    title: '結束時間',
-    key: 'endDateTime',
-    width: 160,
-    render: (row: HookLog) => row.endDateTime ? formatDateTime(row.endDateTime) : '-',
-  },
-  {
     title: '處理時間',
     key: 'processingTimeMs',
     width: 100,
@@ -273,18 +251,16 @@ const columns = [
     key: 'actions',
     width: 150,
     render: (row: HookLog) => {
-      return h('div', { class: 'flex gap-2' }, [
-        h(NButton, {
-          size: 'small',
-          type: 'primary',
+      return h('div', { class: 'action-buttons', style: 'display: flex; gap: 8px; align-items: center;' }, [
+        h('button', {
+          class: 'btn btn-sm btn-outline',
           onClick: () => showDetail(row)
-        }, { default: () => '詳情' }),
-        h(NButton, {
-          size: 'small',
-          type: 'info',
+        }, '詳情'),
+        h('button', {
+          class: 'btn btn-sm btn-outline',
           onClick: () => reExecute(row.id),
-          loading: reExecutingIds.value.includes(row.id)
-        }, { default: () => '重新執行' })
+          disabled: reExecutingIds.value.includes(row.id)
+        }, reExecutingIds.value.includes(row.id) ? '執行中...' : '重新執行')
       ])
     }
   }
@@ -465,10 +441,12 @@ const submitTriggerHook = async () => {
     setTimeout(() => {
       refreshData()
     }, 1000)
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('觸發 Hook 失敗:', error)
-    const errorMessage = error.response?.data?.message || '觸發 Hook 失敗，請稍後再試'
-    message.error(errorMessage)
+    const errorMessage = error instanceof Error && 'response' in error 
+      ? (error as { response?: { data?: { message?: string } } }).response?.data?.message 
+      : '觸發 Hook 失敗，請稍後再試'
+    message.error(errorMessage || '觸發 Hook 失敗，請稍後再試')
   } finally {
     isTriggeringHook.value = false
   }
@@ -497,5 +475,29 @@ onMounted(() => {
 .hook-log-detail {
   max-height: 70vh;
   overflow-y: auto;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* 載入動畫 */
+.loading-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--color-border-primary);
+  border-radius: 50%;
+  border-top-color: var(--color-primary);
+  animation: spin 1s ease-in-out infinite;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

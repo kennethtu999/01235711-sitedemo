@@ -3,8 +3,8 @@
     <n-card class="login-card" :bordered="false">
       <template #header>
         <div class="login-header">
-          <h1 class="login-title">網站管理</h1>
-          <p class="login-subtitle">請登入以繼續</p>
+          <h1 class="page-title">網站管理</h1>
+          <p class="page-subtitle">請登入以繼續</p>
         </div>
       </template>
       
@@ -44,30 +44,13 @@
             block
             :loading="isLoading"
             @click="handleLogin"
+            class="login-button"
           >
             {{ isLoading ? '登入中...' : '登入' }}
           </n-button>
         </n-form-item>
       </n-form>
       
-      <n-divider>測試功能</n-divider>
-      
-      <div class="test-section">
-        <n-button 
-          @click="testApiConnection" 
-          :loading="isTestingApi"
-          block
-          secondary
-        >
-          {{ isTestingApi ? '測試中...' : '測試後端連接' }}
-        </n-button>
-        
-        <n-collapse v-if="apiTestResult" class="api-result">
-          <n-collapse-item title="API 測試結果" name="1">
-            <n-code :code="apiTestResult" language="json" />
-          </n-collapse-item>
-        </n-collapse>
-      </div>
       
       <n-alert 
         v-if="errorMessage" 
@@ -84,7 +67,7 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { NCard, NForm, NFormItem, NInput, NButton, NDivider, NCollapse, NCollapseItem, NCode, NAlert } from 'naive-ui'
+import { NCard, NForm, NFormItem, NInput, NButton, NAlert } from 'naive-ui'
 import { apiService, type LoginCredentials } from '@/api'
 
 const router = useRouter()
@@ -97,9 +80,7 @@ const loginForm = reactive({
 
 // 狀態管理
 const isLoading = ref(false)
-const isTestingApi = ref(false)
 const errorMessage = ref('')
-const apiTestResult = ref('')
 
 // 密碼驗證狀態
 const passwordValidationStatus = ref<'error' | 'warning' | 'success' | undefined>(undefined)
@@ -189,20 +170,6 @@ const handleLogin = async () => {
   }
 }
 
-// 測試 API 連接
-const testApiConnection = async () => {
-  isTestingApi.value = true
-  apiTestResult.value = ''
-  
-  try {
-    const response = await apiService.getStatus()
-    apiTestResult.value = JSON.stringify(response.data, null, 2)
-  } catch (error) {
-    apiTestResult.value = `錯誤: ${error}`
-  } finally {
-    isTestingApi.value = false
-  }
-}
 </script>
 
 <style scoped>
@@ -211,7 +178,7 @@ const testApiConnection = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
+  padding: var(--spacing-page-sm);
 }
 
 .login-card {
@@ -223,53 +190,19 @@ const testApiConnection = async () => {
   text-align: center;
 }
 
-.login-title {
-  margin-bottom: 8px;
-  font-size: 22px;
-  font-weight: 600;
-  line-height: 1.3;
-}
-
-.login-subtitle {
-  margin-bottom: 0;
-  font-size: 14px;
-  opacity: 0.7;
-}
-
 .login-form {
-  margin-bottom: 24px;
+  margin-bottom: var(--spacing-lg);
 }
 
-.test-section {
-  margin-top: 16px;
-}
-
-.api-result {
-  margin-top: 16px;
-}
 
 .error-alert {
-  margin-top: 16px;
+  margin-top: var(--spacing-md);
 }
 
 /* 響應式設計 */
 @media (max-width: 480px) {
   .login-container {
-    padding: 12px;
-  }
-  
-  .login-title {
-    font-size: 20px;
-  }
-}
-
-@media (max-width: 360px) {
-  .login-title {
-    font-size: 18px;
-  }
-  
-  .login-subtitle {
-    font-size: 13px;
+    padding: var(--spacing-sm);
   }
 }
 
@@ -277,68 +210,39 @@ const testApiConnection = async () => {
 @media (max-height: 600px) and (orientation: landscape) {
   .login-container {
     align-items: flex-start;
-    padding-top: 20px;
+    padding-top: var(--spacing-lg);
   }
+}
+
+/* 按鈕樣式 - 統一字體大小 */
+.login-button {
+  font-size: var(--font-size-lg) !important;
 }
 
 /* 大螢幕優化 */
 @media (min-width: 768px) {
-  .login-title {
-    font-size: 24px;
+  .login-card {
+    max-width: 450px;
   }
 }
 
 @media (min-width: 1024px) {
   .login-container {
-    padding: 24px;
-  }
-  
-  .login-card {
-    max-width: 450px;
-  }
-  
-  .login-title {
-    font-size: 28px;
-  }
-  
-  .login-subtitle {
-    font-size: 16px;
-  }
-}
-
-@media (min-width: 1440px) {
-  .login-container {
-    padding: 32px;
+    padding: var(--spacing-page-md);
   }
   
   .login-card {
     max-width: 500px;
   }
-  
-  .login-title {
-    font-size: 32px;
-  }
-  
-  .login-subtitle {
-    font-size: 17px;
-  }
 }
 
-@media (min-width: 1920px) {
+@media (min-width: 1440px) {
   .login-container {
-    padding: 40px;
+    padding: var(--spacing-page-lg);
   }
   
   .login-card {
     max-width: 550px;
-  }
-  
-  .login-title {
-    font-size: 36px;
-  }
-  
-  .login-subtitle {
-    font-size: 18px;
   }
 }
 </style>

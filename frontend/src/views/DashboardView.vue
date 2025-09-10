@@ -2,23 +2,23 @@
   <div class="dashboard-container">
     <n-layout>
       <n-layout-header class="dashboard-header">
-        <n-h1 style="margin: 0">儀表板</n-h1>
+        <h1 class="page-title">儀表板</h1>
       </n-layout-header>
       
-      <n-layout-content class="dashboard-main">
+      <n-layout-content class="dashboard-main page-container">
         <n-space vertical size="large">
           <n-card>
             <template #header>
-              <n-h2 style="margin: 0; text-align: center">我的專案</n-h2>
+              <h2 class="page-title text-center">我的專案</h2>
             </template>
-            <n-p style="text-align: center; margin: 0">
+            <p class="text-center text-secondary">
               您有權限訪問的專案列表
-            </n-p>
+            </p>
           </n-card>
 
           <n-card>
             <template #header>
-              <n-h3 style="margin: 0">可訪問的專案</n-h3>
+              <h3 class="page-title">可訪問的專案</h3>
             </template>
             <n-space vertical>
               <div v-if="userProjects.length === 0 && !isLoadingProjects">
@@ -28,55 +28,56 @@
               <div v-else>
                 <n-grid :cols="2" :x-gap="20" :y-gap="20" responsive="screen">
                   <n-grid-item v-for="project in userProjects" :key="project.id">
-                    <n-card hoverable>
-                      <n-space justify="space-between" align="center">
-                        <n-h4 style="margin: 0">{{ project.name }}</n-h4>
-                      </n-space>
+                    <n-card hoverable class="project-card">
+                      <div class="project-header">
+                        <h3 class="project-title">{{ project.name }}</h3>
+                        <div class="project-status">
+                          <span :class="['status-badge', project.isActive ? 'active' : 'inactive']">
+                            {{ project.isActive ? '啟用' : '停用' }}
+                          </span>
+                        </div>
+                      </div>
                       
-                      <n-space vertical size="small">
-                        <n-text depth="3">{{ project.description }}</n-text>
+                      <div class="project-content">
+                        <p class="project-description">{{ project.description || '無描述' }}</p>
                         <!-- Demo 配置列表 -->
                         <div v-if="project.demoConfigs && project.demoConfigs.length > 0" style="margin-top: 12px;">
                           <n-divider style="margin: 8px 0;" />
                           <n-space vertical size="small">
-                            <div v-for="demo in project.demoConfigs" :key="demo.id" style="padding: 8px; border: 1px solid var(--n-border-color); border-radius: 6px;">
-                              <n-space justify="space-between" align="center">
-                                <n-space vertical size="small">
-                                  <n-text depth="3" style="font-size: 12px;">
-                                    分支: {{ demo.branchName }} | 路徑: {{ demo.demoPath }}
-                                  </n-text>
-                                </n-space>
+                            <div v-for="demo in project.demoConfigs" :key="demo.id" class="demo-config-card">
+                              <div class="demo-config-content">
+                                <div class="demo-config-info">
+                                  <div class="demo-config-details">
+                                    <span class="demo-branch">分支: {{ demo.branchName }}</span>
+                                    <span class="demo-path">路徑: {{ demo.demoPath }}</span>
+                                  </div>
+                                </div>
                                 
-                                <n-space vertical size="small" align="end">
-                                  
-                                  <n-space v-if="demo.demoUrls && demo.demoUrls.length > 0" vertical size="small">
-                                    <n-space size="small" wrap>
-                                        <n-button 
-                                      type="info" 
-                                      size="small" 
-                                      :disabled="!demo.demoUrl"
+                                <div class="demo-config-actions">
+                                  <div v-if="demo.demoUrls && demo.demoUrls.length > 0" class="demo-buttons">
+                                    <button 
+                                      v-if="demo.demoUrl"
                                       @click="demo.demoUrl && openDemo(demo.demoUrl)"
+                                      class="btn btn-sm btn-outline demo-action-button"
                                     >
                                       開啟主要 Demo
-                                    </n-button>
-                                      
-                                      <n-button 
-                                        v-for="subSite in demo.demoUrls" 
-                                        :key="subSite.name"
-                                        type="info" 
-                                        size="small" 
-                                        @click="openDemo(subSite.url)"
-                                      >
-                                        {{ subSite.name }}
-                                      </n-button>
-                                    </n-space>
-                                  </n-space>
-                                </n-space>
-                              </n-space>
+                                    </button>
+                                    
+                                    <button 
+                                      v-for="subSite in demo.demoUrls" 
+                                      :key="subSite.name"
+                                      @click="openDemo(subSite.url)"
+                                      class="btn btn-sm btn-outline demo-action-button"
+                                    >
+                                      {{ subSite.name }}
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
                           </n-space>
                         </div>
-                      </n-space>
+                      </div>
                     </n-card>
                   </n-grid-item>
                 </n-grid>
@@ -92,22 +93,15 @@
 <script setup lang="ts">
 import { apiService, type Project } from '@/api'
 import {
-  NButton,
   NCard,
   NDivider,
   NEmpty,
   NGrid,
   NGridItem,
-  NH1,
-  NH2,
-  NH3,
-  NH4,
   NLayout,
   NLayoutContent,
   NLayoutHeader,
-  NP,
-  NSpace,
-  NText
+  NSpace
 } from 'naive-ui'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -186,74 +180,220 @@ const openDemo = (demoUrl: string) => {
 }
 
 .dashboard-header {
-  padding: 16px 20px;
+  padding: var(--spacing-page-sm);
+  border-bottom: 1px solid var(--color-border-primary);
+  background-color: var(--color-bg-primary);
 }
 
 .dashboard-main {
-  padding: 24px 20px;
-  max-width: 1200px;
-  margin: 0 auto;
+  padding: var(--spacing-page-md);
 }
 
 /* 響應式設計 */
 @media (max-width: 768px) {
   .dashboard-header {
-    padding: 16px;
+    padding: var(--spacing-md);
   }
   
   .dashboard-main {
-    padding: 20px 16px;
+    padding: var(--spacing-page-sm);
   }
 }
 
 @media (max-width: 480px) {
   .dashboard-header {
-    padding: 12px;
+    padding: var(--spacing-sm);
   }
   
   .dashboard-main {
-    padding: 16px 12px;
+    padding: var(--spacing-sm);
   }
 }
 
-@media (max-width: 360px) {
-  .dashboard-main {
-    padding: 12px 8px;
+/* 專案卡片樣式 */
+.project-card {
+  height: 100%;
+  transition: all var(--transition-normal);
+}
+
+.project-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.project-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--color-border-primary);
+}
+
+.project-title {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  line-height: var(--line-height-tight);
+}
+
+.project-status {
+  flex-shrink: 0;
+}
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.status-badge.active {
+  background-color: var(--color-success-light);
+  color: var(--color-success);
+}
+
+.status-badge.inactive {
+  background-color: var(--color-error-light);
+  color: var(--color-error);
+}
+
+.project-content {
+  flex: 1;
+}
+
+.project-description {
+  margin: 0 0 16px 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-normal);
+}
+
+/* Demo 配置卡片樣式 */
+.demo-config-card {
+  padding: 16px;
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-bg-primary);
+  transition: all var(--transition-fast);
+  margin-bottom: 12px;
+}
+
+.demo-config-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+.demo-config-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.demo-config-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.demo-config-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.demo-branch,
+.demo-path {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-normal);
+}
+
+.demo-branch {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.demo-path {
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  background-color: var(--color-bg-secondary);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  display: inline-block;
+}
+
+.demo-config-actions {
+  flex-shrink: 0;
+}
+
+.demo-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.demo-action-button {
+  white-space: nowrap;
+  min-width: auto;
+  font-weight: var(--font-weight-medium);
+  transition: all var(--transition-fast);
+}
+
+.demo-action-button:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+  .demo-config-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .demo-config-actions {
+    width: 100%;
+  }
+  
+  .demo-buttons {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  
+  .demo-action-button {
+    flex: 1;
+    min-width: 120px;
   }
 }
 
 /* 大螢幕優化 */
-@media (min-width: 1200px) {
+@media (min-width: 1024px) {
   .dashboard-main {
-    padding: 48px 40px;
-    max-width: 1400px;
+    padding: var(--spacing-page-lg);
   }
   
   .dashboard-header {
-    padding: 24px 48px;
+    padding: var(--spacing-page-md);
   }
 }
 
 @media (min-width: 1440px) {
   .dashboard-main {
-    max-width: 1600px;
-    padding: 56px 60px;
+    padding: var(--spacing-page-xl);
   }
   
   .dashboard-header {
-    padding: 32px 60px;
-  }
-}
-
-@media (min-width: 1920px) {
-  .dashboard-main {
-    max-width: 1800px;
-    padding: 64px 80px;
-  }
-  
-  .dashboard-header {
-    padding: 40px 80px;
+    padding: var(--spacing-page-lg);
   }
 }
 </style>
+
 

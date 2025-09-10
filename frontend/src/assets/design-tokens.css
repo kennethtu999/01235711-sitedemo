@@ -1,0 +1,187 @@
+/* Design System Tokens - 統一的設計令牌系統 */
+
+:root {
+  /* === 色彩系統 === */
+  /* 主色調 - 基於 Naive UI 的綠色主題 */
+  --color-primary: #18a058;
+  --color-primary-hover: #36ad6a;
+  --color-primary-active: #0c7a43;
+  --color-primary-light: #e8f5e8;
+  --color-primary-dark: #0c7a43;
+
+  /* 輔助色調 */
+  --color-secondary: #2080f0;
+  --color-secondary-hover: #4098fc;
+  --color-secondary-active: #1060cc;
+  --color-secondary-light: #e6f7ff;
+  --color-secondary-dark: #1060cc;
+
+  /* 狀態色彩 */
+  --color-success: #18a058;
+  --color-success-light: #e8f5e8;
+  --color-warning: #f0a020;
+  --color-warning-light: #fef7e6;
+  --color-error: #d03050;
+  --color-error-light: #fef0f0;
+  --color-info: #2080f0;
+  --color-info-light: #e6f7ff;
+
+  /* 中性色調 */
+  --color-text-primary: #18181c;
+  --color-text-secondary: #5c5c5c;
+  --color-text-tertiary: #8a8a8a;
+  --color-text-disabled: #c0c0c0;
+  --color-text-inverse: #ffffff;
+
+  /* 背景色彩 */
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f7f7f7;
+  --color-bg-tertiary: #f0f0f0;
+  --color-bg-disabled: #f5f5f5;
+  --color-bg-overlay: rgba(0, 0, 0, 0.5);
+
+  /* 邊框色彩 */
+  --color-border-primary: #e0e0e6;
+  --color-border-secondary: #d0d0d7;
+  --color-border-focus: var(--color-primary);
+  --color-border-error: var(--color-error);
+
+  /* === 間距系統 === */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+  --spacing-3xl: 64px;
+
+  /* 組件間距 */
+  --spacing-component-xs: var(--spacing-xs);
+  --spacing-component-sm: var(--spacing-sm);
+  --spacing-component-md: var(--spacing-md);
+  --spacing-component-lg: var(--spacing-lg);
+  --spacing-component-xl: var(--spacing-xl);
+
+  /* 頁面間距 */
+  --spacing-page-sm: var(--spacing-md);
+  --spacing-page-md: var(--spacing-lg);
+  --spacing-page-lg: var(--spacing-xl);
+  --spacing-page-xl: var(--spacing-2xl);
+
+  /* === 字體系統 === */
+  --font-family-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  --font-family-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+
+  /* 字體大小 */
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 20px;
+  --font-size-2xl: 24px;
+  --font-size-3xl: 28px;
+  --font-size-4xl: 32px;
+
+  /* 字體權重 */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* 行高 */
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+
+  /* === 圓角系統 === */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-full: 9999px;
+
+  /* === 陰影系統 === */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  /* === 過渡動畫 === */
+  --transition-fast: 0.15s ease-in-out;
+  --transition-normal: 0.3s ease-in-out;
+  --transition-slow: 0.5s ease-in-out;
+
+  /* === 斷點系統 === */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+
+  /* === Z-index 層級 === */
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+  --z-toast: 1080;
+}
+
+/* 深色模式變量 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* 文字色彩 */
+    --color-text-primary: #ffffff;
+    --color-text-secondary: #a0a0a0;
+    --color-text-tertiary: #707070;
+    --color-text-disabled: #404040;
+
+    /* 背景色彩 */
+    --color-bg-primary: #18181c;
+    --color-bg-secondary: #1f1f23;
+    --color-bg-tertiary: #262629;
+    --color-bg-disabled: #2a2a2d;
+
+    /* 邊框色彩 */
+    --color-border-primary: #3a3a3f;
+    --color-border-secondary: #4a4a4f;
+  }
+}
+
+/* 組件專用變量 */
+:root {
+  /* 按鈕變量 */
+  --button-height-sm: 28px;
+  --button-height-md: 32px;
+  --button-height-lg: 36px;
+  --button-height-xl: 40px;
+  --button-padding-sm: var(--spacing-sm) var(--spacing-md);
+  --button-padding-md: var(--spacing-sm) var(--spacing-lg);
+  --button-padding-lg: var(--spacing-md) var(--spacing-xl);
+  --button-padding-xl: var(--spacing-md) var(--spacing-2xl);
+
+  /* 表單變量 */
+  --input-height-sm: 28px;
+  --input-height-md: 32px;
+  --input-height-lg: 36px;
+  --input-height-xl: 40px;
+  --input-padding-sm: var(--spacing-sm) var(--spacing-md);
+  --input-padding-md: var(--spacing-sm) var(--spacing-lg);
+  --input-padding-lg: var(--spacing-md) var(--spacing-xl);
+  --input-padding-xl: var(--spacing-md) var(--spacing-2xl);
+
+  /* 卡片變量 */
+  --card-padding-sm: var(--spacing-md);
+  --card-padding-md: var(--spacing-lg);
+  --card-padding-lg: var(--spacing-xl);
+  --card-radius: var(--radius-lg);
+  --card-shadow: var(--shadow-md);
+
+  /* 導航變量 */
+  --nav-height: 64px;
+  --sidebar-width: 240px;
+  --sidebar-width-collapsed: 64px;
+}

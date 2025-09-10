@@ -3,13 +3,13 @@
     <header class="page-header">
       <div class="header-content">
         <div class="header-left">
-          <button @click="goBack" class="back-button">
+          <button @click="goBack" class="btn btn-md btn-secondary">
             <span>←</span> 返回儀表板
           </button>
           <h1>使用者管理</h1>
         </div>
         <div class="header-right">
-          <button @click="showCreateModal = true" class="create-button">
+          <button @click="showCreateModal = true" class="btn btn-md btn-primary">
             + 新增使用者
           </button>
         </div>
@@ -22,7 +22,7 @@
         <div class="section-header">
           <h2>使用者列表</h2>
           <div class="section-actions">
-            <button @click="refreshUsers" :disabled="isLoading" class="refresh-button">
+            <button @click="refreshUsers" :disabled="isLoading" class="btn btn-md btn-secondary">
               {{ isLoading ? '載入中...' : '重新整理' }}
             </button>
           </div>
@@ -46,7 +46,6 @@
                 <th>角色</th>
                 <th>狀態</th>
                 <th>最後登入</th>
-                <th>建立時間</th>
                 <th>操作</th>
               </tr>
             </thead>
@@ -70,15 +69,14 @@
                 <td class="last-login-cell">
                   {{ user.lastLoginAt ? formatDate(user.lastLoginAt) : '從未登入' }}
                 </td>
-                <td class="created-at-cell">{{ formatDate(user.createdAt) }}</td>
                 <td class="actions-cell">
                   <div class="action-buttons">
-                    <button @click="editUser(user)" class="edit-button" title="編輯使用者">
+                    <button @click="editUser(user)" class="btn btn-sm btn-outline" title="編輯使用者">
                       編輯
                     </button>
                     <button 
                       @click="deleteUser(user)" 
-                      class="delete-button" 
+                      class="btn btn-sm btn-danger" 
                       title="刪除使用者"
                       :disabled="user.role === 'admin' && adminCount <= 1"
                     >
@@ -98,7 +96,7 @@
       <div class="modal-content" @click.stop>
         <div class="modal-header">
           <h3>{{ showCreateModal ? '新增使用者' : '編輯使用者' }}</h3>
-          <button @click="closeModal" class="close-button">×</button>
+          <button @click="closeModal" class="btn btn-sm btn-ghost">×</button>
         </div>
         
         <form @submit.prevent="submitForm" class="modal-form">
@@ -154,10 +152,10 @@
           </div>
 
           <div class="form-actions">
-            <button type="button" @click="closeModal" class="cancel-button">
+            <button type="button" @click="closeModal" class="btn btn-md btn-secondary">
               取消
             </button>
-            <button type="submit" :disabled="isSubmitting" class="submit-button">
+            <button type="submit" :disabled="isSubmitting" class="btn btn-md btn-primary">
               {{ isSubmitting ? '處理中...' : (showCreateModal ? '新增' : '更新') }}
             </button>
           </div>
@@ -170,7 +168,7 @@
       <div class="modal-content delete-modal" @click.stop>
         <div class="modal-header">
           <h3>確認刪除</h3>
-          <button @click="closeDeleteModal" class="close-button">×</button>
+          <button @click="closeDeleteModal" class="btn btn-sm btn-ghost">×</button>
         </div>
         
         <div class="modal-body">
@@ -179,10 +177,10 @@
         </div>
 
         <div class="form-actions">
-          <button @click="closeDeleteModal" class="cancel-button">
+          <button @click="closeDeleteModal" class="btn btn-md btn-secondary">
             取消
           </button>
-          <button @click="confirmDelete" :disabled="isDeleting" class="delete-button">
+          <button @click="confirmDelete" :disabled="isDeleting" class="btn btn-md btn-danger">
             {{ isDeleting ? '刪除中...' : '確認刪除' }}
           </button>
         </div>
