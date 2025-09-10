@@ -3,6 +3,26 @@ const fs = require("fs").promises;
 const { STATIC_DEMOS_DIR } = require("../services/deployService");
 
 /**
+ * 發送檔案並處理快取
+ * @param {Object} req - Express 請求對象
+ * @param {Object} res - Express 響應對象
+ * @param {string} filePath - 檔案路徑
+ */
+async function sendFileWithCache(req, res, filePath) {
+  const stats = await fs.stat(filePath);
+  const lastModified = stats.mtime.toUTCString();
+  res.setHeader("Last-Modified", lastModified);
+
+  const ifModifiedSince = req.headers["if-modified-since"];
+  if (ifModifiedSince && new Date(ifModifiedSince) >= stats.mtime) {
+    // 沒變更 → 回 304
+    return res.status(304).end();
+  }
+
+  return res.sendFile(filePath);
+}
+
+/**
  * 服務靜態 Demo 檔案
  * @param {Object} req - Express 請求對象
  * @param {Object} res - Express 響應對象
@@ -44,7 +64,7 @@ async function serveDemoFiles(req, res) {
         const indexPath = path.join(filePath, "index.html");
         try {
           await fs.access(indexPath);
-          return res.sendFile(indexPath);
+          return sendFileWithCache(req, res, indexPath);
         } catch (error) {
           // 如果沒有 index.html，返回目錄列表或 404
           return res.status(404).json({
@@ -54,8 +74,8 @@ async function serveDemoFiles(req, res) {
           });
         }
       } else {
-        // 如果是檔案，直接提供
-        return res.sendFile(filePath);
+        // 如果是檔案，使用快取功能提供
+        return sendFileWithCache(req, res, filePath);
       }
     } catch (error) {
       if (error.code === "ENOENT") {
@@ -129,7 +149,7 @@ async function serveDemoFilesById(req, res) {
         const indexPath = path.join(filePath, "index.html");
         try {
           await fs.access(indexPath);
-          return res.sendFile(indexPath);
+          return sendFileWithCache(req, res, indexPath);
         } catch (error) {
           // 如果沒有 index.html，返回目錄列表或 404
           return res.status(404).json({
@@ -139,8 +159,8 @@ async function serveDemoFilesById(req, res) {
           });
         }
       } else {
-        // 如果是檔案，直接提供
-        return res.sendFile(filePath);
+        // 如果是檔案，使用快取功能提供
+        return sendFileWithCache(req, res, filePath);
       }
     } catch (error) {
       if (error.code === "ENOENT") {
