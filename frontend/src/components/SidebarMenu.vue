@@ -110,6 +110,12 @@ const HookLogIcon = () => h(NIcon, null, {
   ])
 })
 
+const UserGuideIcon = () => h(NIcon, null, {
+  default: () => h('svg', { viewBox: '0 0 24 24' }, [
+    h('path', { fill: 'currentColor', d: 'M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z' })
+  ])
+})
+
 // 選單選項 - 根據用戶權限動態生成
 const menuOptions = computed(() => {
   const baseOptions: MenuOption[] = [
@@ -137,6 +143,11 @@ const menuOptions = computed(() => {
         label: 'Hook Log 管理',
         key: 'hookLogManagement',
         icon: HookLogIcon
+      },
+      {
+        label: '使用說明',
+        key: 'userGuide',
+        icon: UserGuideIcon
       }
     )
   }
@@ -160,6 +171,9 @@ const handleMenuSelect = (key: string) => {
   } else if (key === 'hookLogManagement') {
     console.log('導航到 Hook Log 管理')
     router.push('/admin/hook-logs')
+  } else if (key === 'userGuide') {
+    console.log('導航到使用說明')
+    router.push('/admin/user-guide')
   }
 }
 

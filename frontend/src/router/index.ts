@@ -39,6 +39,12 @@ const router = createRouter({
       component: () => import('../views/HookLogManagementView.vue'),
       meta: { requiresAuth: true, requiresAdmin: true }
     },
+    {
+      path: '/admin/user-guide',
+      name: 'userGuide',
+      component: () => import('../views/UserGuideView.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
   ],
 })
 
