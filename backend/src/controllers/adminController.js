@@ -807,7 +807,7 @@ const getUserAccessibleProjects = async (req, res) => {
               .filter((folder) => folder);
             demoUrls = folders.map((folder) => ({
               name: folder,
-              url: `${baseUrl}/${folder}${demoConfig.demoPath}`,
+              url: `${baseUrl}/${folder}`,
             }));
           }
 
