@@ -4,6 +4,9 @@ const DemoConfig = require("./DemoConfig");
 const DemoConfigUser = require("./DemoConfigUser");
 const ProjectUser = require("./ProjectUser");
 const HookLog = require("./HookLog");
+const Group = require("./Group");
+const GroupUser = require("./GroupUser");
+const GroupProject = require("./GroupProject");
 
 // 定義模型關聯
 
@@ -95,6 +98,70 @@ HookLog.belongsTo(Project, {
   as: "project",
 });
 
+// 新增群組相關關聯
+
+// User 和 Group 的多對多關聯 (通過 GroupUser 表)
+User.belongsToMany(Group, {
+  through: GroupUser,
+  foreignKey: "userId",
+  otherKey: "groupId",
+  as: "groups",
+});
+
+Group.belongsToMany(User, {
+  through: GroupUser,
+  foreignKey: "groupId",
+  otherKey: "userId",
+  as: "users",
+});
+
+// Group 和 Project 的多對多關聯 (通過 GroupProject 表)
+Group.belongsToMany(Project, {
+  through: GroupProject,
+  foreignKey: "groupId",
+  otherKey: "projectId",
+  as: "projects",
+});
+
+Project.belongsToMany(Group, {
+  through: GroupProject,
+  foreignKey: "projectId",
+  otherKey: "groupId",
+  as: "groups",
+});
+
+// GroupUser 的直接關聯
+GroupUser.belongsTo(User, {
+  foreignKey: "userId",
+  as: "user",
+});
+
+GroupUser.belongsTo(Group, {
+  foreignKey: "groupId",
+  as: "group",
+});
+
+GroupUser.belongsTo(User, {
+  foreignKey: "addedBy",
+  as: "adder",
+});
+
+// GroupProject 的直接關聯
+GroupProject.belongsTo(Group, {
+  foreignKey: "groupId",
+  as: "group",
+});
+
+GroupProject.belongsTo(Project, {
+  foreignKey: "projectId",
+  as: "project",
+});
+
+GroupProject.belongsTo(User, {
+  foreignKey: "grantedBy",
+  as: "granter",
+});
+
 // 導出所有模型
 module.exports = {
   User,
@@ -103,4 +170,7 @@ module.exports = {
   DemoConfigUser,
   ProjectUser,
   HookLog,
+  Group,
+  GroupUser,
+  GroupProject,
 };

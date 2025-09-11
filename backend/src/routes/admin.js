@@ -19,6 +19,12 @@ const {
   removeAllProjectUsers,
   getCacheStats,
   clearCache,
+  addProjectGroups,
+  updateProjectGroupRole,
+  removeProjectGroup,
+  getProjectGroups,
+  getAllGroupsForProject,
+  getUserAccessibleProjects,
 } = require("../controllers/adminController");
 const { triggerProjectHook } = require("../controllers/webhookController");
 
@@ -48,6 +54,16 @@ router.post("/projects/:projectId/users", addProjectUsers);
 router.put("/projects/:projectId/users/:userId", updateProjectUserRole);
 router.delete("/projects/:projectId/users/:userId", removeProjectUser);
 router.delete("/projects/:projectId/users", removeAllProjectUsers);
+
+// 專案群組管理路由
+router.get("/projects/:projectId/groups", getProjectGroups);
+router.post("/projects/:projectId/groups", addProjectGroups);
+router.put("/projects/:projectId/groups/:groupId", updateProjectGroupRole);
+router.delete("/projects/:projectId/groups/:groupId", removeProjectGroup);
+router.get("/groups", getAllGroupsForProject);
+
+// 使用者專案存取路由
+router.get("/users/:userId/projects", getUserAccessibleProjects);
 
 // 專案 Hook 執行路由
 router.post("/projects/:projectId/trigger-hook", triggerProjectHook);

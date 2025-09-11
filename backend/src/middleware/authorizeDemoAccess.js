@@ -1,5 +1,6 @@
 const { DemoConfig, Project, ProjectUser, User } = require("../models");
 const authorizeDemoService = require("../services/authorizeDemoService");
+const groupPermissionService = require("../services/groupPermissionService");
 
 /**
  * Demo 存取授權中間件
@@ -18,11 +19,6 @@ async function authorizeDemoAccess(req, res, next) {
       });
     }
 
-    // 管理員擁有所有 Demo 的存取權限
-    if (req.user.role === "admin") {
-      return next();
-    }
-
     // 從請求參數中獲取 demoConfigId
     const { demoConfigId } = req.params;
 
@@ -39,19 +35,6 @@ async function authorizeDemoAccess(req, res, next) {
         {
           model: Project,
           as: "project",
-          include: [
-            {
-              model: User,
-              as: "authorizedUsers",
-              where: {
-                id: req.user.id,
-              },
-              required: false,
-              through: {
-                attributes: [],
-              },
-            },
-          ],
         },
       ],
     });
@@ -79,10 +62,11 @@ async function authorizeDemoAccess(req, res, next) {
       });
     }
 
-    // 檢查使用者是否有 Project 的授權
-    const hasAccess =
-      demoConfig.project.authorizedUsers &&
-      demoConfig.project.authorizedUsers.length > 0;
+    // 使用新的群組權限服務檢查使用者是否有 Project 的授權
+    const hasAccess = await groupPermissionService.checkUserProjectPermission(
+      req.user.id,
+      demoConfig.project.id
+    );
 
     if (!hasAccess) {
       return res.status(403).json({
@@ -194,27 +178,11 @@ async function authorizeDemoAccessByProjectAndBranch(req, res, next) {
       return next();
     }
 
-    // 緩存未命中，查詢數據庫
-    const projectWithUsers = await Project.findByPk(projectId, {
-      include: [
-        {
-          model: User,
-          as: "authorizedUsers",
-          where: {
-            id: userId,
-          },
-          required: false,
-          through: {
-            attributes: [],
-          },
-        },
-      ],
-    });
-
-    // 檢查使用者是否有 Project 的授權
-    const hasAccess =
-      projectWithUsers.authorizedUsers &&
-      projectWithUsers.authorizedUsers.length > 0;
+    // 緩存未命中，使用新的群組權限服務查詢
+    const hasAccess = await groupPermissionService.checkUserProjectPermission(
+      userId,
+      projectId
+    );
 
     // 將結果存入緩存
     authorizeDemoService.setPermission(projectId, userId, hasAccess);

@@ -55,8 +55,8 @@
                 <button @click="triggerProjectHook(project)" class="btn btn-sm btn-outline" title="執行 Hook" :disabled="!project.isActive || isTriggeringHook">
                   {{ isTriggeringHook ? '執行中...' : '執行 Hook' }}
                 </button>
-                <button @click="manageProjectUsers(project)" class="btn btn-sm btn-outline" title="管理專案用戶">
-                  管理用戶
+                <button @click="manageProjectGroups(project)" class="btn btn-sm btn-outline" title="管理專案群組">
+                  管理群組
                 </button>
                 <button @click="editProject(project)" class="btn btn-sm btn-outline" title="編輯專案">
                   編輯
@@ -276,94 +276,6 @@
       </div>
     </div>
 
-    <!-- 管理專案用戶模態框 -->
-    <div v-if="showManageProjectUsersModal" class="modal-overlay" @click="closeManageProjectUsersModal">
-      <div class="modal-content large-modal" @click.stop>
-        <div class="modal-header">
-          <h3>管理專案用戶 - {{ currentProject?.name }}</h3>
-          <button @click="closeManageProjectUsersModal" class="btn btn-sm btn-ghost">×</button>
-        </div>
-        
-        <div class="modal-body">
-          <!-- 現有用戶列表 -->
-          <div class="current-users-section">
-            <div class="current-users-header">
-              <h4>現有用戶 ({{ currentProject?.authorizedUsers?.length || 0 }})</h4>
-              <button 
-                v-if="currentProject?.authorizedUsers && currentProject.authorizedUsers.length > 0"
-                @click="removeAllProjectUsers" 
-                class="btn btn-sm btn-danger"
-                :disabled="isSubmitting"
-              >
-                移除所有人權限
-              </button>
-            </div>
-            <div v-if="currentProject?.authorizedUsers && currentProject.authorizedUsers.length > 0" class="current-users-list">
-              <div v-for="projectUser in currentProject.authorizedUsers" :key="projectUser.id" class="current-user-item">
-                <div class="user-info">
-                  <span class="username">{{ projectUser.user?.username || 'Unknown' }}</span>
-                  <span class="user-role">({{ projectUser.user?.role === 'admin' ? '管理員' : '使用者' }})</span>
-                </div>
-                <div class="user-actions">
-                  <select 
-                    v-model="projectUser.role" 
-                    @change="updateUserRole(projectUser.userId, projectUser.role)"
-                    class="role-select"
-                  >
-                    <option value="viewer">查看者</option>
-                    <option value="editor">編輯者</option>
-                    <option value="admin">管理員</option>
-                  </select>
-                  <button @click="removeProjectUser(projectUser.userId)" class="btn btn-sm btn-danger">
-                    移除
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div v-else class="no-users">
-              <p>此專案尚無授權用戶</p>
-            </div>
-          </div>
-
-          <!-- 添加新用戶 -->
-          <div class="add-users-section">
-            <h4>添加新用戶</h4>
-            <div class="users-selection">
-              <div class="users-checkboxes">
-                <label v-for="user in availableUsers" :key="user.id" class="user-checkbox-label">
-                  <input
-                    v-model="selectedUserIds"
-                    :value="user.id"
-                    type="checkbox"
-                  />
-                  <span class="user-info">
-                    <span class="username">{{ user.username }}</span>
-                    <span class="user-role">({{ user.role === 'admin' ? '管理員' : '使用者' }})</span>
-                  </span>
-                </label>
-              </div>
-              <div class="role-selection">
-                <label for="newUserRole">角色:</label>
-                <select id="newUserRole" v-model="newUserRole">
-                  <option value="viewer">查看者</option>
-                  <option value="editor">編輯者</option>
-                  <option value="admin">管理員</option>
-                </select>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-actions">
-          <button @click="closeManageProjectUsersModal" class="btn btn-md btn-secondary">
-            取消
-          </button>
-          <button @click="addSelectedUsers" :disabled="isSubmitting || selectedUserIds.length === 0" class="btn btn-md btn-primary">
-            {{ isSubmitting ? '處理中...' : '添加用戶' }}
-          </button>
-        </div>
-      </div>
-    </div>
 
     <!-- 執行 Hook 模態框 -->
     <div v-if="showTriggerHookModal" class="modal-overlay" @click="closeTriggerHookModal">
@@ -404,6 +316,85 @@
             </button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- 管理專案群組模態框 -->
+    <div v-if="showManageProjectGroupsModal" class="modal-overlay" @click="closeManageProjectGroupsModal">
+      <div class="modal-content large-modal" @click.stop>
+        <div class="modal-header">
+          <h3>管理專案群組 - {{ currentProject?.name }}</h3>
+          <button @click="closeManageProjectGroupsModal" class="btn btn-sm btn-ghost">×</button>
+        </div>
+        
+        <div class="modal-body">
+          <!-- 現有群組列表 -->
+          <div class="current-groups-section">
+            <div class="current-groups-header">
+              <h4>現有群組 ({{ projectGroups?.length || 0 }})</h4>
+            </div>
+            <div v-if="projectGroups && projectGroups.length > 0" class="current-groups-list">
+              <div v-for="group in projectGroups" :key="group.id" class="current-group-item">
+                <div class="group-info">
+                  <span class="group-name">{{ group.name }}</span>
+                  <span v-if="group.isAdminGroup" class="admin-badge">管理員群組</span>
+                  <span class="group-role">({{ getRoleLabel(group.role) }})</span>
+                </div>
+                <div class="group-actions">
+                  <button @click="removeProjectGroup(group.id)" class="btn btn-sm btn-danger">
+                    移除
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div v-else class="no-groups">
+              <p>此專案尚未加入任何群組</p>
+            </div>
+          </div>
+
+          <!-- 添加新群組 -->
+          <div class="add-groups-section">
+            <h4>添加群組</h4>
+            <div class="groups-selection">
+              <div class="groups-checkboxes">
+                <table class="groups-table">
+                  <tbody>
+                    <tr v-for="group in availableGroups" :key="group.id" class="group-row">
+                      <td class="checkbox-cell">
+                        <input
+                          v-model="selectedGroupIds"
+                          :value="group.id"
+                          type="checkbox"
+                          class="group-checkbox"
+                        />
+                      </td>
+                      <td class="group-info-cell">
+                        <div class="group-info">
+                          <span class="group-name">{{ group.name }}</span>
+                          <span v-if="group.isAdminGroup" class="admin-badge">管理員群組</span>
+                          <span class="group-role">({{ getRoleLabel(group.role) }})</span>
+                          <span v-if="group.description" class="group-description">{{ group.description }}</span>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div v-if="availableGroups.length === 0" class="no-groups">
+                沒有可新增的群組
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button @click="closeManageProjectGroupsModal" class="btn btn-md btn-secondary">
+            取消
+          </button>
+          <button @click="addSelectedGroups" :disabled="isSubmitting || selectedGroupIds.length === 0" class="btn btn-md btn-primary">
+            {{ isSubmitting ? '處理中...' : '添加群組' }}
+          </button>
+        </div>
       </div>
     </div>
 
@@ -451,12 +442,12 @@ import {
   type UpdateDemoConfigData,
   type AddProjectUsersData
 } from '@/api'
+import api from '@/api'
 
 const router = useRouter()
 
 // 狀態管理
 const projects = ref<Project[]>([])
-const allUsers = ref<User[]>([])
 const isLoading = ref(false)
 const isSubmitting = ref(false)
 const isDeleting = ref(false)
@@ -467,7 +458,7 @@ const showCreateProjectModal = ref(false)
 const showEditProjectModal = ref(false)
 const showCreateDemoConfigModal = ref(false)
 const showEditDemoConfigModal = ref(false)
-const showManageProjectUsersModal = ref(false)
+const showManageProjectGroupsModal = ref(false)
 const showTriggerHookModal = ref(false)
 const showDeleteModal = ref(false)
 
@@ -499,15 +490,27 @@ const currentDemoConfig = ref<DemoConfig | null>(null)
 const itemToDelete = ref<Project | DemoConfig | null>(null)
 const deleteType = ref<'project' | 'demoConfig'>('project')
 
-// 專案用戶管理
-const selectedUserIds = ref<number[]>([])
-const newUserRole = ref<'viewer' | 'editor' | 'admin'>('viewer')
+// 專案群組管理
+const allGroups = ref<any[]>([])
+const projectGroups = ref<any[]>([])
+const selectedGroupIds = ref<number[]>([])
 
-// 計算可用用戶（排除已經在專案中的用戶）
-const availableUsers = computed(() => {
-  if (!currentProject.value) return allUsers.value
-  const currentUserIds = currentProject.value.authorizedUsers?.map(pu => pu.userId) || []
-  return allUsers.value.filter(user => !currentUserIds.includes(user.id))
+// 獲取角色標籤
+const getRoleLabel = (role: string) => {
+  const roleLabels: Record<string, string> = {
+    'viewer': '檢視者',
+    'editor': '編輯者',
+    'admin': '管理員'
+  }
+  return roleLabels[role] || role
+}
+
+
+// 計算可用群組（排除已經在專案中的群組）
+const availableGroups = computed(() => {
+  if (!projectGroups.value) return allGroups.value
+  const currentGroupIds = projectGroups.value.map(g => g.id) || []
+  return allGroups.value.filter(group => !currentGroupIds.includes(group.id))
 })
 
 // 組件掛載時載入數據
@@ -519,12 +522,12 @@ onMounted(() => {
 const loadData = async () => {
   isLoading.value = true
   try {
-    const [projectsResponse, usersResponse] = await Promise.all([
+    const [projectsResponse, groupsResponse] = await Promise.all([
       apiService.getProjects(),
-      apiService.getUsers()
+      api.get('/admin/groups')
     ])
     projects.value = projectsResponse.data.data
-    allUsers.value = usersResponse.data.data
+    allGroups.value = groupsResponse.data.data
   } catch (error) {
     console.error('載入數據失敗:', error)
     alert('載入數據失敗，請稍後再試')
@@ -552,6 +555,63 @@ const updateCurrentProject = () => {
 // 返回儀表板
 const goBack = () => {
   router.push('/dashboard')
+}
+
+// 群組管理方法
+const manageProjectGroups = async (project: Project) => {
+  currentProject.value = project
+  showManageProjectGroupsModal.value = true
+  
+  try {
+    const response = await api.get(`/admin/projects/${project.id}/groups`)
+    projectGroups.value = response.data.data
+  } catch (error: any) {
+    console.error('載入專案群組失敗:', error)
+    alert('載入專案群組失敗，請稍後再試')
+  }
+}
+
+
+const removeProjectGroup = async (groupId: number) => {
+  if (!currentProject.value) return
+  
+  if (!confirm('確定要移除此群組嗎？')) return
+  
+  isSubmitting.value = true
+  try {
+    await api.delete(`/admin/projects/${currentProject.value.id}/groups/${groupId}`)
+    alert('群組移除成功')
+    // 重新載入專案群組
+    await manageProjectGroups(currentProject.value)
+  } catch (error: any) {
+    console.error('移除群組失敗:', error)
+    const message = error.response?.data?.message || '移除失敗，請稍後再試'
+    alert(message)
+  } finally {
+    isSubmitting.value = false
+  }
+}
+
+const addSelectedGroups = async () => {
+  if (!currentProject.value || selectedGroupIds.value.length === 0) return
+  
+  isSubmitting.value = true
+  try {
+    const data = {
+      groupIds: selectedGroupIds.value
+    }
+    await api.post(`/admin/projects/${currentProject.value.id}/groups`, data)
+    alert('群組添加成功')
+    selectedGroupIds.value = []
+    // 重新載入專案群組
+    await manageProjectGroups(currentProject.value)
+  } catch (error: any) {
+    console.error('添加群組失敗:', error)
+    const message = error.response?.data?.message || '添加失敗，請稍後再試'
+    alert(message)
+  } finally {
+    isSubmitting.value = false
+  }
 }
 
 // 專案相關操作
@@ -589,13 +649,6 @@ const triggerProjectHook = (project: Project) => {
   showTriggerHookModal.value = true
 }
 
-// 專案用戶管理
-const manageProjectUsers = (project: Project) => {
-  currentProject.value = project
-  selectedUserIds.value = []
-  newUserRole.value = 'viewer'
-  showManageProjectUsersModal.value = true
-}
 
 // Demo 配置相關操作
 const editDemoConfig = (demoConfig: DemoConfig) => {
@@ -617,97 +670,6 @@ const deleteDemoConfig = (demoConfig: DemoConfig) => {
   showDeleteModal.value = true
 }
 
-// 更新用戶角色
-const updateUserRole = async (userId: number, role: string) => {
-  if (!currentProject.value) return
-  
-  isSubmitting.value = true
-  try {
-    await apiService.updateProjectUserRole(currentProject.value.id, userId, { role: role as 'viewer' | 'editor' | 'admin' })
-    alert('用戶角色更新成功')
-    // 重新載入數據並更新當前專案
-    await loadData()
-    updateCurrentProject()
-  } catch (error: any) {
-    console.error('更新用戶角色失敗:', error)
-    const message = error.response?.data?.message || '更新失敗，請稍後再試'
-    alert(message)
-  } finally {
-    isSubmitting.value = false
-  }
-}
-
-// 移除專案用戶
-const removeProjectUser = async (userId: number) => {
-  if (!currentProject.value) return
-  
-  if (!confirm('確定要移除此用戶嗎？')) return
-  
-  isSubmitting.value = true
-  try {
-    await apiService.removeProjectUser(currentProject.value.id, userId)
-    alert('用戶移除成功')
-    // 重新載入數據並更新當前專案
-    await loadData()
-    updateCurrentProject()
-  } catch (error: any) {
-    console.error('移除用戶失敗:', error)
-    const message = error.response?.data?.message || '移除失敗，請稍後再試'
-    alert(message)
-  } finally {
-    isSubmitting.value = false
-  }
-}
-
-// 移除所有專案用戶
-const removeAllProjectUsers = async () => {
-  if (!currentProject.value) return
-  
-  const userCount = currentProject.value.authorizedUsers?.length || 0
-  if (userCount === 0) return
-  
-  if (!confirm(`確定要移除所有 ${userCount} 個用戶的權限嗎？此操作無法復原。`)) return
-  
-  isSubmitting.value = true
-  try {
-    await apiService.removeAllProjectUsers(currentProject.value.id)
-    alert(`已成功移除 ${userCount} 個用戶的權限`)
-    // 重新載入數據並更新當前專案
-    await loadData()
-    updateCurrentProject()
-  } catch (error: any) {
-    console.error('移除所有用戶失敗:', error)
-    const message = error.response?.data?.message || '移除失敗，請稍後再試'
-    alert(message)
-  } finally {
-    isSubmitting.value = false
-  }
-}
-
-// 添加選中的用戶
-const addSelectedUsers = async () => {
-  if (!currentProject.value || selectedUserIds.value.length === 0) return
-  
-  isSubmitting.value = true
-  try {
-    const data: AddProjectUsersData = {
-      userIds: selectedUserIds.value,
-      role: newUserRole.value
-    }
-    await apiService.addProjectUsers(currentProject.value.id, data)
-    alert('用戶添加成功')
-    selectedUserIds.value = []
-    // 重新載入數據並更新當前專案
-    await loadData()
-    updateCurrentProject()
-  } catch (error: any) {
-    console.error('添加用戶失敗:', error)
-    const message = error.response?.data?.message || '添加失敗，請稍後再試'
-    alert(message)
-  } finally {
-    isSubmitting.value = false
-  }
-}
 
 // 關閉模態框
 const closeProjectModal = () => {
@@ -722,11 +684,12 @@ const closeDemoConfigModal = () => {
   resetDemoConfigForm()
 }
 
-const closeManageProjectUsersModal = () => {
-  showManageProjectUsersModal.value = false
+
+const closeManageProjectGroupsModal = () => {
+  showManageProjectGroupsModal.value = false
   currentProject.value = null
-  selectedUserIds.value = []
-  newUserRole.value = 'viewer'
+  projectGroups.value = []
+  selectedGroupIds.value = []
 }
 
 const closeTriggerHookModal = () => {
@@ -1252,36 +1215,6 @@ const formatDate = (dateString: string) => {
   gap: 16px;
 }
 
-.authorized-users {
-  flex: 1;
-}
-
-.authorized-users h6 {
-  margin: 0 0 8px 0;
-  color: #333;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.users-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.user-badge {
-  background: #e9ecef;
-  color: #495057;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 10px;
-}
-
-.no-users {
-  color: #666;
-  font-size: 12px;
-  font-style: italic;
-}
 
 .demo-config-buttons {
   display: flex;
@@ -1290,7 +1223,6 @@ const formatDate = (dateString: string) => {
 }
 
 .trigger-hook-button,
-.manage-users-button,
 .edit-demo-button,
 .delete-demo-button {
   padding: 4px 8px;
@@ -1332,9 +1264,6 @@ const formatDate = (dateString: string) => {
   transition: background-color 0.2s ease;
 }
 
-.manage-users-button:hover {
-  background: #5a32a3;
-}
 
 .edit-demo-button {
   background: #ffc107;
@@ -1524,128 +1453,7 @@ const formatDate = (dateString: string) => {
   font-size: 12px;
 }
 
-/* 專案用戶管理樣式 */
-.current-users-section,
-.add-users-section {
-  margin-bottom: 24px;
-}
 
-.current-users-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.current-users-section h4,
-.add-users-section h4 {
-  margin: 0;
-  color: #333;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.remove-all-users-button {
-  padding: 6px 12px;
-  background: #dc3545;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.remove-all-users-button:hover:not(:disabled) {
-  background: #c82333;
-}
-
-.remove-all-users-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.current-users-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  max-height: 200px;
-  overflow-y: auto;
-  border: 1px solid #e9ecef;
-  border-radius: 6px;
-  padding: 12px;
-}
-
-.current-user-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 12px;
-  background: #f8f9fa;
-  border-radius: 4px;
-  border: 1px solid #e9ecef;
-}
-
-.current-user-item .user-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.current-user-item .user-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.role-select {
-  padding: 4px 8px;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  font-size: 12px;
-  background: white;
-}
-
-.remove-user-button {
-  padding: 4px 8px;
-  background: #dc3545;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 10px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.remove-user-button:hover {
-  background: #c82333;
-}
-
-.role-selection {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 12px;
-  padding: 12px;
-  background: #f8f9fa;
-  border-radius: 6px;
-}
-
-.role-selection label {
-  margin: 0;
-  font-weight: 500;
-  color: #333;
-  font-size: 14px;
-}
-
-.role-selection select {
-  padding: 6px 10px;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  font-size: 14px;
-  background: white;
-}
 
 .form-actions {
   display: flex;
@@ -1729,6 +1537,91 @@ const formatDate = (dateString: string) => {
 
 .delete-modal .delete-button:hover:not(:disabled) {
   background: #c82333;
+}
+
+/* 群組選擇表格樣式 */
+.groups-selection {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 0;
+  background: white;
+}
+
+.groups-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.group-row {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.group-row:hover {
+  background-color: #f8f9fa;
+}
+
+.group-row:last-child {
+  border-bottom: none;
+}
+
+.checkbox-cell {
+  width: 40px;
+  padding: 12px 8px;
+  vertical-align: middle;
+  text-align: center;
+}
+
+.group-info-cell {
+  padding: 12px 8px;
+  vertical-align: middle;
+  word-wrap: break-word;
+}
+
+.group-checkbox {
+  margin: 0;
+  transform: scale(1.1);
+}
+
+.group-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.group-name {
+  font-weight: 500;
+  color: #333;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.admin-badge {
+  display: inline-block;
+  background: #dc3545;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+.group-role {
+  font-size: 12px;
+  color: #666;
+  font-style: italic;
+}
+
+.group-description {
+  font-size: 12px;
+  color: #666;
+  line-height: 1.3;
+  margin-top: 2px;
 }
 
 /* 響應式設計 */

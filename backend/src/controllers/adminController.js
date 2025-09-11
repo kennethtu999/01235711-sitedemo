@@ -4,9 +4,12 @@ const {
   DemoConfig,
   DemoConfigUser,
   ProjectUser,
+  Group,
+  GroupProject,
 } = require("../models");
 const { Op } = require("sequelize");
 const authorizeDemoService = require("../services/authorizeDemoService");
+const groupPermissionService = require("../services/groupPermissionService");
 
 // ==================== 使用者管理 ====================
 
@@ -750,49 +753,33 @@ const removeAllProjectUsers = async (req, res) => {
 const getUserAccessibleProjects = async (req, res) => {
   try {
     const userId = req.user.id;
-    const userRole = req.user.role;
 
-    let projects;
+    // 使用新的群組權限服務獲取可存取的專案
+    const projects = await groupPermissionService.getUserAccessibleProjects(
+      userId
+    );
 
-    if (userRole === "admin") {
-      // 管理員可以訪問所有專案
-      projects = await Project.findAll({
-        where: { isActive: true },
-        include: [
-          {
-            model: DemoConfig,
-            as: "demoConfigs",
-            where: { isActive: true },
-            required: false,
+    // 為每個專案添加 Demo 配置
+    const projectsWithDemos = await Promise.all(
+      projects.map(async (project) => {
+        const demos = await DemoConfig.findAll({
+          where: {
+            projectId: project.id,
+            isActive: true,
           },
-        ],
-        order: [["createdAt", "DESC"]],
-      });
-    } else {
-      // 一般用戶只能訪問被授權的專案
-      projects = await Project.findAll({
-        where: { isActive: true },
-        include: [
-          {
-            model: User,
-            as: "authorizedUsers",
-            where: { id: userId },
-            required: true,
-          },
-          {
-            model: DemoConfig,
-            as: "demoConfigs",
-            where: { isActive: true },
-            required: false,
-          },
-        ],
-        order: [["createdAt", "DESC"]],
-      });
-    }
+          order: [["createdAt", "DESC"]],
+        });
+
+        return {
+          ...project.toJSON(),
+          demoConfigs: demos,
+        };
+      })
+    );
 
     // 為每個專案添加 Demo URL
-    const projectsWithUrls = projects.map((project) => {
-      const projectWithUrls = project.toJSON();
+    const projectsWithUrls = projectsWithDemos.map((project) => {
+      const projectWithUrls = project;
       projectWithUrls.demoConfigs = projectWithUrls.demoConfigs.map(
         (demoConfig) => {
           const baseUrl = `/demo/${project.name}/${demoConfig.branchName}`;
@@ -852,45 +839,286 @@ module.exports = {
   removeProjectUser,
   removeAllProjectUsers,
   getUserAccessibleProjects,
+};
 
-  // 緩存管理
-  getCacheStats: async (req, res) => {
-    try {
-      const stats = authorizeDemoService.getStats();
-      const permissions = authorizeDemoService.getAllPermissions();
+// 獲取緩存統計
+const getCacheStats = async (req, res) => {
+  try {
+    const stats = authorizeDemoService.getStats();
+    const permissions = authorizeDemoService.getAllPermissions();
 
-      res.json({
-        success: true,
-        data: {
-          stats,
-          permissions,
+    res.json({
+      success: true,
+      data: {
+        stats,
+        permissions,
+      },
+    });
+  } catch (error) {
+    console.error("Error getting cache stats:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to get cache stats",
+      message: error.message,
+    });
+  }
+};
+
+// 清除緩存
+const clearCache = async (req, res) => {
+  try {
+    authorizeDemoService.clearAll();
+
+    res.json({
+      success: true,
+      message: "Cache cleared successfully",
+    });
+  } catch (error) {
+    console.error("Error clearing cache:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to clear cache",
+      message: error.message,
+    });
+  }
+};
+
+// ==================== 專案群組管理 ====================
+
+// 為指定專案添加群組
+const addProjectGroups = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const { groupIds } = req.body;
+
+    // 驗證必填欄位
+    if (!groupIds || !Array.isArray(groupIds) || groupIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: "Validation error",
+        message: "Group IDs array is required",
+      });
+    }
+
+    // 檢查專案是否存在
+    const project = await Project.findByPk(projectId);
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        error: "Project not found",
+        message: "The specified project does not exist",
+      });
+    }
+
+    // 檢查所有群組是否存在
+    const groups = await Group.findAll({
+      where: { id: { [Op.in]: groupIds } },
+    });
+
+    if (groups.length !== groupIds.length) {
+      return res.status(400).json({
+        success: false,
+        error: "Validation error",
+        message: "One or more groups not found",
+      });
+    }
+
+    // 批量創建專案群組關聯
+    const grantedBy = req.user.id;
+    const projectGroupData = groupIds.map((groupId) => ({
+      projectId: parseInt(projectId),
+      groupId: parseInt(groupId),
+      grantedBy,
+      role: "viewer", // 預設角色，實際權限由群組角色決定
+    }));
+
+    await GroupProject.bulkCreate(projectGroupData, {
+      ignoreDuplicates: true, // 忽略重複的關聯
+    });
+
+    res.json({
+      success: true,
+      message: "Groups added to project successfully",
+    });
+  } catch (error) {
+    console.error("Error adding project groups:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to add groups to project",
+      message: error.message,
+    });
+  }
+};
+
+// 更新專案群組的角色
+const updateProjectGroupRole = async (req, res) => {
+  try {
+    const { projectId, groupId } = req.params;
+    const { role } = req.body;
+
+    // 驗證角色
+    if (!role || !["viewer", "editor", "admin"].includes(role)) {
+      return res.status(400).json({
+        success: false,
+        error: "Validation error",
+        message: "Valid role (viewer, editor, admin) is required",
+      });
+    }
+
+    // 檢查專案群組關聯是否存在
+    const projectGroup = await GroupProject.findOne({
+      where: {
+        projectId: parseInt(projectId),
+        groupId: parseInt(groupId),
+      },
+    });
+
+    if (!projectGroup) {
+      return res.status(404).json({
+        success: false,
+        error: "Project group not found",
+        message: "The specified project group association does not exist",
+      });
+    }
+
+    // 更新角色
+    await projectGroup.update({ role });
+
+    res.json({
+      success: true,
+      message: "Project group role updated successfully",
+    });
+  } catch (error) {
+    console.error("Error updating project group role:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to update project group role",
+      message: error.message,
+    });
+  }
+};
+
+// 移除指定專案的群組
+const removeProjectGroup = async (req, res) => {
+  try {
+    const { projectId, groupId } = req.params;
+
+    const projectGroup = await GroupProject.findOne({
+      where: {
+        projectId: parseInt(projectId),
+        groupId: parseInt(groupId),
+      },
+    });
+
+    if (!projectGroup) {
+      return res.status(404).json({
+        success: false,
+        error: "Project group not found",
+        message: "The specified project group association does not exist",
+      });
+    }
+
+    await projectGroup.destroy();
+
+    res.json({
+      success: true,
+      message: "Group removed from project successfully",
+    });
+  } catch (error) {
+    console.error("Error removing project group:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to remove group from project",
+      message: error.message,
+    });
+  }
+};
+
+// 獲取專案的群組列表
+const getProjectGroups = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+
+    const project = await Project.findByPk(projectId, {
+      include: [
+        {
+          model: Group,
+          as: "groups",
+          through: {
+            attributes: ["role", "grantedAt"],
+          },
+          attributes: ["id", "name", "description", "isAdminGroup"],
         },
-      });
-    } catch (error) {
-      console.error("Error getting cache stats:", error);
-      res.status(500).json({
+      ],
+    });
+
+    if (!project) {
+      return res.status(404).json({
         success: false,
-        error: "Failed to get cache stats",
-        message: error.message,
+        error: "Project not found",
+        message: "The specified project does not exist",
       });
     }
-  },
 
-  clearCache: async (req, res) => {
-    try {
-      authorizeDemoService.clearAll();
+    res.json({
+      success: true,
+      data: project.groups || [],
+    });
+  } catch (error) {
+    console.error("Error fetching project groups:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch project groups",
+      message: error.message,
+    });
+  }
+};
 
-      res.json({
-        success: true,
-        message: "Cache cleared successfully",
-      });
-    } catch (error) {
-      console.error("Error clearing cache:", error);
-      res.status(500).json({
-        success: false,
-        error: "Failed to clear cache",
-        message: error.message,
-      });
-    }
-  },
+// 獲取所有群組（用於專案群組管理）
+const getAllGroupsForProject = async (req, res) => {
+  try {
+    const groups = await Group.findAll({
+      where: { isActive: true },
+      attributes: ["id", "name", "description", "isAdminGroup"],
+      order: [["name", "ASC"]],
+    });
+
+    res.json({
+      success: true,
+      data: groups,
+    });
+  } catch (error) {
+    console.error("Error fetching groups:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch groups",
+      message: error.message,
+    });
+  }
+};
+
+module.exports = {
+  getAllUsers,
+  createUser,
+  updateUser,
+  deleteUser,
+  getAllProjects,
+  createProject,
+  updateProject,
+  deleteProject,
+  createDemoConfig,
+  updateDemoConfig,
+  deleteDemoConfig,
+  addProjectUsers,
+  updateProjectUserRole,
+  removeProjectUser,
+  removeAllProjectUsers,
+  getUserAccessibleProjects,
+  getCacheStats,
+  clearCache,
+  addProjectGroups,
+  updateProjectGroupRole,
+  removeProjectGroup,
+  getProjectGroups,
+  getAllGroupsForProject,
 };

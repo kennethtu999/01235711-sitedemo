@@ -45,6 +45,12 @@ const router = createRouter({
       component: () => import('../views/UserGuideView.vue'),
       meta: { requiresAuth: true, requiresAdmin: true }
     },
+    {
+      path: '/admin/groups',
+      name: 'groupManagement',
+      component: () => import('../views/GroupManagementView.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
   ],
 })
 

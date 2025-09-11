@@ -116,6 +116,12 @@ const UserGuideIcon = () => h(NIcon, null, {
   ])
 })
 
+const GroupIcon = () => h(NIcon, null, {
+  default: () => h('svg', { viewBox: '0 0 24 24' }, [
+    h('path', { fill: 'currentColor', d: 'M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm4 18v-6h2.5l-2.54-7.63A1.5 1.5 0 0 0 18.54 7H16c-.8 0-1.54.37-2.01.99L12 10.5 10.01 7.99A2.5 2.5 0 0 0 8 7H5.46c-.8 0-1.54.37-2.01.99L1 14.37V16h2v6h2v-6h.5l1-6h2l1 6H10v6h2v-6h.5l1-6h2l1 6H16v6h2z' })
+  ])
+})
+
 // 選單選項 - 根據用戶權限動態生成
 const menuOptions = computed(() => {
   const baseOptions: MenuOption[] = [
@@ -133,6 +139,11 @@ const menuOptions = computed(() => {
         label: '使用者管理',
         key: 'userManagement',
         icon: UserIcon
+      },
+      {
+        label: '群組管理',
+        key: 'groupManagement',
+        icon: GroupIcon
       },
       {
         label: '專案管理',
@@ -174,6 +185,9 @@ const handleMenuSelect = (key: string) => {
   } else if (key === 'userGuide') {
     console.log('導航到使用說明')
     router.push('/admin/user-guide')
+  } else if (key === 'groupManagement') {
+    console.log('導航到群組管理')
+    router.push('/admin/groups')
   }
 }
 

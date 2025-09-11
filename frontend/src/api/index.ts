@@ -221,6 +221,35 @@ export interface HookLogStatsResponse {
   data: HookLogStats
 }
 
+export interface Group {
+  id: number
+  name: string
+  description: string
+  role: 'viewer' | 'editor' | 'admin'
+  isActive: boolean
+  isAdminGroup: boolean
+  createdAt: string
+  updatedAt: string
+  users?: User[]
+}
+
+export interface CreateGroupData {
+  name: string
+  description?: string
+  role?: 'viewer' | 'editor' | 'admin'
+}
+
+export interface UpdateGroupData {
+  name?: string
+  description?: string
+  role?: 'viewer' | 'editor' | 'admin'
+}
+
+export interface AddUserToGroupData {
+  userId: number
+  role?: 'member'
+}
+
 // API 方法
 export const apiService = {
   // 狀態檢查
@@ -274,6 +303,17 @@ export const apiService = {
   // 專案 Hook 執行
   triggerProjectHook: (projectId: number, branch?: string) => 
     api.post(`/admin/projects/${projectId}/trigger-hook`, { branch }),
+  
+  // 群組管理
+  getGroups: () => api.get('/groups'),
+  createGroup: (groupData: CreateGroupData) => api.post('/groups', groupData),
+  updateGroup: (id: number, groupData: UpdateGroupData) => api.put(`/groups/${id}`, groupData),
+  deleteGroup: (id: number) => api.delete(`/groups/${id}`),
+  addUserToGroup: (groupId: number, data: AddUserToGroupData) => 
+    api.post(`/groups/${groupId}/users`, data),
+  removeUserFromGroup: (groupId: number, userId: number) => 
+    api.delete(`/groups/${groupId}/users/${userId}`),
+  getUserGroups: (userId: number) => api.get(`/groups/users/${userId}/groups`),
 }
 
 export default api
