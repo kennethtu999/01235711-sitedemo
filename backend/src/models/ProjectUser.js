@@ -12,6 +12,7 @@ const ProjectUser = sequelize.define(
     projectId: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      field: "project_id",
       references: {
         model: "projects",
         key: "id",
@@ -21,6 +22,7 @@ const ProjectUser = sequelize.define(
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      field: "user_id",
       references: {
         model: "users",
         key: "id",
@@ -30,11 +32,13 @@ const ProjectUser = sequelize.define(
     grantedAt: {
       type: DataTypes.DATE,
       allowNull: false,
+      field: "granted_at",
       defaultValue: DataTypes.NOW,
     },
     grantedBy: {
       type: DataTypes.INTEGER,
       allowNull: true,
+      field: "granted_by",
       references: {
         model: "users",
         key: "id",

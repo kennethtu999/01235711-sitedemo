@@ -12,6 +12,7 @@ const GroupUser = sequelize.define(
     groupId: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      field: "group_id",
       references: {
         model: "groups",
         key: "id",
@@ -21,6 +22,7 @@ const GroupUser = sequelize.define(
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      field: "user_id",
       references: {
         model: "users",
         key: "id",
@@ -30,11 +32,13 @@ const GroupUser = sequelize.define(
     joinedAt: {
       type: DataTypes.DATE,
       allowNull: false,
+      field: "joined_at",
       defaultValue: DataTypes.NOW,
     },
     addedBy: {
       type: DataTypes.INTEGER,
       allowNull: true,
+      field: "added_by",
       references: {
         model: "users",
         key: "id",
@@ -54,7 +58,7 @@ const GroupUser = sequelize.define(
     indexes: [
       {
         unique: true,
-        fields: ["groupId", "userId"],
+        fields: ["group_id", "user_id"],
         name: "unique_group_user",
       },
     ],

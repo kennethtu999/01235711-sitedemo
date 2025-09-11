@@ -12,6 +12,7 @@ const GroupProject = sequelize.define(
     groupId: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      field: "group_id",
       references: {
         model: "groups",
         key: "id",
@@ -21,6 +22,7 @@ const GroupProject = sequelize.define(
     projectId: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      field: "project_id",
       references: {
         model: "projects",
         key: "id",
@@ -30,11 +32,13 @@ const GroupProject = sequelize.define(
     grantedAt: {
       type: DataTypes.DATE,
       allowNull: false,
+      field: "granted_at",
       defaultValue: DataTypes.NOW,
     },
     grantedBy: {
       type: DataTypes.INTEGER,
       allowNull: true,
+      field: "granted_by",
       references: {
         model: "users",
         key: "id",
@@ -54,7 +58,7 @@ const GroupProject = sequelize.define(
     indexes: [
       {
         unique: true,
-        fields: ["groupId", "projectId"],
+        fields: ["group_id", "project_id"],
         name: "unique_group_project",
       },
     ],
