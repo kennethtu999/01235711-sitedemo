@@ -1,5 +1,6 @@
 const app = require("./app");
 const sequelize = require("./config/database");
+const { initializeOIDCClients } = require("./config/oidc");
 const {
   User,
   Project,
@@ -122,10 +123,13 @@ async function startServer() {
     await sequelize.authenticate();
     console.log("✅ Database connection established successfully.");
 
-    // 同步資料庫 (只在表格不存在時創建)
+    // 同步資料庫 (強制同步以添加新欄位)
     // 生產環境請使用 alter: true 或 migrate
-    await sequelize.sync({ force: false });
+    await sequelize.sync({ force: false, alter: true });
     console.log("✅ Database synchronized successfully.");
+
+    // 初始化 OIDC 客戶端
+    await initializeOIDCClients();
 
     // 創建預設管理員帳號
     await createDefaultAdmin();

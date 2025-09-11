@@ -33,6 +33,10 @@ api.interceptors.response.use(
       // Token 過期或無效，清除本地存儲並重定向到登入頁
       localStorage.removeItem('token')
       localStorage.removeItem('user')
+      
+      // 觸發自定義事件通知其他組件用戶信息已清除
+      window.dispatchEvent(new CustomEvent('userUpdated'))
+      
       // 使用 router 進行導航，避免頁面刷新
       if (window.location.pathname !== '/login') {
         window.location.href = '/login'
@@ -56,8 +60,24 @@ export interface LoginResponse {
     username: string
     role: string
     email: string
+    name?: string
+    loginMethod?: string
     lastLoginAt: string
   }
+}
+
+export interface OIDCProvider {
+  name: string
+  displayName: string
+  authUrl: string
+}
+
+export interface OIDCProvidersResponse {
+  providers: OIDCProvider[]
+}
+
+export interface OIDCAuthResponse {
+  authUrl: string
 }
 
 export interface User {
@@ -260,6 +280,10 @@ export const apiService = {
   logout: () => api.post('/auth/logout'),
   getCurrentUser: () => api.get('/auth/me'),
   getUserProjects: () => api.get('/auth/projects'),
+  
+  // OIDC 認證相關
+  getOIDCProviders: () => api.get('/auth/oidc/providers'),
+  startOIDCAuth: (provider: string) => api.get(`/auth/oidc/${provider}`),
   
   // 使用者管理
   getUsers: () => api.get('/admin/users'),

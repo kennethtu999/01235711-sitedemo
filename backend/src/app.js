@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const session = require("express-session");
 const path = require("path");
 require("dotenv").config();
 
@@ -29,6 +30,20 @@ app.use("/api/webhook/github", express.raw({ type: "application/json" }));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
+
+// Session 設定 (用於 OIDC 認證)
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "your-session-secret-key",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === "production",
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000, // 24 小時
+    },
+  })
+);
 
 // 靜態文件服務 (前端打包文件)
 app.use(express.static(path.join(__dirname, "../public")));

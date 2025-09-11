@@ -12,6 +12,7 @@ router.get("/status", (req, res) => {
 
 // 其他 API 路由將在這裡添加
 router.use("/auth", require("./auth"));
+router.use("/auth/oidc", require("./oidc"));
 router.use("/admin", require("./admin"));
 router.use("/webhook", require("./webhook"));
 router.use("/hook-logs", require("./hookLog"));

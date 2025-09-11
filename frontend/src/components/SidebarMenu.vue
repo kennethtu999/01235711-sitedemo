@@ -59,7 +59,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, h } from 'vue'
+import { computed, ref, h, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { NButton, NIcon, NLayoutSider, NMenu, NSpace, NText } from 'naive-ui'
 import type { MenuOption } from 'naive-ui'
@@ -76,11 +76,37 @@ const getUserInfo = () => {
   const storedUser = localStorage.getItem('user')
   if (storedUser) {
     user.value = JSON.parse(storedUser)
+  } else {
+    user.value = null
   }
+}
+
+// 監聽localStorage變化
+const handleStorageChange = (e: StorageEvent) => {
+  if (e.key === 'user') {
+    getUserInfo()
+  }
+}
+
+// 監聽自定義事件（用於OIDC回調後的用戶信息更新）
+const handleUserUpdate = () => {
+  getUserInfo()
 }
 
 // 初始化用戶信息
 getUserInfo()
+
+// 組件掛載時添加事件監聽
+onMounted(() => {
+  window.addEventListener('storage', handleStorageChange)
+  window.addEventListener('userUpdated', handleUserUpdate)
+})
+
+// 組件卸載時移除事件監聽
+onUnmounted(() => {
+  window.removeEventListener('storage', handleStorageChange)
+  window.removeEventListener('userUpdated', handleUserUpdate)
+})
 
 // 當前路由
 const currentRoute = computed(() => route.name as string)
@@ -203,6 +229,10 @@ const handleLogout = async () => {
     // 清除本地存儲
     localStorage.removeItem('token')
     localStorage.removeItem('user')
+    
+    // 觸發自定義事件通知其他組件用戶信息已清除
+    window.dispatchEvent(new CustomEvent('userUpdated'))
+    
     // 重定向到登入頁
     router.push('/login')
   }

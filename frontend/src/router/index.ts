@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import LoginView from '../views/LoginView.vue'
+import OIDCCallbackView from '../views/OIDCCallbackView.vue'
 import DashboardView from '../views/DashboardView.vue'
 
 const router = createRouter({
@@ -14,6 +15,11 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: LoginView,
+    },
+    {
+      path: '/auth/oidc/callback',
+      name: 'oidcCallback',
+      component: OIDCCallbackView,
     },
     {
       path: '/dashboard',

@@ -51,6 +51,32 @@
         </n-form-item>
       </n-form>
       
+      <!-- 分隔線 -->
+      <n-divider>或</n-divider>
+      
+      <!-- OIDC 登入選項 -->
+      <div class="oidc-login-section">
+        <n-button 
+          v-for="provider in oidcProviders"
+          :key="provider.name"
+          type="info"
+          size="large"
+          block
+          :loading="isOIDCLoading"
+          @click="handleOIDCLogin(provider)"
+          class="oidc-button"
+        >
+          <template #icon>
+            <n-icon>
+              <svg viewBox="0 0 24 24" width="20" height="20">
+                <path :d="getProviderIcon(provider.name)" fill="currentColor"/>
+              </svg>
+            </n-icon>
+          </template>
+          SSO 登入
+        </n-button>
+      </div>
+      
       
       <n-alert 
         v-if="errorMessage" 
@@ -65,10 +91,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { NCard, NForm, NFormItem, NInput, NButton, NAlert } from 'naive-ui'
-import { apiService, type LoginCredentials } from '@/api'
+import { NCard, NForm, NFormItem, NInput, NButton, NAlert, NDivider, NIcon } from 'naive-ui'
+import { apiService, type LoginCredentials, type OIDCProvider } from '@/api'
 
 const router = useRouter()
 
@@ -80,7 +106,9 @@ const loginForm = reactive({
 
 // 狀態管理
 const isLoading = ref(false)
+const isOIDCLoading = ref(false)
 const errorMessage = ref('')
+const oidcProviders = ref<OIDCProvider[]>([])
 
 // 密碼驗證狀態
 const passwordValidationStatus = ref<'error' | 'warning' | 'success' | undefined>(undefined)
@@ -143,6 +171,9 @@ const handleLogin = async () => {
     localStorage.setItem('token', data.token)
     localStorage.setItem('user', JSON.stringify(data.user))
     
+    // 觸發自定義事件通知其他組件用戶信息已更新
+    window.dispatchEvent(new CustomEvent('userUpdated'))
+    
     console.log('登入成功:', data.user)
     
     // 跳轉到儀表板
@@ -169,6 +200,59 @@ const handleLogin = async () => {
     isLoading.value = false
   }
 }
+
+// 獲取 OIDC 提供者
+const loadOIDCProviders = async () => {
+  try {
+    const response = await apiService.getOIDCProviders()
+    oidcProviders.value = response.data.providers
+  } catch (error) {
+    console.error('獲取 OIDC 提供者失敗:', error)
+    // 不顯示錯誤，因為 OIDC 是可選功能
+  }
+}
+
+// 處理 OIDC 登入
+const handleOIDCLogin = async (provider: OIDCProvider) => {
+  isOIDCLoading.value = true
+  errorMessage.value = ''
+  
+  try {
+    const response = await apiService.startOIDCAuth(provider.name)
+    const { authUrl } = response.data
+    
+    // 重定向到 OIDC 提供者的授權頁面
+    window.location.href = authUrl
+  } catch (error: unknown) {
+    console.error('OIDC 登入失敗:', error)
+    
+    if (error && typeof error === 'object' && 'response' in error) {
+      const axiosError = error as { response?: { data?: { message?: string } } }
+      if (axiosError.response?.data?.message) {
+        errorMessage.value = axiosError.response.data.message
+      } else {
+        errorMessage.value = 'OIDC 登入失敗，請稍後再試'
+      }
+    } else {
+      errorMessage.value = 'OIDC 登入失敗，請稍後再試'
+    }
+  } finally {
+    isOIDCLoading.value = false
+  }
+}
+
+// 獲取提供者圖標
+const getProviderIcon = (providerName: string): string => {
+  const icons: Record<string, string> = {
+    keycloak: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z'
+  }
+  return icons[providerName] || 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'
+}
+
+// 組件掛載時載入 OIDC 提供者
+onMounted(() => {
+  loadOIDCProviders()
+})
 
 </script>
 
@@ -217,6 +301,20 @@ const handleLogin = async () => {
 /* 按鈕樣式 - 統一字體大小 */
 .login-button {
   font-size: var(--font-size-lg) !important;
+}
+
+/* OIDC 登入區域樣式 */
+.oidc-login-section {
+  margin-top: var(--spacing-md);
+}
+
+.oidc-button {
+  margin-bottom: var(--spacing-sm);
+  font-size: var(--font-size-lg) !important;
+}
+
+.oidc-button:last-child {
+  margin-bottom: 0;
 }
 
 /* 大螢幕優化 */
