@@ -50,7 +50,8 @@ async function deployProjectDemo(demoConfigId) {
     const projectDir = path.join(STATIC_DEMOS_DIR, projectName);
     const branchDir = path.join(projectDir, branchName);
     // 使用固定的 temp 目錄名稱，基於專案名稱和分支名稱
-    const tempDir = path.join(projectDir, `temp_${branchName}`);
+    //20250912 將 temp 目錄名稱改為 branchName
+    const tempDir = path.join(projectDir, `${branchName}`);
 
     console.log(`專案目錄: ${projectDir}`);
     console.log(`分支目錄: ${branchDir}`);
@@ -70,7 +71,8 @@ async function deployProjectDemo(demoConfigId) {
     await performGitOperations(githubRepoUrl, branchName, tempDir);
 
     // 7. 複製 Demo 內容
-    await copyDemoContent(tempDir, demoPath, branchDir);
+    // 20250912 clone 成目標目錄，就不搬動了
+    //await copyDemoContent(tempDir, demoPath, branchDir);
 
     // 8. 更新部署狀態為成功
     await demoConfig.updateDeploymentStatus("success");
