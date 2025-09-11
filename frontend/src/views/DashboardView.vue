@@ -26,7 +26,7 @@
               </div>
               
               <div v-else>
-                <n-grid :cols="2" :x-gap="20" :y-gap="20" responsive="screen">
+                <n-grid :cols="1" :x-gap="20" :y-gap="20" responsive="screen">
                   <n-grid-item v-for="project in userProjects" :key="project.id">
                     <n-card hoverable class="project-card">
                       <div class="project-header">
@@ -177,6 +177,9 @@ const openDemo = (demoUrl: string) => {
 <style scoped>
 .dashboard-container {
   min-height: 100vh;
+  /* 確保在移動設備上正確顯示 */
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .dashboard-header {
@@ -198,6 +201,32 @@ const openDemo = (demoUrl: string) => {
   .dashboard-main {
     padding: var(--spacing-page-sm);
   }
+  
+  /* 移動端網格布局 */
+  .n-grid {
+    --n-cols: 1 !important;
+  }
+  
+  /* 移動端專案卡片 */
+  .project-card {
+    margin-bottom: var(--spacing-md);
+  }
+  
+  .project-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+  
+  .project-title {
+    font-size: var(--font-size-md);
+    line-height: var(--line-height-tight);
+  }
+  
+  .project-description {
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--spacing-md);
+  }
 }
 
 @media (max-width: 480px) {
@@ -207,6 +236,70 @@ const openDemo = (demoUrl: string) => {
   
   .dashboard-main {
     padding: var(--spacing-sm);
+  }
+  
+  /* 小螢幕優化 */
+  .page-title {
+    font-size: var(--font-size-xl);
+  }
+  
+  .project-title {
+    font-size: var(--font-size-sm);
+  }
+  
+  .project-description {
+    font-size: var(--font-size-xs);
+  }
+}
+
+/* iPhone 和移動設備特定優化 */
+@media (max-width: 414px) {
+  .dashboard-container {
+    /* 防止水平滾動 */
+    overflow-x: hidden;
+  }
+  
+  .dashboard-main {
+    padding: var(--spacing-xs);
+  }
+  
+  .dashboard-header {
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+  
+  .page-title {
+    font-size: var(--font-size-lg);
+    margin-bottom: var(--spacing-sm);
+  }
+  
+  .project-card {
+    margin-bottom: var(--spacing-sm);
+  }
+  
+  .project-header {
+    margin-bottom: var(--spacing-sm);
+    padding-bottom: var(--spacing-sm);
+  }
+  
+  .project-title {
+    font-size: var(--font-size-sm);
+    line-height: 1.3;
+  }
+  
+  .status-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+  
+  .demo-config-card {
+    padding: var(--spacing-sm);
+    margin-bottom: var(--spacing-xs);
+  }
+  
+  .demo-action-button {
+    min-height: 50px;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
   }
 }
 
@@ -366,11 +459,52 @@ const openDemo = (demoUrl: string) => {
   .demo-buttons {
     width: 100%;
     justify-content: flex-start;
+    flex-direction: column;
+    gap: var(--spacing-sm);
   }
   
   .demo-action-button {
-    flex: 1;
-    min-width: 120px;
+    width: 100%;
+    min-height: 44px; /* 確保觸控目標足夠大 */
+    font-size: var(--font-size-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+  
+  .demo-config-card {
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+  }
+  
+  .demo-config-details {
+    gap: var(--spacing-xs);
+  }
+  
+  .demo-branch,
+  .demo-path {
+    font-size: var(--font-size-xs);
+    word-break: break-all;
+  }
+  
+  .demo-path {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: var(--font-size-xs);
+  }
+}
+
+@media (max-width: 480px) {
+  .demo-config-card {
+    padding: var(--spacing-sm);
+  }
+  
+  .demo-action-button {
+    min-height: 48px; /* 更大的觸控目標 */
+    font-size: var(--font-size-md);
+    padding: var(--spacing-md) var(--spacing-lg);
+  }
+  
+  .demo-branch,
+  .demo-path {
+    font-size: var(--font-size-xs);
   }
 }
 
