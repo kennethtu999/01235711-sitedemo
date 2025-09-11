@@ -181,18 +181,40 @@
 import { ref, computed, onMounted } from 'vue'
 import api from '@/api'
 
+// 定義類型接口
+interface User {
+  id: number
+  username: string
+  email: string
+}
+
+interface Group {
+  id: number
+  name: string
+  description?: string
+  role: 'viewer' | 'editor' | 'admin'
+  isAdminGroup?: boolean
+  users?: User[]
+}
+
+interface GroupForm {
+  name: string
+  description: string
+  role: 'viewer' | 'editor' | 'admin'
+}
+
 // 響應式數據
-const groups = ref([])
-const users = ref([])
-const selectedGroup = ref(null)
+const groups = ref<Group[]>([])
+const users = ref<User[]>([])
+const selectedGroup = ref<Group | null>(null)
 const showCreateGroupModal = ref(false)
 const showEditGroupModal = ref(false)
 const showAddUserModalFlag = ref(false)
-const editingGroup = ref(null)
-const currentGroup = ref(null)
+const editingGroup = ref<Group | null>(null)
+const currentGroup = ref<Group | null>(null)
 
 // 表單數據
-const groupForm = ref({
+const groupForm = ref<GroupForm>({
   name: '',
   description: '',
   role: 'viewer'
@@ -243,7 +265,9 @@ const saveGroup = async () => {
     if (showCreateGroupModal.value) {
       await api.post('/groups', groupForm.value)
     } else {
-      await api.put(`/groups/${editingGroup.value.id}`, groupForm.value)
+      if (editingGroup.value) {
+        await api.put(`/groups/${editingGroup.value.id}`, groupForm.value)
+      }
     }
     await loadGroups()
     closeModals()
@@ -252,7 +276,7 @@ const saveGroup = async () => {
   }
 }
 
-const editGroup = (group) => {
+const editGroup = (group: Group) => {
   editingGroup.value = group
   groupForm.value = {
     name: group.name,
@@ -262,7 +286,7 @@ const editGroup = (group) => {
   showEditGroupModal.value = true
 }
 
-const deleteGroup = async (groupId) => {
+const deleteGroup = async (groupId: number) => {
   if (!confirm('確定要刪除這個群組嗎？')) return
   
   try {
@@ -273,7 +297,7 @@ const deleteGroup = async (groupId) => {
   }
 }
 
-const showAddUserModal = (group) => {
+const showAddUserModal = (group: Group) => {
   currentGroup.value = group
   selectedUserIds.value = []
   showAddUserModalFlag.value = true
@@ -294,7 +318,7 @@ const addUsersToGroup = async () => {
   }
 }
 
-const removeUserFromGroup = async (groupId, userId) => {
+const removeUserFromGroup = async (groupId: number, userId: number) => {
   if (!confirm('確定要從群組中移除這個使用者嗎？')) return
   
   try {
@@ -302,7 +326,7 @@ const removeUserFromGroup = async (groupId, userId) => {
     await loadGroups()
     // 如果移除的是當前選中群組的使用者，更新選中群組
     if (selectedGroup.value?.id === groupId) {
-      selectedGroup.value = groups.value.find(g => g.id === groupId)
+      selectedGroup.value = groups.value.find(g => g.id === groupId) || null
     }
   } catch (error) {
     console.error('從群組移除使用者失敗:', error)
@@ -310,13 +334,13 @@ const removeUserFromGroup = async (groupId, userId) => {
 }
 
 // 選擇群組
-const selectGroup = (group) => {
+const selectGroup = (group: Group) => {
   selectedGroup.value = group
 }
 
 // 獲取角色標籤
-const getRoleLabel = (role) => {
-  const roleLabels = {
+const getRoleLabel = (role: string) => {
+  const roleLabels: Record<string, string> = {
     'viewer': '檢視者',
     'editor': '編輯者',
     'admin': '管理員'
