@@ -49,20 +49,28 @@ async function deployProjectDemo(demoConfigId) {
     // 4. 準備目錄路徑
     const projectDir = path.join(STATIC_DEMOS_DIR, projectName);
     const branchDir = path.join(projectDir, branchName);
-    const tempDir = path.join(projectDir, `temp_${branchName}_${Date.now()}`);
+    // 使用固定的 temp 目錄名稱，基於專案名稱和分支名稱
+    const tempDir = path.join(projectDir, `temp_${branchName}`);
 
     console.log(`專案目錄: ${projectDir}`);
     console.log(`分支目錄: ${branchDir}`);
     console.log(`臨時目錄: ${tempDir}`);
 
-    // 5. 執行 Git 操作
+    // 5. 如果臨時目錄存在，先刪除
+    const tempDirExists = await fs
+      .access(tempDir, fs.constants.F_OK)
+      .then(() => true)
+      .catch(() => false);
+    if (tempDirExists) {
+      console.log(`臨時目錄 ${tempDir} 已存在，正在刪除...`);
+      await fs.rm(tempDir, { recursive: true, force: true });
+    }
+
+    // 6. 執行 Git 操作
     await performGitOperations(githubRepoUrl, branchName, tempDir);
 
-    // 6. 複製 Demo 內容
+    // 7. 複製 Demo 內容
     await copyDemoContent(tempDir, demoPath, branchDir);
-
-    // 7. 清理臨時目錄
-    await cleanupTempDirectory(tempDir);
 
     // 8. 更新部署狀態為成功
     await demoConfig.updateDeploymentStatus("success");
@@ -179,18 +187,6 @@ async function performGitOperations(githubRepoUrl, branchName, tempCloneDir) {
     // 確保臨時目錄的父目錄存在，如果不存在則創建
     await fs.mkdir(path.dirname(tempCloneDir), { recursive: true });
 
-    // 如果臨時目錄已存在（可能是上次失敗的嘗試），先刪除以確保清潔克隆
-    const tempDirExists = await fs
-      .access(tempCloneDir, fs.constants.F_OK)
-      .then(() => true)
-      .catch(() => false);
-    if (tempDirExists) {
-      console.warn(
-        `臨時目錄 ${tempCloneDir} 已存在，正在刪除以進行清潔克隆...`
-      );
-      await fs.rm(tempCloneDir, { recursive: true, force: true });
-    }
-
     // 執行 git clone 命令
     const cloneCommand = `git clone --depth 1 --branch ${branchName} ${sshRepoUrl} ${tempCloneDir}`;
     await execCommand(cloneCommand, gitEnv);
@@ -249,6 +245,9 @@ async function copyDirectory(src, dest) {
   const entries = await fs.readdir(src, { withFileTypes: true });
 
   for (const entry of entries) {
+    // 跳過 .git 目錄
+    if (entry.name === ".git") continue;
+
     const srcPath = path.join(src, entry.name);
     const destPath = path.join(dest, entry.name);
 
