@@ -46,7 +46,13 @@ const handleOIDCCallback = async () => {
     
     // 檢查是否有錯誤
     if (error) {
-      throw new Error(error_description || error)
+      const errorMsg = Array.isArray(error_description) 
+        ? error_description[0] || error_description.join(', ')
+        : error_description
+      const fallbackError = Array.isArray(error) 
+        ? error[0] || error.join(', ')
+        : error
+      throw new Error(errorMsg || fallbackError)
     }
     
     // 檢查是否成功並有 token
