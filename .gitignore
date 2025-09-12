@@ -15,6 +15,7 @@ frontend/dist/
 # 后端静态文件 (由构建脚本生成)
 backend/public/
 backend/data
+backend/logs
 
 # Docker 相关
 .docker/

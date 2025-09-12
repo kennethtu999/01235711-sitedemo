@@ -86,7 +86,9 @@ const login = async (req, res) => {
     // 設置 HTTP-only cookie
     const cookieOptions = {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // 在生產環境使用 HTTPS
+      secure:
+        process.env.NODE_ENV === "production" &&
+        process.env.FORCE_HTTPS === "true", // 在生產環境使用 HTTPS
       sameSite: "lax",
       maxAge: 24 * 60 * 60 * 1000, // 24 小時
     };
@@ -191,7 +193,9 @@ const logout = async (req, res) => {
     // 清除 JWT cookie
     res.clearCookie("jwt", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure:
+        process.env.NODE_ENV === "production" &&
+        process.env.FORCE_HTTPS === "true",
       sameSite: "lax",
     });
 

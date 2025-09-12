@@ -9,6 +9,7 @@ const {
   HookLog,
 } = require("./models");
 const path = require("path");
+const logger = require("./config/logger");
 
 const PORT = process.env.PORT || 3000;
 
@@ -39,20 +40,20 @@ async function createDefaultAdmin() {
         isActive: true,
       });
 
-      console.log("✅ Default admin account created:");
-      console.log(`   Username: ${adminUser.username}`);
-      console.log(`   Password: admin123456`);
-      console.log(`   Email: ${adminUser.email}`);
-      console.log("✅ Default demo account created:");
-      console.log(`   Username: ${demoUser.username}`);
-      console.log(`   Password: demo123456`);
-      console.log(`   Email: ${demoUser.email}`);
-      console.log("⚠️  Please change the default password after first login!");
+      logger.info("✅ Default admin account created:", {
+        username: adminUser.username,
+        email: adminUser.email,
+      });
+      logger.info("✅ Default demo account created:", {
+        username: demoUser.username,
+        email: demoUser.email,
+      });
+      logger.warn("⚠️  Please change the default password after first login!");
     } else {
-      console.log("✅ Admin account already exists.");
+      logger.info("✅ Admin account already exists.");
     }
   } catch (error) {
-    console.error("❌ Error creating default admin account:", error);
+    logger.error("❌ Error creating default admin account:", error);
   }
 }
 
@@ -68,7 +69,10 @@ async function createDefaultProject() {
         githubRepoUrl: `git@${process.env.GITHUB_DEFAULT_HOST}:kennetht/webhooktest.git`,
         isActive: 1,
       });
-      console.log("✅ Default project created:", newProject);
+      logger.info("✅ Default project created:", {
+        projectId: newProject.id,
+        name: newProject.name,
+      });
 
       const newDemoConfig = await DemoConfig.create({
         projectId: newProject.id,
@@ -79,7 +83,10 @@ async function createDefaultProject() {
         subSiteFolders: "rc1,rc2",
         isActive: 1,
       });
-      console.log("✅ Default demo config created:", newDemoConfig);
+      logger.info("✅ Default demo config created:", {
+        configId: newDemoConfig.id,
+        projectId: newDemoConfig.projectId,
+      });
 
       // Find the demo user to get their ID
       const demoUser = await User.findOne({
@@ -93,17 +100,20 @@ async function createDefaultProject() {
           grantedAt: new Date(),
           grantedBy: 1,
         });
-        console.log("✅ Default demo config user created:", newDemoConfigUser);
+        logger.info("✅ Default demo config user created:", {
+          userId: newDemoConfigUser.userId,
+          configId: newDemoConfigUser.demoConfigId,
+        });
       } else {
-        console.log(
+        logger.warn(
           "⚠️  Demo user not found, skipping demo config user creation"
         );
       }
     } else {
-      console.log("✅ Project already exists.");
+      logger.info("✅ Project already exists.");
     }
   } catch (error) {
-    console.error("❌ Error creating default project:", error);
+    logger.error("❌ Error creating default project:", error);
   }
 }
 
@@ -121,12 +131,12 @@ async function startServer() {
 
     // 測試資料庫連接
     await sequelize.authenticate();
-    console.log("✅ Database connection established successfully.");
+    logger.info("✅ Database connection established successfully.");
 
     // 同步資料庫 (強制同步以添加新欄位)
     // 生產環境請使用 alter: true 或 migrate
     await sequelize.sync({ force: false, alter: true });
-    console.log("✅ Database synchronized successfully.");
+    logger.info("✅ Database synchronized successfully.");
 
     // 初始化 OIDC 客戶端
     await initializeOIDCClients();
@@ -139,30 +149,30 @@ async function startServer() {
 
     // 啟動伺服器
     const server = app.listen(PORT, () => {
-      console.log(`🚀 Server is running on port ${PORT}`);
-      console.log(`📊 Health check: http://localhost:${PORT}/health`);
-      console.log(`🔗 API base URL: http://localhost:${PORT}/api`);
-      console.log(`🌍 Environment: ${process.env.NODE_ENV || "development"}`);
+      logger.info(`🚀 Server is running on port ${PORT}`);
+      logger.info(`📊 Health check: http://localhost:${PORT}/health`);
+      logger.info(`🔗 API base URL: http://localhost:${PORT}/api`);
+      logger.info(`🌍 Environment: ${process.env.NODE_ENV || "development"}`);
     });
 
     // 優雅關閉
     process.on("SIGTERM", () => {
-      console.log("SIGTERM received, shutting down gracefully");
+      logger.info("SIGTERM received, shutting down gracefully");
       server.close(() => {
-        console.log("Process terminated");
+        logger.info("Process terminated");
         sequelize.close();
       });
     });
 
     process.on("SIGINT", () => {
-      console.log("SIGINT received, shutting down gracefully");
+      logger.info("SIGINT received, shutting down gracefully");
       server.close(() => {
-        console.log("Process terminated");
+        logger.info("Process terminated");
         sequelize.close();
       });
     });
   } catch (error) {
-    console.error("❌ Unable to start server:", error);
+    logger.error("❌ Unable to start server:", error);
     process.exit(1);
   }
 }

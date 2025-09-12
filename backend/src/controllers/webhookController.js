@@ -5,6 +5,7 @@ const {
 } = require("../services/deployService");
 const { HookLog, Project } = require("../models");
 const hookExecutionService = require("../services/hookExecutionService");
+const logger = require("../config/logger");
 
 /**
  * 驗證 GitHub Webhook 簽名
@@ -39,7 +40,7 @@ async function handleGitHubWebhook(req, res) {
   const startTime = new Date();
 
   try {
-    console.log("收到 GitHub Webhook 請求");
+    logger.info("收到 GitHub Webhook 請求");
 
     // 1. 驗證簽名
     const signature = req.get("X-Hub-Signature-256");
@@ -58,11 +59,11 @@ async function handleGitHubWebhook(req, res) {
 
     // 2. 解析 Webhook 事件類型
     const eventType = req.get("X-GitHub-Event");
-    console.log(`GitHub Webhook 事件類型: ${eventType}`);
+    logger.debug(`GitHub Webhook 事件類型: ${eventType}`);
 
     // 只處理 push 事件
     if (eventType !== "push") {
-      console.log(`忽略非 push 事件: ${eventType}`);
+      logger.debug(`忽略非 push 事件: ${eventType}`);
       return res.status(200).json({
         message: "Event ignored",
         eventType,
@@ -74,7 +75,7 @@ async function handleGitHubWebhook(req, res) {
     const { repository, ref, commits } = payloadData;
 
     if (!repository || !ref) {
-      console.error("GitHub Webhook Payload 缺少必要欄位");
+      logger.warn("GitHub Webhook Payload 缺少必要欄位");
       return res.status(400).json({
         error: "Bad Request",
         message: "Missing required fields in payload",
@@ -85,7 +86,7 @@ async function handleGitHubWebhook(req, res) {
     const repoFullName = repository.full_name;
     const branchName = ref.replace("refs/heads/", "");
 
-    console.log(`處理推送事件: ${repoFullName} -> ${branchName}`);
+    logger.info(`處理推送事件: ${repoFullName} -> ${branchName}`);
 
     // 5. 查找對應的 Project
     const project = await Project.findOne({
@@ -93,7 +94,7 @@ async function handleGitHubWebhook(req, res) {
     });
 
     if (!project) {
-      console.log(`未找到對應的 Project: ${repoFullName}`);
+      logger.info(`未找到對應的 Project: ${repoFullName}`);
       return res.status(200).json({
         message: "No matching project found",
         repository: repoFullName,
@@ -118,7 +119,7 @@ async function handleGitHubWebhook(req, res) {
     );
 
     if (demoConfigs.length === 0) {
-      console.log(`未找到匹配的 Demo 配置: ${repoFullName} -> ${branchName}`);
+      logger.info(`未找到匹配的 Demo 配置: ${repoFullName} -> ${branchName}`);
       await hookLog.markAsSuccess({
         message: "No matching demo configurations found",
         totalConfigs: 0,
@@ -137,9 +138,9 @@ async function handleGitHubWebhook(req, res) {
     // 8. 異步部署所有匹配的 Demo 配置
     const deploymentPromises = demoConfigs.map(async (demoConfig) => {
       try {
-        console.log(`開始部署 Demo 配置 ID: ${demoConfig.id}`);
+        logger.debug(`開始部署 Demo 配置 ID: ${demoConfig.id}`);
         const result = await deployProjectDemo(demoConfig.id);
-        console.log(`Demo 配置 ID ${demoConfig.id} 部署結果:`, result);
+        logger.debug(`Demo 配置 ID ${demoConfig.id} 部署結果:`, result);
         return {
           demoConfigId: demoConfig.id,
           success: result.success,
@@ -147,7 +148,7 @@ async function handleGitHubWebhook(req, res) {
           error: result.error,
         };
       } catch (error) {
-        console.error(`Demo 配置 ID ${demoConfig.id} 部署異常:`, error);
+        logger.error(`Demo 配置 ID ${demoConfig.id} 部署異常:`, error);
         return {
           demoConfigId: demoConfig.id,
           success: false,
@@ -176,7 +177,7 @@ async function handleGitHubWebhook(req, res) {
     const successCount = results.filter((r) => r.success).length;
     const failureCount = results.length - successCount;
 
-    console.log(`部署完成: 成功 ${successCount} 個，失敗 ${failureCount} 個`);
+    logger.info(`部署完成: 成功 ${successCount} 個，失敗 ${failureCount} 個`);
 
     // 10. 更新 Hook Log 為成功狀態
     await hookLog.markAsSuccess({
@@ -198,7 +199,7 @@ async function handleGitHubWebhook(req, res) {
       hookLogId: hookLog.id,
     });
   } catch (error) {
-    console.error("處理 GitHub Webhook 時發生錯誤:", error);
+    logger.error("處理 GitHub Webhook 時發生錯誤:", error);
 
     // 如果有 Hook Log 記錄，標記為失敗
     if (hookLog) {
@@ -220,7 +221,7 @@ async function handleGitHubWebhook(req, res) {
  * @param {Object} res - Express 響應對象
  */
 function handleGitHubWebhookTest(req, res) {
-  console.log("收到 GitHub Webhook 測試請求");
+  logger.info("收到 GitHub Webhook 測試請求");
 
   res.status(200).json({
     message: "GitHub Webhook endpoint is working",
@@ -258,7 +259,7 @@ async function reExecuteHookLog(req, res) {
       });
     }
   } catch (error) {
-    console.error("重新執行 Hook Log 時發生錯誤:", error);
+    logger.error("重新執行 Hook Log 時發生錯誤:", error);
     res.status(500).json({
       error: "Internal Server Error",
       message: "Failed to re-execute hook log",
@@ -298,7 +299,7 @@ async function triggerProjectHook(req, res) {
       });
     }
   } catch (error) {
-    console.error("手動觸發專案 Hook 時發生錯誤:", error);
+    logger.error("手動觸發專案 Hook 時發生錯誤:", error);
     res.status(500).json({
       error: "Internal Server Error",
       message: "Failed to trigger project hook",

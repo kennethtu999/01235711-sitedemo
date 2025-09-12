@@ -163,7 +163,9 @@ const handleCallback = async (req, res) => {
     // 設置 HTTP-only cookie
     const cookieOptions = {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure:
+        process.env.NODE_ENV === "production" &&
+        process.env.FORCE_HTTPS === "true",
       sameSite: "lax",
       maxAge: 24 * 60 * 60 * 1000, // 24 小時
     };
