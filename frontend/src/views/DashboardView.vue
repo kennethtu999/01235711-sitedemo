@@ -26,7 +26,7 @@
               </div>
               
               <div v-else>
-                <n-grid :cols="1" :x-gap="20" :y-gap="20" responsive="screen">
+                <n-grid :cols="2" :x-gap="20" :y-gap="20" responsive="screen">
                   <n-grid-item v-for="project in userProjects" :key="project.id">
                     <n-card hoverable class="project-card">
                       <div class="project-header">
@@ -38,47 +38,44 @@
                         </div>
                       </div>
                       
-                      <div class="project-content">
-                        <p class="project-description">{{ project.description || '無描述' }}</p>
                         <!-- Demo 配置列表 -->
                         <div v-if="project.demoConfigs && project.demoConfigs.length > 0" style="margin-top: 12px;">
-                          <n-divider style="margin: 8px 0;" />
                           <n-space vertical size="small">
-                            <div v-for="demo in project.demoConfigs" :key="demo.id" class="demo-config-card">
+                            <div v-for="demo in project.demoConfigs" :key="demo.id" class="">
                               <div class="demo-config-content">
                                 <div class="demo-config-info">
                                   <div class="demo-config-details">
-                                    <span class="demo-branch">分支: {{ demo.branchName }}</span>
-                                    <span class="demo-path">路徑: {{ demo.demoPath }}</span>
+                                    <span class="demo-branch">分支: {{ demo.branchName || demo.dataValues?.branchName || '未定義' }}</span>
                                   </div>
+                                
+                                  <div class="demo-config-actions">
+                                    <div class="demo-buttons">
+                                      <button 
+                                          v-if="demo.demoUrl"
+                                          @click="demo.demoUrl && openDemo(demo.demoUrl)"
+                                          class="btn btn-sm btn-outline demo-action-button"
+                                        >
+                                          開啟主要 Demo
+                                      </button>
+                                      
+                                      <button 
+                                        v-for="subSite in demo.demoUrls" 
+                                        :key="subSite.name"
+                                        @click="openDemo(subSite.url)"
+                                        class="btn btn-sm btn-outline demo-action-button subsite-button"
+                                      >
+                                        {{ subSite.name }}
+                                      </button>
+                                    </div>
+                                  </div>
+                                  
                                 </div>
                                 
-                                <div class="demo-config-actions">
-                                  <button 
-                                      v-if="demo.demoUrl"
-                                      @click="demo.demoUrl && openDemo(demo.demoUrl)"
-                                      class="btn btn-sm btn-outline demo-action-button"
-                                    >
-                                      開啟主要 Demo
-                                  </button>
-                                    
-                                  <div v-if="demo.demoUrls && demo.demoUrls.length > 0" class="demo-buttons">
-                                    
-                                    <button 
-                                      v-for="subSite in demo.demoUrls" 
-                                      :key="subSite.name"
-                                      @click="openDemo(subSite.url)"
-                                      class="btn btn-sm btn-outline demo-action-button"
-                                    >
-                                      {{ subSite.name }}
-                                    </button>
-                                  </div>
-                                </div>
+                                
                               </div>
                             </div>
                           </n-space>
                         </div>
-                      </div>
                     </n-card>
                   </n-grid-item>
                 </n-grid>
@@ -203,7 +200,7 @@ const openDemo = (demoUrl: string) => {
     padding: var(--spacing-page-sm);
   }
   
-  /* 移動端網格布局 */
+  /* 移動端網格布局 - 強制一列 */
   .n-grid {
     --n-cols: 1 !important;
   }
@@ -428,9 +425,10 @@ const openDemo = (demoUrl: string) => {
 
 .demo-buttons {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 8px;
   align-items: center;
+  overflow-x: auto;
 }
 
 .demo-action-button {
@@ -438,11 +436,17 @@ const openDemo = (demoUrl: string) => {
   min-width: auto;
   font-weight: var(--font-weight-medium);
   transition: all var(--transition-fast);
+  flex-shrink: 0;
 }
 
 .demo-action-button:hover {
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
+}
+
+.subsite-button {
+  flex-shrink: 0;
+  min-width: fit-content;
 }
 
 /* 響應式設計 */
@@ -460,15 +464,19 @@ const openDemo = (demoUrl: string) => {
   .demo-buttons {
     width: 100%;
     justify-content: flex-start;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: nowrap;
     gap: var(--spacing-sm);
+    overflow-x: auto;
+    padding-bottom: 4px;
   }
   
   .demo-action-button {
-    width: 100%;
     min-height: 44px; /* 確保觸控目標足夠大 */
     font-size: var(--font-size-sm);
     padding: var(--spacing-sm) var(--spacing-md);
+    width: auto;
+    flex-shrink: 0;
   }
   
   .demo-config-card {
