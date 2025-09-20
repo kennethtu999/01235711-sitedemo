@@ -45,7 +45,7 @@
                               <div class="demo-config-content">
                                 <div class="demo-config-info">
                                   <div class="demo-config-details">
-                                    <span class="demo-branch">分支: {{ demo.branchName || demo.dataValues?.branchName || '未定義' }}</span>
+                                    <span class="demo-branch">分支: {{ demo.branchName || (demo as any).dataValues?.branchName || '未定義' }}</span>
                                   </div>
                                 
                                   <div class="demo-config-actions">
@@ -92,7 +92,6 @@
 import { apiService, type Project } from '@/api'
 import {
   NCard,
-  NDivider,
   NEmpty,
   NGrid,
   NGridItem,
