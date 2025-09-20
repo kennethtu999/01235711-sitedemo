@@ -7,11 +7,6 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/',
-      name: 'home',
-      redirect: '/dashboard'
-    },
-    {
       path: '/login',
       name: 'login',
       component: LoginView,
@@ -56,6 +51,12 @@ const router = createRouter({
       name: 'groupManagement',
       component: () => import('../views/GroupManagementView.vue'),
       meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    // Catch-all route for unmatched paths (including /)
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'notFound',
+      redirect: '/login'
     },
   ],
 })

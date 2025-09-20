@@ -54,14 +54,15 @@
                                 </div>
                                 
                                 <div class="demo-config-actions">
-                                  <div v-if="demo.demoUrls && demo.demoUrls.length > 0" class="demo-buttons">
-                                    <button 
+                                  <button 
                                       v-if="demo.demoUrl"
                                       @click="demo.demoUrl && openDemo(demo.demoUrl)"
                                       class="btn btn-sm btn-outline demo-action-button"
                                     >
                                       開啟主要 Demo
-                                    </button>
+                                  </button>
+                                    
+                                  <div v-if="demo.demoUrls && demo.demoUrls.length > 0" class="demo-buttons">
                                     
                                     <button 
                                       v-for="subSite in demo.demoUrls" 

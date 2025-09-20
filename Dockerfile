@@ -31,5 +31,6 @@ ENV NODE_ENV=production
 ENV DATA_PATH=/app/data
 ENV PORT=3000
 
+
 # 啟動應用程式
 CMD ["node", "src/server.js"]
