@@ -424,10 +424,9 @@ const openDemo = (demoUrl: string) => {
 
 .demo-buttons {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   gap: 8px;
   align-items: center;
-  overflow-x: auto;
 }
 
 .demo-action-button {
@@ -464,9 +463,8 @@ const openDemo = (demoUrl: string) => {
     width: 100%;
     justify-content: flex-start;
     flex-direction: row;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     gap: var(--spacing-sm);
-    overflow-x: auto;
     padding-bottom: 4px;
   }
   
