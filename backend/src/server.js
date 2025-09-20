@@ -1,6 +1,7 @@
 const app = require("./app");
 const sequelize = require("./config/database");
 const { initializeOIDCClients } = require("./config/oidc");
+const { safeMigration, needsMigration } = require("./config/migration");
 const {
   User,
   Project,
@@ -133,10 +134,15 @@ async function startServer() {
     await sequelize.authenticate();
     logger.info("✅ Database connection established successfully.");
 
-    // 同步資料庫 (強制同步以添加新欄位)
-    // 生產環境請使用 alter: true 或 migrate
-    await sequelize.sync({ force: false, alter: true });
-    logger.info("✅ Database synchronized successfully.");
+    // 檢查是否需要遷移
+    const needsMigrate = await needsMigration();
+    if (needsMigrate) {
+      logger.info("🔄 Database migration required, starting safe migration...");
+      await safeMigration();
+      logger.info("✅ Database migration completed successfully.");
+    } else {
+      logger.info("✅ Database schema is up to date.");
+    }
 
     // 初始化 OIDC 客戶端
     await initializeOIDCClients();
