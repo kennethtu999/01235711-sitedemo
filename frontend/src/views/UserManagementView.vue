@@ -301,7 +301,6 @@ const submitForm = async () => {
     if (showCreateModal.value) {
       // 新增使用者
       await apiService.createUser(formData.value)
-      alert('使用者新增成功')
     } else if (showEditModal.value && userToDelete.value) {
       // 編輯使用者
       const updateData: UpdateUserData = {
@@ -317,7 +316,6 @@ const submitForm = async () => {
       }
       
       await apiService.updateUser(userToDelete.value.id, updateData)
-      alert('使用者更新成功')
     }
     
     closeModal()
@@ -338,7 +336,6 @@ const confirmDelete = async () => {
   isDeleting.value = true
   try {
     await apiService.deleteUser(userToDelete.value.id)
-    alert('使用者刪除成功')
     closeDeleteModal()
     loadUsers()
   } catch (error: any) {

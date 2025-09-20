@@ -6,6 +6,7 @@ const {
   ProjectUser,
   Group,
   GroupProject,
+  HookLog,
 } = require("../models");
 const { Op } = require("sequelize");
 const authorizeDemoService = require("../services/authorizeDemoService");
@@ -362,7 +363,43 @@ const deleteProject = async (req, res) => {
       });
     }
 
-    // 刪除專案（會級聯刪除相關的 DemoConfigs 和 DemoConfigUser 關聯）
+    // 手動刪除所有相關的子項資料
+    const projectId = project.id;
+
+    // 1. 刪除專案用戶權限
+    await ProjectUser.destroy({
+      where: { projectId: projectId },
+    });
+
+    // 2. 刪除群組專案權限
+    await GroupProject.destroy({
+      where: { projectId: projectId },
+    });
+
+    // 3. 刪除 Demo 配置用戶權限
+    const demoConfigs = await DemoConfig.findAll({
+      where: { projectId: projectId },
+      attributes: ["id"],
+    });
+
+    if (demoConfigs.length > 0) {
+      const demoConfigIds = demoConfigs.map((dc) => dc.id);
+      await DemoConfigUser.destroy({
+        where: { demoConfigId: demoConfigIds },
+      });
+    }
+
+    // 4. 刪除 Demo 配置
+    await DemoConfig.destroy({
+      where: { projectId: projectId },
+    });
+
+    // 5. 刪除 Hook Logs
+    await HookLog.destroy({
+      where: { projectId: projectId },
+    });
+
+    // 6. 最後刪除專案本身
     await project.destroy();
 
     res.json({

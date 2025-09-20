@@ -18,6 +18,7 @@ router.use("/webhook", require("./webhook"));
 router.use("/hook-logs", require("./hookLog"));
 router.use("/user-guide", require("./userGuide"));
 router.use("/groups", require("./group"));
+router.use("/import-export", require("./importExport"));
 // router.use('/user', require('./user'));
 
 module.exports = router;

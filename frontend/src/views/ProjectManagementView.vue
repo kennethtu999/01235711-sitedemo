@@ -580,7 +580,6 @@ const removeProjectGroup = async (groupId: number) => {
   isSubmitting.value = true
   try {
     await api.delete(`/admin/projects/${currentProject.value.id}/groups/${groupId}`)
-    alert('群組移除成功')
     // 重新載入專案群組
     await manageProjectGroups(currentProject.value)
   } catch (error: any) {
@@ -601,7 +600,6 @@ const addSelectedGroups = async () => {
       groupIds: selectedGroupIds.value
     }
     await api.post(`/admin/projects/${currentProject.value.id}/groups`, data)
-    alert('群組添加成功')
     selectedGroupIds.value = []
     // 重新載入專案群組
     await manageProjectGroups(currentProject.value)
@@ -733,7 +731,6 @@ const submitProjectForm = async () => {
   try {
     if (showCreateProjectModal.value) {
       await apiService.createProject(projectFormData.value)
-      alert('專案新增成功')
     } else if (showEditProjectModal.value && currentProject.value) {
       const updateData: UpdateProjectData = {
         name: projectFormData.value.name,
@@ -743,7 +740,6 @@ const submitProjectForm = async () => {
         isActive: projectFormData.value.isActive
       }
       await apiService.updateProject(currentProject.value.id, updateData)
-      alert('專案更新成功')
     }
     
     closeProjectModal()
@@ -763,7 +759,6 @@ const submitDemoConfigForm = async () => {
   try {
     if (showCreateDemoConfigModal.value && currentProject.value) {
       await apiService.createDemoConfig(currentProject.value.id, demoConfigFormData.value)
-      alert('Demo 配置新增成功')
     } else if (showEditDemoConfigModal.value && currentDemoConfig.value) {
       const updateData: UpdateDemoConfigData = {
         branchName: demoConfigFormData.value.branchName,
@@ -774,7 +769,6 @@ const submitDemoConfigForm = async () => {
         isActive: demoConfigFormData.value.isActive
       }
       await apiService.updateDemoConfig(currentDemoConfig.value.id, updateData)
-      alert('Demo 配置更新成功')
     }
     
     closeDemoConfigModal()
@@ -797,7 +791,6 @@ const submitTriggerHook = async () => {
   try {
     const branch = hookFormData.value.branch.trim() || undefined
     await apiService.triggerProjectHook(currentProject.value.id, branch)
-    alert('Hook 執行已開始，請查看 Hook Log 了解執行狀態')
     closeTriggerHookModal()
     loadData()
   } catch (error: any) {
@@ -817,10 +810,8 @@ const confirmDelete = async () => {
   try {
     if (deleteType.value === 'project') {
       await apiService.deleteProject((itemToDelete.value as Project).id)
-      alert('專案刪除成功')
     } else {
       await apiService.deleteDemoConfig((itemToDelete.value as DemoConfig).id)
-      alert('Demo 配置刪除成功')
     }
     
     closeDeleteModal()

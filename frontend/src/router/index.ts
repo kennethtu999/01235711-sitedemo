@@ -52,6 +52,12 @@ const router = createRouter({
       component: () => import('../views/GroupManagementView.vue'),
       meta: { requiresAuth: true, requiresAdmin: true }
     },
+    {
+      path: '/admin/import-export',
+      name: 'importExport',
+      component: () => import('../views/ImportExportView.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
     // Catch-all route for unmatched paths (including /)
     {
       path: '/:pathMatch(.*)*',

@@ -148,6 +148,12 @@ const GroupIcon = () => h(NIcon, null, {
   ])
 })
 
+const ImportExportIcon = () => h(NIcon, null, {
+  default: () => h('svg', { viewBox: '0 0 24 24' }, [
+    h('path', { fill: 'currentColor', d: 'M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z' })
+  ])
+})
+
 // 選單選項 - 根據用戶權限動態生成
 const menuOptions = computed(() => {
   const baseOptions: MenuOption[] = [
@@ -185,6 +191,11 @@ const menuOptions = computed(() => {
         label: '使用說明',
         key: 'userGuide',
         icon: UserGuideIcon
+      },
+      {
+        label: '資料匯入/匯出',
+        key: 'importExport',
+        icon: ImportExportIcon
       }
     )
   }
@@ -214,6 +225,9 @@ const handleMenuSelect = (key: string) => {
   } else if (key === 'groupManagement') {
     console.log('導航到群組管理')
     router.push('/admin/groups')
+  } else if (key === 'importExport') {
+    console.log('導航到資料匯入/匯出')
+    router.push('/admin/import-export')
   }
 }
 
