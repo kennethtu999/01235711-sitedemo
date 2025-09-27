@@ -26,8 +26,24 @@
               </div>
               
               <div v-else>
-                <n-grid :cols="2" :x-gap="20" :y-gap="20" responsive="screen">
-                  <n-grid-item v-for="project in userProjects" :key="project.id">
+                <n-grid 
+                  :cols="2" 
+                  :x-gap="20" 
+                  :y-gap="20" 
+                  responsive="screen"
+                  :collapsed-rows="1"
+                  :item-responsive="true"
+                >
+                  <n-grid-item 
+                    v-for="project in userProjects" 
+                    :key="project.id"
+                    :span="1"
+                    :s-span="1"
+                    :m-span="1"
+                    :l-span="1"
+                    :xl-span="1"
+                    :xxl-span="1"
+                  >
                     <n-card hoverable class="project-card">
                       <div class="project-header">
                         <h3 class="project-title">{{ project.name }}</h3>
@@ -200,14 +216,15 @@ const openDemo = (demoUrl: string) => {
     padding: var(--spacing-page-sm);
   }
   
-  /* 移動端網格布局 - 強制一列 */
+  /* 移動端網格布局 - 確保一列顯示 */
   .n-grid {
-    --n-cols: 1 !important;
+    grid-template-columns: 1fr !important;
   }
   
   /* 移動端專案卡片 */
   .project-card {
-    margin-bottom: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+    padding: var(--spacing-md);
   }
   
   .project-header {
@@ -295,9 +312,13 @@ const openDemo = (demoUrl: string) => {
   }
   
   .demo-action-button {
-    min-height: 50px;
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
+    min-height: 56px;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    padding: var(--spacing-lg) var(--spacing-xl);
+    border-radius: var(--radius-lg);
+    width: 100%;
+    margin-bottom: var(--spacing-sm);
   }
 }
 
@@ -470,16 +491,19 @@ const openDemo = (demoUrl: string) => {
   }
   
   .demo-action-button {
-    min-height: 44px; /* 確保觸控目標足夠大 */
-    font-size: var(--font-size-sm);
-    padding: var(--spacing-sm) var(--spacing-md);
+    min-height: 48px; /* 確保觸控目標足夠大 */
+    font-size: var(--font-size-md);
+    padding: var(--spacing-md) var(--spacing-lg);
     width: auto;
     flex-shrink: 0;
+    border-radius: var(--radius-md);
+    font-weight: var(--font-weight-medium);
   }
   
   .demo-config-card {
-    padding: var(--spacing-md);
-    margin-bottom: var(--spacing-sm);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+    border-radius: var(--radius-lg);
   }
   
   .demo-config-details {
@@ -504,14 +528,24 @@ const openDemo = (demoUrl: string) => {
   }
   
   .demo-action-button {
-    min-height: 48px; /* 更大的觸控目標 */
-    font-size: var(--font-size-md);
-    padding: var(--spacing-md) var(--spacing-lg);
+    min-height: 52px; /* 更大的觸控目標 */
+    font-size: var(--font-size-lg);
+    padding: var(--spacing-lg) var(--spacing-xl);
+    border-radius: var(--radius-lg);
+    font-weight: var(--font-weight-semibold);
   }
   
   .demo-branch,
   .demo-path {
     font-size: var(--font-size-xs);
+  }
+}
+
+/* 桌面版優化 */
+@media (min-width: 769px) {
+  /* 桌面版網格布局 - 顯示兩列 */
+  .n-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
   }
 }
 
