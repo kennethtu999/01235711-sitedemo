@@ -58,6 +58,7 @@ const getDisplayName = (provider) => {
 const startAuth = async (req, res) => {
   try {
     const { provider } = req.params;
+    const { redirect } = req.query; // 獲取重定向 URL
     const client = getOIDCClient(provider);
     const config = getOIDCConfig(provider);
 
@@ -73,9 +74,12 @@ const startAuth = async (req, res) => {
       Math.random().toString(36).substring(2, 15) +
       Math.random().toString(36).substring(2, 15);
 
-    // 將 state 存儲在 session 中
+    // 將 state 和重定向 URL 存儲在 session 中
     req.session.oidcState = state;
     req.session.oidcProvider = provider;
+    if (redirect) {
+      req.session.oidcRedirect = redirect;
+    }
 
     // 生成授權 URL
     const authUrl = client.authorizationUrl({
@@ -172,15 +176,24 @@ const handleCallback = async (req, res) => {
 
     res.cookie("jwt", token, cookieOptions);
 
+    // 獲取重定向 URL
+    const originalRedirect = req.session.oidcRedirect;
+
     // 清除 session 中的 OIDC 資料
     delete req.session.oidcState;
     delete req.session.oidcProvider;
+    delete req.session.oidcRedirect;
 
     // 重定向到前端，並將 token 作為查詢參數傳遞
     const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
-    const redirectUrl = `${frontendUrl}/auth/oidc/callback?token=${encodeURIComponent(
+    let redirectUrl = `${frontendUrl}/auth/oidc/callback?token=${encodeURIComponent(
       token
     )}&success=true`;
+
+    // 如果有原始重定向 URL，添加到查詢參數中
+    if (originalRedirect) {
+      redirectUrl += `&redirect=${encodeURIComponent(originalRedirect)}`;
+    }
 
     res.redirect(redirectUrl);
   } catch (error) {

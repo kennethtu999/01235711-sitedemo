@@ -75,10 +75,20 @@ const handleOIDCCallback = async () => {
         
         loadingMessage.value = '登入成功！'
         
+        // 檢查是否有重定向 URL
+        const redirectUrl = route.query.redirect as string
+        
         // 延遲一下再跳轉，讓用戶看到成功訊息並確保所有組件都已更新
         setTimeout(() => {
-          // 使用 replace 而不是 push，避免用戶可以返回到回調頁面
-          router.replace('/dashboard')
+          if (redirectUrl) {
+            // 解碼重定向 URL 並跳轉
+            const decodedUrl = decodeURIComponent(redirectUrl)
+            console.log('OIDC 重定向到:', decodedUrl)
+            window.location.href = decodedUrl
+          } else {
+            // 使用 replace 而不是 push，避免用戶可以返回到回調頁面
+            router.replace('/dashboard')
+          }
         }, 1000)
         
         return

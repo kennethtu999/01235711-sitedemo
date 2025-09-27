@@ -283,7 +283,10 @@ export const apiService = {
   
   // OIDC 認證相關
   getOIDCProviders: () => api.get('/auth/oidc/providers'),
-  startOIDCAuth: (provider: string) => api.get(`/auth/oidc/${provider}`),
+  startOIDCAuth: (provider: string, redirectUrl?: string) => {
+    const params = redirectUrl ? { redirect: redirectUrl } : {}
+    return api.get(`/auth/oidc/${provider}`, { params })
+  },
   
   // 使用者管理
   getUsers: () => api.get('/admin/users'),

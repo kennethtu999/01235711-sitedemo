@@ -50,8 +50,9 @@
                                 
                                   <div class="demo-config-actions">
                                     <div class="demo-buttons">
+                                      <!-- 只有當沒有子網站時才顯示主要 Demo -->
                                       <button 
-                                          v-if="demo.demoUrl"
+                                          v-if="demo.demoUrl && (!demo.demoUrls || demo.demoUrls.length === 0)"
                                           @click="demo.demoUrl && openDemo(demo.demoUrl)"
                                           class="btn btn-sm btn-outline demo-action-button"
                                         >

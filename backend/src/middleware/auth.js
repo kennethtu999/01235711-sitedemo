@@ -22,6 +22,19 @@ const authenticateJWT = async (req, res, next) => {
     );
 
     if (!token) {
+      // 檢查是否為 Demo 路由，如果是則重定向到登入頁
+      if (
+        req.path.startsWith("/demo/") ||
+        req.originalUrl.startsWith("/demo/")
+      ) {
+        const originalUrl = req.originalUrl;
+        const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+        const loginUrl = `${frontendUrl}/login?redirect=${encodeURIComponent(
+          originalUrl
+        )}`;
+        return res.redirect(loginUrl);
+      }
+
       return res.status(401).json({
         error: "Access denied",
         message: "No token provided",
@@ -47,6 +60,19 @@ const authenticateJWT = async (req, res, next) => {
     }
 
     if (!user.isActive) {
+      // 檢查是否為 Demo 路由，如果是則重定向到登入頁
+      if (
+        req.path.startsWith("/demo/") ||
+        req.originalUrl.startsWith("/demo/")
+      ) {
+        const originalUrl = req.originalUrl;
+        const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+        const loginUrl = `${frontendUrl}/login?redirect=${encodeURIComponent(
+          originalUrl
+        )}`;
+        return res.redirect(loginUrl);
+      }
+
       return res.status(401).json({
         error: "Access denied",
         message: "User account is deactivated",
@@ -57,6 +83,16 @@ const authenticateJWT = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
+    // 檢查是否為 Demo 路由，如果是則重定向到登入頁
+    if (req.path.startsWith("/demo/") || req.originalUrl.startsWith("/demo/")) {
+      const originalUrl = req.originalUrl;
+      const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+      const loginUrl = `${frontendUrl}/login?redirect=${encodeURIComponent(
+        originalUrl
+      )}`;
+      return res.redirect(loginUrl);
+    }
+
     if (error.name === "JsonWebTokenError") {
       return res.status(401).json({
         error: "Access denied",

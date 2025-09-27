@@ -92,11 +92,12 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { NCard, NForm, NFormItem, NInput, NButton, NAlert, NDivider, NIcon } from 'naive-ui'
 import { apiService, type LoginCredentials, type OIDCProvider } from '@/api'
 
 const router = useRouter()
+const route = useRoute()
 
 // 表單數據
 const loginForm = reactive({
@@ -176,8 +177,17 @@ const handleLogin = async () => {
     
     console.log('登入成功:', data.user)
     
-    // 跳轉到儀表板
-    router.push('/dashboard')
+    // 檢查是否有重定向 URL
+    const redirectUrl = route.query.redirect as string
+    if (redirectUrl) {
+      // 解碼重定向 URL 並跳轉
+      const decodedUrl = decodeURIComponent(redirectUrl)
+      console.log('重定向到:', decodedUrl)
+      window.location.href = decodedUrl
+    } else {
+      // 沒有重定向 URL，跳轉到儀表板
+      router.push('/dashboard')
+    }
   } catch (error: unknown) {
     console.error('登入失敗:', error)
     
@@ -218,7 +228,9 @@ const handleOIDCLogin = async (provider: OIDCProvider) => {
   errorMessage.value = ''
   
   try {
-    const response = await apiService.startOIDCAuth(provider.name)
+    // 檢查是否有重定向 URL，如果有就傳遞給後端
+    const redirectUrl = route.query.redirect as string
+    const response = await apiService.startOIDCAuth(provider.name, redirectUrl)
     const { authUrl } = response.data
     
     // 重定向到 OIDC 提供者的授權頁面

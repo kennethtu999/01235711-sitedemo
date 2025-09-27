@@ -1,9 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const { authenticateJWT } = require("../middleware/auth");
-const {
-  authorizeDemoAccessByProjectAndBranch,
-} = require("../middleware/authorizeDemoAccess");
 const { serveDemoFiles } = require("../controllers/demoController");
 
 // 根據專案名稱和分支名稱服務靜態檔案 (所有子路徑)
@@ -11,7 +8,6 @@ const { serveDemoFiles } = require("../controllers/demoController");
 router.get(
   "/:projectName/:branchName/*subPath",
   authenticateJWT,
-  authorizeDemoAccessByProjectAndBranch,
   serveDemoFiles
 );
 

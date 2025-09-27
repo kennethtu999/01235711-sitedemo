@@ -1,6 +1,8 @@
 const path = require("path");
 const fs = require("fs").promises;
 const { STATIC_DEMOS_DIR } = require("../services/deployService");
+const { DemoConfig, Project } = require("../models");
+const groupPermissionService = require("../services/groupPermissionService");
 
 /**
  * 發送檔案並處理快取
@@ -31,6 +33,52 @@ async function serveDemoFiles(req, res) {
   try {
     // 從路由參數中獲取專案名稱和分支名稱
     const { projectName, branchName, subPath } = req.params;
+
+    // 檢查用戶是否有權限訪問此專案
+    // 管理員擁有所有 Demo 的存取權限
+    if (req.user.role !== "admin") {
+      // 查找 Demo 配置
+      const demoConfig = await DemoConfig.findOne({
+        where: {
+          branchName: branchName,
+          isActive: true,
+        },
+        include: [
+          {
+            model: Project,
+            as: "project",
+            where: {
+              name: projectName,
+              isActive: true,
+            },
+          },
+        ],
+      });
+
+      if (!demoConfig) {
+        return res.status(404).json({
+          error: "Not Found",
+          message: "Demo configuration not found",
+          projectName,
+          branchName,
+        });
+      }
+
+      // 檢查用戶是否有專案權限
+      const hasAccess = await groupPermissionService.checkUserProjectPermission(
+        req.user.id,
+        demoConfig.project.id
+      );
+
+      if (!hasAccess) {
+        return res.status(403).json({
+          error: "Forbidden",
+          message: "You do not have access to this project",
+          projectName,
+          branchName,
+        });
+      }
+    }
 
     // 從查詢參數或路徑中獲取請求的檔案路徑
     // 如果使用通配符路由，req.params[0] 會包含通配符匹配的部分
