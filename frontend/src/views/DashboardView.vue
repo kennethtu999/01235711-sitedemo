@@ -54,6 +54,11 @@
                         </div>
                       </div>
                       
+                      <!-- 專案說明文字 -->
+                      <div v-if="project.description" class="project-description">
+                        {{ project.description }}
+                      </div>
+                      
                         <!-- Demo 配置列表 -->
                         <div v-if="project.demoConfigs && project.demoConfigs.length > 0" style="margin-top: 12px;">
                           <n-space vertical size="small">
@@ -382,6 +387,9 @@ const openDemo = (demoUrl: string) => {
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   line-height: var(--line-height-normal);
+  padding: 8px 0;
+  border-top: 1px solid var(--color-border-light);
+  margin-top: 8px;
 }
 
 /* Demo 配置卡片樣式 */
