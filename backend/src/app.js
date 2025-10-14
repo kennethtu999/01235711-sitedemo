@@ -47,8 +47,25 @@ app.use(
   })
 );
 
-// 靜態文件服務 (前端打包文件)
-app.use(express.static(path.join(__dirname, "../public")));
+// 靜態文件服務 (前端打包文件) - 設定正確的 MIME 類型
+app.use(
+  express.static(path.join(__dirname, "../public"), {
+    setHeaders: (res, path) => {
+      // 確保 JavaScript 文件有正確的 MIME 類型
+      if (path.endsWith(".js")) {
+        res.setHeader("Content-Type", "application/javascript; charset=utf-8");
+      }
+      // 確保 CSS 文件有正確的 MIME 類型
+      if (path.endsWith(".css")) {
+        res.setHeader("Content-Type", "text/css; charset=utf-8");
+      }
+      // 確保 SVG 文件有正確的 MIME 類型
+      if (path.endsWith(".svg")) {
+        res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+      }
+    },
+  })
+);
 
 // Demo 路由 (直接掛在根路徑下)
 app.use("/demo", require("./routes/demo"));
@@ -65,13 +82,26 @@ app.get("/health", (req, res) => {
   });
 });
 
-// 前端路由處理 (SPA 路由) - 使用中间件处理所有未匹配的请求
+// 前端路由處理 (SPA 路由) - 只處理非靜態文件請求
 app.use((req, res, next) => {
   // 如果是 API 請求，返回 404
   if (req.path.startsWith("/api/")) {
     return res.status(404).json({
       error: "Not Found",
       message: `API Route ${req.originalUrl} not found`,
+    });
+  }
+
+  // 如果是靜態文件請求（assets, favicon等），不應該到這裡
+  // 如果到了這裡，說明靜態文件不存在，返回 404
+  if (
+    req.path.startsWith("/assets/") ||
+    req.path === "/favicon.svg" ||
+    req.path === "/favicon.png"
+  ) {
+    return res.status(404).json({
+      error: "Not Found",
+      message: `Static file ${req.originalUrl} not found`,
     });
   }
 

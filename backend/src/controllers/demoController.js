@@ -21,6 +21,48 @@ async function sendFileWithCache(req, res, filePath) {
     return res.status(304).end();
   }
 
+  // 根據檔案副檔名設定正確的 MIME 類型
+  const ext = path.extname(filePath).toLowerCase();
+  switch (ext) {
+    case ".js":
+      res.setHeader("Content-Type", "application/javascript; charset=utf-8");
+      break;
+    case ".css":
+      res.setHeader("Content-Type", "text/css; charset=utf-8");
+      break;
+    case ".html":
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      break;
+    case ".svg":
+      res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+      break;
+    case ".png":
+      res.setHeader("Content-Type", "image/png");
+      break;
+    case ".jpg":
+    case ".jpeg":
+      res.setHeader("Content-Type", "image/jpeg");
+      break;
+    case ".gif":
+      res.setHeader("Content-Type", "image/gif");
+      break;
+    case ".ico":
+      res.setHeader("Content-Type", "image/x-icon");
+      break;
+    case ".json":
+      res.setHeader("Content-Type", "application/json; charset=utf-8");
+      break;
+    case ".xml":
+      res.setHeader("Content-Type", "application/xml; charset=utf-8");
+      break;
+    case ".txt":
+      res.setHeader("Content-Type", "text/plain; charset=utf-8");
+      break;
+    default:
+      // 對於其他檔案類型，讓 Express 自動判斷
+      break;
+  }
+
   return res.sendFile(filePath);
 }
 
