@@ -226,6 +226,15 @@ const getAllProjects = async (req, res) => {
     // 將 projectUsers 重新命名為 authorizedUsers 以保持前端兼容性
     const projectsWithRenamedUsers = projects.map((project) => {
       const projectData = project.toJSON();
+
+      // 處理 demoConfigs，確保 subSiteDisplayName 字段存在
+      if (projectData.demoConfigs) {
+        projectData.demoConfigs = projectData.demoConfigs.map((demoConfig) => ({
+          ...demoConfig,
+          subSiteDisplayName: demoConfig.subSiteDisplayName || "",
+        }));
+      }
+
       projectData.authorizedUsers = projectData.projectUsers || [];
       delete projectData.projectUsers;
       return projectData;
@@ -814,7 +823,10 @@ const getUserAccessibleProjects = async (req, res) => {
 
         return {
           ...project.toJSON(),
-          demoConfigs: demos,
+          demoConfigs: demos.map((demo) => ({
+            ...demo.toJSON(),
+            subSiteDisplayName: demo.subSiteDisplayName || "",
+          })),
         };
       })
     );
