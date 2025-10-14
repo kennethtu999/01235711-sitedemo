@@ -1,0 +1,9 @@
+# 忽略某些文件的格式化
+node_modules/
+dist/
+build/
+.nuxt/
+.next/
+
+# 如果需要忽略特定文件，可以添加：
+# src/views/ProjectManagementView.vue

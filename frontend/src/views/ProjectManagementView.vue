@@ -3,15 +3,11 @@
     <header class="page-header">
       <div class="header-content">
         <div class="header-left">
-          <button @click="goBack" class="btn btn-md btn-secondary">
-            <span>←</span> 返回儀表板
-          </button>
+          <button @click="goBack" class="btn btn-md btn-secondary"> <span>←</span> 返回儀表板 </button>
           <h1>專案管理</h1>
         </div>
         <div class="header-right">
-          <button @click="showCreateProjectModal = true" class="btn btn-md btn-primary">
-            + 新增專案
-          </button>
+          <button @click="showCreateProjectModal = true" class="btn btn-md btn-primary"> + 新增專案 </button>
         </div>
       </div>
     </header>
@@ -42,7 +38,9 @@
             <div class="project-header">
               <div class="project-info">
                 <h3 class="project-name">{{ project.name }}</h3>
-                <p class="project-description">{{ project.description || '無描述' }}</p>
+                <p class="project-description">
+                  {{ project.description || '無描述' }}
+                </p>
                 <div class="project-meta">
                   <span class="github-url">{{ project.githubRepoUrl }}</span>
                   <span v-if="project.githubRepoName" class="github-repo-name">{{ project.githubRepoName }}</span>
@@ -52,18 +50,19 @@
                 </div>
               </div>
               <div class="project-actions">
-                <button @click="triggerProjectHook(project)" class="btn btn-sm btn-outline" title="執行 Hook" :disabled="!project.isActive || isTriggeringHook">
+                <button
+                  @click="triggerProjectHook(project)"
+                  class="btn btn-sm btn-outline"
+                  title="執行 Hook"
+                  :disabled="!project.isActive || isTriggeringHook"
+                >
                   {{ isTriggeringHook ? '執行中...' : '執行 Hook' }}
                 </button>
                 <button @click="manageProjectGroups(project)" class="btn btn-sm btn-outline" title="管理專案群組">
                   管理群組
                 </button>
-                <button @click="editProject(project)" class="btn btn-sm btn-outline" title="編輯專案">
-                  編輯
-                </button>
-                <button @click="deleteProject(project)" class="btn btn-sm btn-danger" title="刪除專案">
-                  刪除
-                </button>
+                <button @click="editProject(project)" class="btn btn-sm btn-outline" title="編輯專案">編輯</button>
+                <button @click="deleteProject(project)" class="btn btn-sm btn-danger" title="刪除專案">刪除</button>
               </div>
             </div>
 
@@ -84,30 +83,45 @@
                 <div v-for="demoConfig in project.demoConfigs" :key="demoConfig.id" class="demo-config-card">
                   <div class="demo-config-info">
                     <div class="demo-config-header">
-                      <h5 class="demo-config-name">{{ demoConfig.displayName || demoConfig.branchName }}</h5>
+                      <h5 class="demo-config-name">
+                        {{ demoConfig.displayName || demoConfig.branchName }}
+                      </h5>
                       <span :class="['deployment-status', demoConfig.deploymentStatus]">
                         {{ getDeploymentStatusText(demoConfig.deploymentStatus) }}
                       </span>
                     </div>
                     <div class="demo-config-details">
-                      <p><strong>分支:</strong> {{ demoConfig.branchName }}</p>
-                      <p><strong>路徑:</strong> {{ demoConfig.demoPath }}</p>
-                      <p v-if="demoConfig.subSiteFolders"><strong>子站點資料夾:</strong> {{ demoConfig.subSiteFolders }}</p>
-                      <p v-if="demoConfig.description"><strong>描述:</strong> {{ demoConfig.description }}</p>
+                      <p>
+                        <strong>分支:</strong>
+                        {{ demoConfig.branchName }}
+                      </p>
+                      <p>
+                        <strong>路徑:</strong>
+                        {{ demoConfig.demoPath }}
+                      </p>
+                      <p v-if="demoConfig.subSiteFolders">
+                        <strong>子站點資料夾:</strong>
+                        {{ demoConfig.subSiteFolders }}
+                      </p>
+                      <p v-if="demoConfig.subSiteDisplayName">
+                        <strong>子站點顯示名稱:</strong>
+                        {{ demoConfig.subSiteDisplayName }}
+                      </p>
+                      <p v-if="demoConfig.description">
+                        <strong>描述:</strong>
+                        {{ demoConfig.description }}
+                      </p>
                       <p v-if="demoConfig.lastDeploymentTime">
-                        <strong>最後部署:</strong> {{ formatDate(demoConfig.lastDeploymentTime) }}
+                        <strong>最後部署:</strong>
+                        {{ formatDate(demoConfig.lastDeploymentTime) }}
                       </p>
                     </div>
                   </div>
 
                   <div class="demo-config-actions">
                     <div class="demo-config-buttons">
-                      <button @click="editDemoConfig(demoConfig)" class="btn btn-sm btn-outline">
-                        編輯
-                      </button>
-                      <button @click="deleteDemoConfig(demoConfig)" class="btn btn-sm btn-danger">
-                        刪除
-                      </button>
+                      <button @click="editDemoConfig(demoConfig)" class="btn btn-sm btn-outline">編輯</button>
+                      <button @click="deleteDemoConfig(demoConfig)" class="btn btn-sm btn-danger">刪除</button>
                     </div>
                   </div>
                 </div>
@@ -119,23 +133,17 @@
     </main>
 
     <!-- 新增/編輯專案模態框 -->
-    <div v-if="showCreateProjectModal || showEditProjectModal" class="modal-overlay" @click="closeProjectModal">
-      <div class="modal-content" @click.stop>
+    <div v-if="showCreateProjectModal || showEditProjectModal" class="modal-overlay">
+      <div class="modal-content">
         <div class="modal-header">
           <h3>{{ showCreateProjectModal ? '新增專案' : '編輯專案' }}</h3>
           <button @click="closeProjectModal" class="btn btn-sm btn-ghost">×</button>
         </div>
-        
+
         <form @submit.prevent="submitProjectForm" class="modal-form">
           <div class="form-group">
             <label for="projectName">專案名稱 *</label>
-            <input
-              id="projectName"
-              v-model="projectFormData.name"
-              type="text"
-              required
-              placeholder="請輸入專案名稱"
-            />
+            <input id="projectName" v-model="projectFormData.name" type="text" required placeholder="請輸入專案名稱" />
           </div>
 
           <div class="form-group">
@@ -173,20 +181,15 @@
 
           <div v-if="showEditProjectModal" class="form-group">
             <label class="checkbox-label">
-              <input
-                v-model="projectFormData.isActive"
-                type="checkbox"
-              />
+              <input v-model="projectFormData.isActive" type="checkbox" />
               啟用專案
             </label>
           </div>
 
           <div class="form-actions">
-            <button type="button" @click="closeProjectModal" class="btn btn-md btn-secondary">
-              取消
-            </button>
+            <button type="button" @click="closeProjectModal" class="btn btn-md btn-secondary">取消</button>
             <button type="submit" :disabled="isSubmitting" class="btn btn-md btn-primary">
-              {{ isSubmitting ? '處理中...' : (showCreateProjectModal ? '新增' : '更新') }}
+              {{ isSubmitting ? '處理中...' : showCreateProjectModal ? '新增' : '更新' }}
             </button>
           </div>
         </form>
@@ -194,13 +197,15 @@
     </div>
 
     <!-- 新增/編輯 Demo 配置模態框 -->
-    <div v-if="showCreateDemoConfigModal || showEditDemoConfigModal" class="modal-overlay" @click="closeDemoConfigModal">
-      <div class="modal-content" @click.stop>
+    <div v-if="showCreateDemoConfigModal || showEditDemoConfigModal" class="modal-overlay">
+      <div class="modal-content">
         <div class="modal-header">
-          <h3>{{ showCreateDemoConfigModal ? '新增 Demo 配置' : '編輯 Demo 配置' }}</h3>
+          <h3>
+            {{ showCreateDemoConfigModal ? '新增 Demo 配置' : '編輯 Demo 配置' }}
+          </h3>
           <button @click="closeDemoConfigModal" class="btn btn-sm btn-ghost">×</button>
         </div>
-        
+
         <form @submit.prevent="submitDemoConfigForm" class="modal-form">
           <div class="form-group">
             <label for="branchName">分支名稱 *</label>
@@ -245,6 +250,17 @@
           </div>
 
           <div class="form-group">
+            <label for="subSiteDisplayName">子站點顯示名稱</label>
+            <input
+              id="subSiteDisplayName"
+              v-model="demoConfigFormData.subSiteDisplayName"
+              type="text"
+              placeholder="例如: 子站點1,子站點2"
+            />
+            <small class="form-help-text">多個資料夾請用逗號分隔</small>
+          </div>
+
+          <div class="form-group">
             <label for="demoDescription">描述</label>
             <textarea
               id="demoDescription"
@@ -256,35 +272,29 @@
 
           <div v-if="showEditDemoConfigModal" class="form-group">
             <label class="checkbox-label">
-              <input
-                v-model="demoConfigFormData.isActive"
-                type="checkbox"
-              />
+              <input v-model="demoConfigFormData.isActive" type="checkbox" />
               啟用配置
             </label>
           </div>
 
           <div class="form-actions">
-            <button type="button" @click="closeDemoConfigModal" class="btn btn-md btn-secondary">
-              取消
-            </button>
+            <button type="button" @click="closeDemoConfigModal" class="btn btn-md btn-secondary">取消</button>
             <button type="submit" :disabled="isSubmitting" class="btn btn-md btn-primary">
-              {{ isSubmitting ? '處理中...' : (showCreateDemoConfigModal ? '新增' : '更新') }}
+              {{ isSubmitting ? '處理中...' : showCreateDemoConfigModal ? '新增' : '更新' }}
             </button>
           </div>
         </form>
       </div>
     </div>
 
-
     <!-- 執行 Hook 模態框 -->
-    <div v-if="showTriggerHookModal" class="modal-overlay" @click="closeTriggerHookModal">
-      <div class="modal-content" @click.stop>
+    <div v-if="showTriggerHookModal" class="modal-overlay">
+      <div class="modal-content">
         <div class="modal-header">
           <h3>執行專案 Hook</h3>
           <button @click="closeTriggerHookModal" class="btn btn-sm btn-ghost">×</button>
         </div>
-        
+
         <form @submit.prevent="submitTriggerHook" class="modal-form">
           <div class="form-group">
             <label for="hookBranch">分支名稱</label>
@@ -299,18 +309,17 @@
 
           <div class="form-group">
             <p class="hook-info">
-              <strong>專案:</strong> {{ currentProject?.name }}<br>
-              <strong>倉庫:</strong> {{ currentProject?.githubRepoName }}
+              <strong>專案:</strong>
+              {{ currentProject?.name }}
+              <br />
+              <strong>倉庫:</strong>
+              {{ currentProject?.githubRepoName }}
             </p>
-            <p class="hook-warning">
-              此操作將觸發專案的所有匹配 Demo 配置進行部署。
-            </p>
+            <p class="hook-warning">此操作將觸發專案的所有匹配 Demo 配置進行部署。</p>
           </div>
 
           <div class="form-actions">
-            <button type="button" @click="closeTriggerHookModal" class="btn btn-md btn-secondary">
-              取消
-            </button>
+            <button type="button" @click="closeTriggerHookModal" class="btn btn-md btn-secondary">取消</button>
             <button type="submit" :disabled="isTriggeringHook" class="btn btn-md btn-primary">
               {{ isTriggeringHook ? '執行中...' : '執行 Hook' }}
             </button>
@@ -320,13 +329,13 @@
     </div>
 
     <!-- 管理專案群組模態框 -->
-    <div v-if="showManageProjectGroupsModal" class="modal-overlay" @click="closeManageProjectGroupsModal">
-      <div class="modal-content large-modal" @click.stop>
+    <div v-if="showManageProjectGroupsModal" class="modal-overlay">
+      <div class="modal-content large-modal">
         <div class="modal-header">
           <h3>管理專案群組 - {{ currentProject?.name }}</h3>
           <button @click="closeManageProjectGroupsModal" class="btn btn-sm btn-ghost">×</button>
         </div>
-        
+
         <div class="modal-body">
           <!-- 現有群組列表 -->
           <div class="current-groups-section">
@@ -341,9 +350,7 @@
                   <span class="group-role">({{ getRoleLabel(group.role) }})</span>
                 </div>
                 <div class="group-actions">
-                  <button @click="removeProjectGroup(group.id)" class="btn btn-sm btn-danger">
-                    移除
-                  </button>
+                  <button @click="removeProjectGroup(group.id)" class="btn btn-sm btn-danger">移除</button>
                 </div>
               </div>
             </div>
@@ -361,12 +368,7 @@
                   <tbody>
                     <tr v-for="group in availableGroups" :key="group.id" class="group-row">
                       <td class="checkbox-cell">
-                        <input
-                          v-model="selectedGroupIds"
-                          :value="group.id"
-                          type="checkbox"
-                          class="group-checkbox"
-                        />
+                        <input v-model="selectedGroupIds" :value="group.id" type="checkbox" class="group-checkbox" />
                       </td>
                       <td class="group-info-cell">
                         <div class="group-info">
@@ -380,18 +382,18 @@
                   </tbody>
                 </table>
               </div>
-              <div v-if="availableGroups.length === 0" class="no-groups">
-                沒有可新增的群組
-              </div>
+              <div v-if="availableGroups.length === 0" class="no-groups">沒有可新增的群組</div>
             </div>
           </div>
         </div>
 
         <div class="form-actions">
-          <button @click="closeManageProjectGroupsModal" class="btn btn-md btn-secondary">
-            取消
-          </button>
-          <button @click="addSelectedGroups" :disabled="isSubmitting || selectedGroupIds.length === 0" class="btn btn-md btn-primary">
+          <button @click="closeManageProjectGroupsModal" class="btn btn-md btn-secondary">取消</button>
+          <button
+            @click="addSelectedGroups"
+            :disabled="isSubmitting || selectedGroupIds.length === 0"
+            class="btn btn-md btn-primary"
+          >
             {{ isSubmitting ? '處理中...' : '添加群組' }}
           </button>
         </div>
@@ -399,26 +401,30 @@
     </div>
 
     <!-- 刪除確認模態框 -->
-    <div v-if="showDeleteModal" class="modal-overlay" @click="closeDeleteModal">
-      <div class="modal-content delete-modal" @click.stop>
+    <div v-if="showDeleteModal" class="modal-overlay">
+      <div class="modal-content delete-modal">
         <div class="modal-header">
           <h3>確認刪除</h3>
           <button @click="closeDeleteModal" class="btn btn-sm btn-ghost">×</button>
         </div>
-        
+
         <div class="modal-body">
-          <p>您確定要刪除{{ deleteType === 'project' ? '專案' : 'Demo 配置'}} <strong>{{ 
-            deleteType === 'project' 
-              ? (itemToDelete as Project)?.name 
-              : (itemToDelete as DemoConfig)?.displayName || (itemToDelete as DemoConfig)?.branchName 
-          }}</strong> 嗎？</p>
+          <p>
+            您確定要刪除{{ deleteType === 'project' ? '專案' : 'Demo 配置' }}
+            <strong>
+              {{
+                deleteType === 'project'
+                  ? (itemToDelete as Project)?.name
+                  : (itemToDelete as DemoConfig)?.displayName || (itemToDelete as DemoConfig)?.branchName
+              }}
+            </strong>
+            嗎？
+          </p>
           <p class="warning-text">此操作無法復原。</p>
         </div>
 
         <div class="form-actions">
-          <button @click="closeDeleteModal" class="btn btn-md btn-secondary">
-            取消
-          </button>
+          <button @click="closeDeleteModal" class="btn btn-md btn-secondary">取消</button>
           <button @click="confirmDelete" :disabled="isDeleting" class="btn btn-md btn-danger">
             {{ isDeleting ? '刪除中...' : '確認刪除' }}
           </button>
@@ -431,16 +437,15 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { 
-  apiService, 
-  type Project, 
-  type DemoConfig, 
+import {
+  apiService,
+  type Project,
+  type DemoConfig,
   type User,
-  type CreateProjectData, 
+  type CreateProjectData,
   type UpdateProjectData,
-  type CreateDemoConfigData,
   type UpdateDemoConfigData,
-  type AddProjectUsersData
+  type AddProjectUsersData,
 } from '@/api'
 import api from '@/api'
 
@@ -468,20 +473,21 @@ const projectFormData = ref<CreateProjectData & UpdateProjectData & { isActive: 
   description: '',
   githubRepoUrl: '',
   githubRepoName: '',
-  isActive: true
+  isActive: true,
 })
 
-const demoConfigFormData = ref<CreateDemoConfigData & UpdateDemoConfigData & { isActive: boolean; subSiteFolders: string }>({
+const demoConfigFormData = ref({
   branchName: '',
   demoPath: '/',
   subSiteFolders: '',
   displayName: '',
+  subSiteDisplayName: '',
   description: '',
-  isActive: true
+  isActive: true,
 })
 
 const hookFormData = ref<{ branch: string }>({
-  branch: ''
+  branch: '',
 })
 
 // 當前操作的項目
@@ -498,19 +504,18 @@ const selectedGroupIds = ref<number[]>([])
 // 獲取角色標籤
 const getRoleLabel = (role: string) => {
   const roleLabels: Record<string, string> = {
-    'viewer': '檢視者',
-    'editor': '編輯者',
-    'admin': '管理員'
+    viewer: '檢視者',
+    editor: '編輯者',
+    admin: '管理員',
   }
   return roleLabels[role] || role
 }
 
-
 // 計算可用群組（排除已經在專案中的群組）
 const availableGroups = computed(() => {
   if (!projectGroups.value) return allGroups.value
-  const currentGroupIds = projectGroups.value.map(g => g.id) || []
-  return allGroups.value.filter(group => !currentGroupIds.includes(group.id))
+  const currentGroupIds = projectGroups.value.map((g) => g.id) || []
+  return allGroups.value.filter((group) => !currentGroupIds.includes(group.id))
 })
 
 // 組件掛載時載入數據
@@ -522,10 +527,7 @@ onMounted(() => {
 const loadData = async () => {
   isLoading.value = true
   try {
-    const [projectsResponse, groupsResponse] = await Promise.all([
-      apiService.getProjects(),
-      api.get('/admin/groups')
-    ])
+    const [projectsResponse, groupsResponse] = await Promise.all([apiService.getProjects(), api.get('/admin/groups')])
     projects.value = projectsResponse.data.data
     allGroups.value = groupsResponse.data.data
   } catch (error) {
@@ -544,9 +546,9 @@ const refreshProjects = () => {
 // 更新當前專案數據
 const updateCurrentProject = () => {
   if (!currentProject.value) return
-  
+
   // 從重新載入的專案列表中找到對應的專案
-  const updatedProject = projects.value.find(p => p.id === currentProject.value!.id)
+  const updatedProject = projects.value.find((p) => p.id === currentProject.value!.id)
   if (updatedProject) {
     currentProject.value = updatedProject
   }
@@ -561,7 +563,7 @@ const goBack = () => {
 const manageProjectGroups = async (project: Project) => {
   currentProject.value = project
   showManageProjectGroupsModal.value = true
-  
+
   try {
     const response = await api.get(`/admin/projects/${project.id}/groups`)
     projectGroups.value = response.data.data
@@ -571,12 +573,11 @@ const manageProjectGroups = async (project: Project) => {
   }
 }
 
-
 const removeProjectGroup = async (groupId: number) => {
   if (!currentProject.value) return
-  
+
   if (!confirm('確定要移除此群組嗎？')) return
-  
+
   isSubmitting.value = true
   try {
     await api.delete(`/admin/projects/${currentProject.value.id}/groups/${groupId}`)
@@ -593,11 +594,11 @@ const removeProjectGroup = async (groupId: number) => {
 
 const addSelectedGroups = async () => {
   if (!currentProject.value || selectedGroupIds.value.length === 0) return
-  
+
   isSubmitting.value = true
   try {
     const data = {
-      groupIds: selectedGroupIds.value
+      groupIds: selectedGroupIds.value,
     }
     await api.post(`/admin/projects/${currentProject.value.id}/groups`, data)
     selectedGroupIds.value = []
@@ -619,7 +620,7 @@ const editProject = (project: Project) => {
     description: project.description || '',
     githubRepoUrl: project.githubRepoUrl,
     githubRepoName: project.githubRepoName || '',
-    isActive: project.isActive
+    isActive: project.isActive,
   }
   currentProject.value = project
   showEditProjectModal.value = true
@@ -647,7 +648,6 @@ const triggerProjectHook = (project: Project) => {
   showTriggerHookModal.value = true
 }
 
-
 // Demo 配置相關操作
 const editDemoConfig = (demoConfig: DemoConfig) => {
   demoConfigFormData.value = {
@@ -655,8 +655,9 @@ const editDemoConfig = (demoConfig: DemoConfig) => {
     demoPath: demoConfig.demoPath,
     subSiteFolders: demoConfig.subSiteFolders || '',
     displayName: demoConfig.displayName || '',
+    subSiteDisplayName: demoConfig.subSiteDisplayName || '',
     description: demoConfig.description || '',
-    isActive: demoConfig.isActive
+    isActive: demoConfig.isActive,
   }
   currentDemoConfig.value = demoConfig
   showEditDemoConfigModal.value = true
@@ -667,7 +668,6 @@ const deleteDemoConfig = (demoConfig: DemoConfig) => {
   deleteType.value = 'demoConfig'
   showDeleteModal.value = true
 }
-
 
 // 關閉模態框
 const closeProjectModal = () => {
@@ -681,7 +681,6 @@ const closeDemoConfigModal = () => {
   showEditDemoConfigModal.value = false
   resetDemoConfigForm()
 }
-
 
 const closeManageProjectGroupsModal = () => {
   showManageProjectGroupsModal.value = false
@@ -708,7 +707,7 @@ const resetProjectForm = () => {
     description: '',
     githubRepoUrl: '',
     githubRepoName: '',
-    isActive: true
+    isActive: true,
   }
   currentProject.value = null
 }
@@ -719,8 +718,9 @@ const resetDemoConfigForm = () => {
     demoPath: '/',
     subSiteFolders: '',
     displayName: '',
+    subSiteDisplayName: '',
     description: '',
-    isActive: true
+    isActive: true,
   }
   currentDemoConfig.value = null
 }
@@ -737,11 +737,11 @@ const submitProjectForm = async () => {
         description: projectFormData.value.description,
         githubRepoUrl: projectFormData.value.githubRepoUrl,
         githubRepoName: projectFormData.value.githubRepoName,
-        isActive: projectFormData.value.isActive
+        isActive: projectFormData.value.isActive,
       }
       await apiService.updateProject(currentProject.value.id, updateData)
     }
-    
+
     closeProjectModal()
     loadData()
   } catch (error: any) {
@@ -760,17 +760,20 @@ const submitDemoConfigForm = async () => {
     if (showCreateDemoConfigModal.value && currentProject.value) {
       await apiService.createDemoConfig(currentProject.value.id, demoConfigFormData.value)
     } else if (showEditDemoConfigModal.value && currentDemoConfig.value) {
+      // 使用解構賦值和明確的屬性
+      const formData = demoConfigFormData.value
       const updateData: UpdateDemoConfigData = {
-        branchName: demoConfigFormData.value.branchName,
-        demoPath: demoConfigFormData.value.demoPath,
-        subSiteFolders: demoConfigFormData.value.subSiteFolders,
-        displayName: demoConfigFormData.value.displayName,
-        description: demoConfigFormData.value.description,
-        isActive: demoConfigFormData.value.isActive
+        branchName: formData.branchName,
+        demoPath: formData.demoPath,
+        subSiteFolders: formData.subSiteFolders,
+        displayName: formData.displayName,
+        subSiteDisplayName: formData.subSiteDisplayName,
+        description: formData.description,
+        isActive: formData.isActive,
       }
       await apiService.updateDemoConfig(currentDemoConfig.value.id, updateData)
     }
-    
+
     closeDemoConfigModal()
     loadData()
   } catch (error: any) {
@@ -782,11 +785,10 @@ const submitDemoConfigForm = async () => {
   }
 }
 
-
 // 提交觸發 Hook
 const submitTriggerHook = async () => {
   if (!currentProject.value) return
-  
+
   isTriggeringHook.value = true
   try {
     const branch = hookFormData.value.branch.trim() || undefined
@@ -805,7 +807,7 @@ const submitTriggerHook = async () => {
 // 確認刪除
 const confirmDelete = async () => {
   if (!itemToDelete.value) return
-  
+
   isDeleting.value = true
   try {
     if (deleteType.value === 'project') {
@@ -813,7 +815,7 @@ const confirmDelete = async () => {
     } else {
       await apiService.deleteDemoConfig((itemToDelete.value as DemoConfig).id)
     }
-    
+
     closeDeleteModal()
     loadData()
   } catch (error: any) {
@@ -831,7 +833,7 @@ const getDeploymentStatusText = (status: string) => {
     pending: '待部署',
     deploying: '部署中',
     success: '部署成功',
-    failed: '部署失敗'
+    failed: '部署失敗',
   }
   return statusMap[status] || status
 }
@@ -976,8 +978,12 @@ const formatDate = (dateString: string) => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .empty-state {
@@ -1206,7 +1212,6 @@ const formatDate = (dateString: string) => {
   gap: 16px;
 }
 
-
 .demo-config-buttons {
   display: flex;
   gap: 6px;
@@ -1254,7 +1259,6 @@ const formatDate = (dateString: string) => {
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
-
 
 .edit-demo-button {
   background: #ffc107;
@@ -1381,7 +1385,7 @@ const formatDate = (dateString: string) => {
   cursor: pointer;
 }
 
-.checkbox-label input[type="checkbox"] {
+.checkbox-label input[type='checkbox'] {
   width: auto;
   margin: 0;
 }
@@ -1423,7 +1427,7 @@ const formatDate = (dateString: string) => {
   background: #f8f9fa;
 }
 
-.user-checkbox-label input[type="checkbox"] {
+.user-checkbox-label input[type='checkbox'] {
   width: auto;
   margin: 0;
 }
@@ -1443,8 +1447,6 @@ const formatDate = (dateString: string) => {
   color: #666;
   font-size: 12px;
 }
-
-
 
 .form-actions {
   display: flex;
@@ -1622,54 +1624,54 @@ const formatDate = (dateString: string) => {
     gap: 16px;
     align-items: flex-start;
   }
-  
+
   .header-left {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
   }
-  
+
   .page-main {
     padding: 16px;
   }
-  
+
   .section-header {
     flex-direction: column;
     gap: 16px;
     align-items: flex-start;
   }
-  
+
   .project-header {
     flex-direction: column;
     gap: 16px;
     align-items: flex-start;
   }
-  
+
   .project-actions {
     width: 100%;
     justify-content: flex-end;
   }
-  
+
   .demo-configs-header {
     flex-direction: column;
     gap: 12px;
     align-items: flex-start;
   }
-  
+
   .demo-config-actions {
     flex-direction: column;
     gap: 12px;
   }
-  
+
   .demo-config-buttons {
     justify-content: flex-start;
   }
-  
+
   .modal-content {
     width: 95%;
     margin: 20px;
   }
-  
+
   .form-actions {
     flex-direction: column;
   }
@@ -1681,43 +1683,43 @@ const formatDate = (dateString: string) => {
     max-width: 1400px;
     padding: 32px 40px;
   }
-  
+
   .header-content {
     max-width: 1400px;
   }
-  
+
   .page-header {
     padding: 20px 40px;
   }
-  
+
   .header-left h1 {
     font-size: 28px;
   }
-  
+
   .section-header h2 {
     font-size: 24px;
   }
-  
+
   .project-name {
     font-size: 20px;
   }
-  
+
   .project-description {
     font-size: 15px;
   }
-  
+
   .demo-configs-header h4 {
     font-size: 18px;
   }
-  
+
   .demo-config-name {
     font-size: 16px;
   }
-  
+
   .modal-content {
     max-width: 600px;
   }
-  
+
   .large-modal {
     max-width: 700px;
   }
@@ -1728,43 +1730,43 @@ const formatDate = (dateString: string) => {
     max-width: 1600px;
     padding: 40px 60px;
   }
-  
+
   .header-content {
     max-width: 1600px;
   }
-  
+
   .page-header {
     padding: 24px 60px;
   }
-  
+
   .header-left h1 {
     font-size: 32px;
   }
-  
+
   .section-header h2 {
     font-size: 28px;
   }
-  
+
   .project-name {
     font-size: 22px;
   }
-  
+
   .project-description {
     font-size: 16px;
   }
-  
+
   .demo-configs-header h4 {
     font-size: 20px;
   }
-  
+
   .demo-config-name {
     font-size: 17px;
   }
-  
+
   .modal-content {
     max-width: 700px;
   }
-  
+
   .large-modal {
     max-width: 800px;
   }
@@ -1775,43 +1777,43 @@ const formatDate = (dateString: string) => {
     max-width: 1800px;
     padding: 48px 80px;
   }
-  
+
   .header-content {
     max-width: 1800px;
   }
-  
+
   .page-header {
     padding: 32px 80px;
   }
-  
+
   .header-left h1 {
     font-size: 36px;
   }
-  
+
   .section-header h2 {
     font-size: 32px;
   }
-  
+
   .project-name {
     font-size: 24px;
   }
-  
+
   .project-description {
     font-size: 17px;
   }
-  
+
   .demo-configs-header h4 {
     font-size: 22px;
   }
-  
+
   .demo-config-name {
     font-size: 18px;
   }
-  
+
   .modal-content {
     max-width: 800px;
   }
-  
+
   .large-modal {
     max-width: 900px;
   }

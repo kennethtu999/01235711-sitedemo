@@ -2,9 +2,7 @@
   <div class="group-management">
     <div class="header">
       <h1>群組管理</h1>
-      <button @click="showCreateGroupModal = true" class="btn btn-primary">
-        新增群組
-      </button>
+      <button @click="showCreateGroupModal = true" class="btn btn-primary"> 新增群組 </button>
     </div>
 
     <!-- 主要內容區域：左右分欄 -->
@@ -13,9 +11,9 @@
       <div class="groups-panel">
         <h2>群組列表</h2>
         <div class="groups-list">
-          <div 
-            v-for="group in groups" 
-            :key="group.id" 
+          <div
+            v-for="group in groups"
+            :key="group.id"
             class="group-card"
             :class="{ active: selectedGroup?.id === group.id }"
             @click="selectGroup(group)"
@@ -27,7 +25,7 @@
                 <span class="badge badge-users">{{ group.users?.length || 0 }} 人</span>
               </div>
             </div>
-            
+
             <div class="group-info">
               <p v-if="group.description" class="group-description">{{ group.description }}</p>
               <div class="group-role">
@@ -38,14 +36,8 @@
             </div>
 
             <div class="group-actions">
-              <button @click.stop="editGroup(group)" class="btn btn-sm btn-secondary">
-                編輯
-              </button>
-              <button 
-                @click.stop="deleteGroup(group.id)" 
-                class="btn btn-sm btn-danger"
-                :disabled="group.isAdminGroup"
-              >
+              <button @click.stop="editGroup(group)" class="btn btn-sm btn-secondary"> 編輯 </button>
+              <button @click.stop="deleteGroup(group.id)" class="btn btn-sm btn-danger" :disabled="group.isAdminGroup">
                 刪除
               </button>
             </div>
@@ -58,12 +50,7 @@
         <div v-if="selectedGroup" class="selected-group">
           <div class="panel-header">
             <h2>{{ selectedGroup.name }} - 使用者管理</h2>
-            <button 
-              @click="showAddUserModal(selectedGroup)" 
-              class="btn btn-primary"
-            >
-              新增使用者
-            </button>
+            <button @click="showAddUserModal(selectedGroup)" class="btn btn-primary"> 新增使用者 </button>
           </div>
 
           <!-- 使用者列表 -->
@@ -72,16 +59,11 @@
               <div class="user-info">
                 <span class="user-name">{{ user.username }}</span>
               </div>
-              <button 
-                @click="removeUserFromGroup(selectedGroup.id, user.id)"
-                class="btn btn-sm btn-outline-danger"
-              >
+              <button @click="removeUserFromGroup(selectedGroup.id, user.id)" class="btn btn-sm btn-outline-danger">
                 移除
               </button>
             </div>
-            <div v-if="!selectedGroup.users || selectedGroup.users.length === 0" class="no-users">
-              暫無使用者
-            </div>
+            <div v-if="!selectedGroup.users || selectedGroup.users.length === 0" class="no-users"> 暫無使用者 </div>
           </div>
         </div>
 
@@ -92,18 +74,13 @@
     </div>
 
     <!-- 新增/編輯群組模態框 -->
-    <div v-if="showCreateGroupModal || showEditGroupModal" class="modal-overlay" @click="closeModals">
-      <div class="modal" @click.stop>
+    <div v-if="showCreateGroupModal || showEditGroupModal" class="modal-overlay">
+      <div class="modal">
         <h3>{{ showCreateGroupModal ? '新增群組' : '編輯群組' }}</h3>
         <form @submit.prevent="saveGroup">
           <div class="form-group">
             <label>群組名稱</label>
-            <input 
-              v-model="groupForm.name" 
-              type="text" 
-              required 
-              :disabled="editingGroup?.isAdminGroup"
-            />
+            <input v-model="groupForm.name" type="text" required :disabled="editingGroup?.isAdminGroup" />
           </div>
           <div class="form-group">
             <label>描述</label>
@@ -116,25 +93,19 @@
               <option value="editor">編輯者</option>
               <option value="admin">管理員</option>
             </select>
-            <small class="form-help">
-              管理員角色擁有所有專案權限，等同於管理員群組
-            </small>
+            <small class="form-help"> 管理員角色擁有所有專案權限，等同於管理員群組 </small>
           </div>
           <div class="form-actions">
-            <button type="button" @click="closeModals" class="btn btn-secondary">
-              取消
-            </button>
-            <button type="submit" class="btn btn-primary">
-              儲存
-            </button>
+            <button type="button" @click="closeModals" class="btn btn-secondary"> 取消 </button>
+            <button type="submit" class="btn btn-primary"> 儲存 </button>
           </div>
         </form>
       </div>
     </div>
 
     <!-- 新增使用者模態框 -->
-    <div v-if="showAddUserModalFlag" class="modal-overlay" @click="closeModals">
-      <div class="modal large-modal" @click.stop>
+    <div v-if="showAddUserModalFlag" class="modal-overlay">
+      <div class="modal large-modal">
         <h3>新增使用者到群組</h3>
         <form @submit.prevent="addUsersToGroup">
           <div class="form-group">
@@ -144,12 +115,7 @@
                 <tbody>
                   <tr v-for="user in sortedAvailableUsers" :key="user.id" class="user-row">
                     <td class="checkbox-cell">
-                      <input 
-                        type="checkbox" 
-                        :value="user.id" 
-                        v-model="selectedUserIds"
-                        class="user-checkbox"
-                      />
+                      <input type="checkbox" :value="user.id" v-model="selectedUserIds" class="user-checkbox" />
                     </td>
                     <td class="username-cell">
                       <span class="username">{{ user.username }} ({{ user.email }})</span>
@@ -157,15 +123,11 @@
                   </tr>
                 </tbody>
               </table>
-              <div v-if="sortedAvailableUsers.length === 0" class="no-users">
-                沒有可新增的使用者
-              </div>
+              <div v-if="sortedAvailableUsers.length === 0" class="no-users"> 沒有可新增的使用者 </div>
             </div>
           </div>
           <div class="form-actions">
-            <button type="button" @click="closeModals" class="btn btn-secondary">
-              取消
-            </button>
+            <button type="button" @click="closeModals" class="btn btn-secondary"> 取消 </button>
             <button type="submit" :disabled="selectedUserIds.length === 0" class="btn btn-primary">
               {{ selectedUserIds.length > 0 ? `新增 ${selectedUserIds.length} 個使用者` : '新增' }}
             </button>
@@ -173,7 +135,6 @@
         </form>
       </div>
     </div>
-
   </div>
 </template>
 
@@ -217,11 +178,11 @@ const currentGroup = ref<Group | null>(null)
 const groupForm = ref<GroupForm>({
   name: '',
   description: '',
-  role: 'viewer'
+  role: 'viewer',
 })
 
 const userForm = ref({
-  userId: ''
+  userId: '',
 })
 
 // 多選使用者
@@ -230,15 +191,14 @@ const selectedUserIds = ref<number[]>([])
 // 計算屬性
 const availableUsers = computed(() => {
   if (!currentGroup.value) return users.value
-  const groupUserIds = currentGroup.value.users?.map(u => u.id) || []
-  return users.value.filter(user => !groupUserIds.includes(user.id))
+  const groupUserIds = currentGroup.value.users?.map((u) => u.id) || []
+  return users.value.filter((user) => !groupUserIds.includes(user.id))
 })
 
 // 按字母順序排列的可用使用者列表
 const sortedAvailableUsers = computed(() => {
   return [...availableUsers.value].sort((a, b) => a.username.localeCompare(b.username))
 })
-
 
 // 方法
 const loadGroups = async () => {
@@ -258,7 +218,6 @@ const loadUsers = async () => {
     console.error('載入使用者失敗:', error)
   }
 }
-
 
 const saveGroup = async () => {
   try {
@@ -281,14 +240,14 @@ const editGroup = (group: Group) => {
   groupForm.value = {
     name: group.name,
     description: group.description || '',
-    role: group.role || 'viewer'
+    role: group.role || 'viewer',
   }
   showEditGroupModal.value = true
 }
 
 const deleteGroup = async (groupId: number) => {
   if (!confirm('確定要刪除這個群組嗎？')) return
-  
+
   try {
     await api.delete(`/groups/${groupId}`)
     await loadGroups()
@@ -305,7 +264,7 @@ const showAddUserModal = (group: Group) => {
 
 const addUsersToGroup = async () => {
   if (!currentGroup.value || selectedUserIds.value.length === 0) return
-  
+
   try {
     // 批量新增使用者到群組
     for (const userId of selectedUserIds.value) {
@@ -320,13 +279,13 @@ const addUsersToGroup = async () => {
 
 const removeUserFromGroup = async (groupId: number, userId: number) => {
   if (!confirm('確定要從群組中移除這個使用者嗎？')) return
-  
+
   try {
     await api.delete(`/groups/${groupId}/users/${userId}`)
     await loadGroups()
     // 如果移除的是當前選中群組的使用者，更新選中群組
     if (selectedGroup.value?.id === groupId) {
-      selectedGroup.value = groups.value.find(g => g.id === groupId) || null
+      selectedGroup.value = groups.value.find((g) => g.id === groupId) || null
     }
   } catch (error) {
     console.error('從群組移除使用者失敗:', error)
@@ -341,14 +300,12 @@ const selectGroup = (group: Group) => {
 // 獲取角色標籤
 const getRoleLabel = (role: string) => {
   const roleLabels: Record<string, string> = {
-    'viewer': '檢視者',
-    'editor': '編輯者',
-    'admin': '管理員'
+    viewer: '檢視者',
+    editor: '編輯者',
+    admin: '管理員',
   }
   return roleLabels[role] || role
 }
-
-
 
 const closeModals = () => {
   showCreateGroupModal.value = false
@@ -442,14 +399,14 @@ onMounted(() => {
 }
 
 .group-card:hover {
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   transform: translateY(-1px);
 }
 
 .group-card.active {
   border-color: #007bff;
   background: #f8f9ff;
-  box-shadow: 0 4px 8px rgba(0,123,255,0.2);
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
 }
 
 .group-header {
@@ -505,13 +462,15 @@ onMounted(() => {
   color: #333;
 }
 
-.users-list, .projects-list {
+.users-list,
+.projects-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.user-item, .project-item {
+.user-item,
+.project-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -520,7 +479,8 @@ onMounted(() => {
   border-radius: 4px;
 }
 
-.user-role, .project-role {
+.user-role,
+.project-role {
   font-size: 12px;
   color: #666;
   text-transform: capitalize;
@@ -656,7 +616,6 @@ onMounted(() => {
   color: #666;
 }
 
-
 .group-description {
   font-size: 14px;
   color: #666;
@@ -718,7 +677,6 @@ onMounted(() => {
   color: #333;
   margin: 0;
 }
-
 
 .form-help {
   display: block;

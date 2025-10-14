@@ -46,6 +46,11 @@ const DemoConfig = sequelize.define(
       allowNull: true,
       // 可選的顯示名稱，如果沒有則使用 branchName
     },
+    subSiteDisplayName: {
+      type: DataTypes.STRING(200),
+      allowNull: true,
+      // 可選的顯示名稱，如果沒有則使用 subSiteFolders name
+    },
     description: {
       type: DataTypes.TEXT,
       allowNull: true,

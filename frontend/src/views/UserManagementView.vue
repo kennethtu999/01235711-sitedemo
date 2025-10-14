@@ -3,15 +3,11 @@
     <header class="page-header">
       <div class="header-content">
         <div class="header-left">
-          <button @click="goBack" class="btn btn-md btn-secondary">
-            <span>←</span> 返回儀表板
-          </button>
+          <button @click="goBack" class="btn btn-md btn-secondary"> <span>←</span> 返回儀表板 </button>
           <h1>使用者管理</h1>
         </div>
         <div class="header-right">
-          <button @click="showCreateModal = true" class="btn btn-md btn-primary">
-            + 新增使用者
-          </button>
+          <button @click="showCreateModal = true" class="btn btn-md btn-primary"> + 新增使用者 </button>
         </div>
       </div>
     </header>
@@ -71,12 +67,10 @@
                 </td>
                 <td class="actions-cell">
                   <div class="action-buttons">
-                    <button @click="editUser(user)" class="btn btn-sm btn-outline" title="編輯使用者">
-                      編輯
-                    </button>
-                    <button 
-                      @click="deleteUser(user)" 
-                      class="btn btn-sm btn-danger" 
+                    <button @click="editUser(user)" class="btn btn-sm btn-outline" title="編輯使用者"> 編輯 </button>
+                    <button
+                      @click="deleteUser(user)"
+                      class="btn btn-sm btn-danger"
                       title="刪除使用者"
                       :disabled="user.role === 'admin' && adminCount <= 1"
                     >
@@ -92,13 +86,13 @@
     </main>
 
     <!-- 新增/編輯使用者模態框 -->
-    <div v-if="showCreateModal || showEditModal" class="modal-overlay" @click="closeModal">
-      <div class="modal-content" @click.stop>
+    <div v-if="showCreateModal || showEditModal" class="modal-overlay">
+      <div class="modal-content">
         <div class="modal-header">
           <h3>{{ showCreateModal ? '新增使用者' : '編輯使用者' }}</h3>
           <button @click="closeModal" class="btn btn-sm btn-ghost">×</button>
         </div>
-        
+
         <form @submit.prevent="submitForm" class="modal-form">
           <div class="form-group">
             <label for="username">使用者名稱 *</label>
@@ -114,12 +108,7 @@
 
           <div class="form-group">
             <label for="email">電子郵件</label>
-            <input
-              id="email"
-              v-model="formData.email"
-              type="email"
-              placeholder="請輸入電子郵件"
-            />
+            <input id="email" v-model="formData.email" type="email" placeholder="請輸入電子郵件" />
           </div>
 
           <div class="form-group">
@@ -143,20 +132,15 @@
 
           <div v-if="showEditModal" class="form-group">
             <label class="checkbox-label">
-              <input
-                v-model="formData.isActive"
-                type="checkbox"
-              />
+              <input v-model="formData.isActive" type="checkbox" />
               啟用帳號
             </label>
           </div>
 
           <div class="form-actions">
-            <button type="button" @click="closeModal" class="btn btn-md btn-secondary">
-              取消
-            </button>
+            <button type="button" @click="closeModal" class="btn btn-md btn-secondary"> 取消 </button>
             <button type="submit" :disabled="isSubmitting" class="btn btn-md btn-primary">
-              {{ isSubmitting ? '處理中...' : (showCreateModal ? '新增' : '更新') }}
+              {{ isSubmitting ? '處理中...' : showCreateModal ? '新增' : '更新' }}
             </button>
           </div>
         </form>
@@ -164,22 +148,22 @@
     </div>
 
     <!-- 刪除確認模態框 -->
-    <div v-if="showDeleteModal" class="modal-overlay" @click="closeDeleteModal">
-      <div class="modal-content delete-modal" @click.stop>
+    <div v-if="showDeleteModal" class="modal-overlay">
+      <div class="modal-content delete-modal">
         <div class="modal-header">
           <h3>確認刪除</h3>
           <button @click="closeDeleteModal" class="btn btn-sm btn-ghost">×</button>
         </div>
-        
+
         <div class="modal-body">
-          <p>您確定要刪除使用者 <strong>{{ userToDelete?.username }}</strong> 嗎？</p>
+          <p
+            >您確定要刪除使用者 <strong>{{ userToDelete?.username }}</strong> 嗎？</p
+          >
           <p class="warning-text">此操作無法復原。</p>
         </div>
 
         <div class="form-actions">
-          <button @click="closeDeleteModal" class="btn btn-md btn-secondary">
-            取消
-          </button>
+          <button @click="closeDeleteModal" class="btn btn-md btn-secondary"> 取消 </button>
           <button @click="confirmDelete" :disabled="isDeleting" class="btn btn-md btn-danger">
             {{ isDeleting ? '刪除中...' : '確認刪除' }}
           </button>
@@ -213,14 +197,14 @@ const formData = ref<CreateUserData & UpdateUserData & { isActive: boolean }>({
   email: '',
   password: '',
   role: 'user',
-  isActive: true
+  isActive: true,
 })
 
 // 要刪除的使用者
 const userToDelete = ref<User | null>(null)
 
 // 計算屬性
-const adminCount = computed(() => users.value.filter(user => user.role === 'admin').length)
+const adminCount = computed(() => users.value.filter((user) => user.role === 'admin').length)
 
 // 組件掛載時載入使用者列表
 onMounted(() => {
@@ -258,7 +242,7 @@ const editUser = (user: User) => {
     email: user.email || '',
     password: '',
     role: user.role as 'admin' | 'user',
-    isActive: user.isActive
+    isActive: user.isActive,
   }
   userToDelete.value = user
   showEditModal.value = true
@@ -290,7 +274,7 @@ const resetForm = () => {
     email: '',
     password: '',
     role: 'user',
-    isActive: true
+    isActive: true,
   }
 }
 
@@ -307,17 +291,17 @@ const submitForm = async () => {
         username: formData.value.username,
         email: formData.value.email,
         role: formData.value.role,
-        isActive: formData.value.isActive
+        isActive: formData.value.isActive,
       }
-      
+
       // 只有當密碼不為空時才更新密碼
       if (formData.value.password) {
         updateData.password = formData.value.password
       }
-      
+
       await apiService.updateUser(userToDelete.value.id, updateData)
     }
-    
+
     closeModal()
     loadUsers()
   } catch (error: any) {
@@ -332,7 +316,7 @@ const submitForm = async () => {
 // 確認刪除
 const confirmDelete = async () => {
   if (!userToDelete.value) return
-  
+
   isDeleting.value = true
   try {
     await apiService.deleteUser(userToDelete.value.id)
@@ -487,8 +471,12 @@ const formatDate = (dateString: string) => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .empty-state {
@@ -712,7 +700,7 @@ const formatDate = (dateString: string) => {
   cursor: pointer;
 }
 
-.checkbox-label input[type="checkbox"] {
+.checkbox-label input[type='checkbox'] {
   width: auto;
   margin: 0;
 }
@@ -788,42 +776,42 @@ const formatDate = (dateString: string) => {
     gap: 16px;
     align-items: flex-start;
   }
-  
+
   .header-left {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
   }
-  
+
   .page-main {
     padding: 16px;
   }
-  
+
   .section-header {
     flex-direction: column;
     gap: 16px;
     align-items: flex-start;
   }
-  
+
   .users-table-container {
     font-size: 12px;
   }
-  
+
   .users-table th,
   .users-table td {
     padding: 8px 12px;
   }
-  
+
   .action-buttons {
     flex-direction: column;
     gap: 4px;
   }
-  
+
   .modal-content {
     width: 95%;
     margin: 20px;
   }
-  
+
   .form-actions {
     flex-direction: column;
   }
@@ -835,29 +823,29 @@ const formatDate = (dateString: string) => {
     max-width: 1400px;
     padding: 32px 40px;
   }
-  
+
   .header-content {
     max-width: 1400px;
   }
-  
+
   .page-header {
     padding: 20px 40px;
   }
-  
+
   .header-left h1 {
     font-size: 28px;
   }
-  
+
   .section-header h2 {
     font-size: 24px;
   }
-  
+
   .users-table th,
   .users-table td {
     padding: 16px 20px;
     font-size: 15px;
   }
-  
+
   .modal-content {
     max-width: 600px;
   }
@@ -868,29 +856,29 @@ const formatDate = (dateString: string) => {
     max-width: 1600px;
     padding: 40px 60px;
   }
-  
+
   .header-content {
     max-width: 1600px;
   }
-  
+
   .page-header {
     padding: 24px 60px;
   }
-  
+
   .header-left h1 {
     font-size: 32px;
   }
-  
+
   .section-header h2 {
     font-size: 28px;
   }
-  
+
   .users-table th,
   .users-table td {
     padding: 18px 24px;
     font-size: 16px;
   }
-  
+
   .modal-content {
     max-width: 700px;
   }
@@ -901,29 +889,29 @@ const formatDate = (dateString: string) => {
     max-width: 1800px;
     padding: 48px 80px;
   }
-  
+
   .header-content {
     max-width: 1800px;
   }
-  
+
   .page-header {
     padding: 32px 80px;
   }
-  
+
   .header-left h1 {
     font-size: 36px;
   }
-  
+
   .section-header h2 {
     font-size: 32px;
   }
-  
+
   .users-table th,
   .users-table td {
     padding: 20px 28px;
     font-size: 17px;
   }
-  
+
   .modal-content {
     max-width: 800px;
   }

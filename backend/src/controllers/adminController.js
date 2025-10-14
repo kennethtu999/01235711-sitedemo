@@ -427,6 +427,7 @@ const createDemoConfig = async (req, res) => {
       demoPath = "/",
       subSiteFolders,
       displayName,
+      subSiteDisplayName,
       description,
     } = req.body;
 
@@ -468,6 +469,7 @@ const createDemoConfig = async (req, res) => {
       demoPath,
       subSiteFolders,
       displayName,
+      subSiteDisplayName,
       description,
     });
 
@@ -495,6 +497,7 @@ const updateDemoConfig = async (req, res) => {
       demoPath,
       subSiteFolders,
       displayName,
+      subSiteDisplayName,
       description,
       isActive,
     } = req.body;
@@ -533,6 +536,8 @@ const updateDemoConfig = async (req, res) => {
     if (subSiteFolders !== undefined)
       updateData.subSiteFolders = subSiteFolders;
     if (displayName !== undefined) updateData.displayName = displayName;
+    if (subSiteDisplayName !== undefined)
+      updateData.subSiteDisplayName = subSiteDisplayName;
     if (description !== undefined) updateData.description = description;
     if (isActive !== undefined) updateData.isActive = isActive;
 
@@ -825,12 +830,17 @@ const getUserAccessibleProjects = async (req, res) => {
           // 處理 subSiteFolders
           let demoUrls = [];
           if (demoConfig.subSiteFolders && demoConfig.subSiteFolders.trim()) {
+            const folderNames = demoConfig.subSiteDisplayName
+              ? demoConfig.subSiteDisplayName
+                  .split(",")
+                  .map((name) => name.trim())
+              : [];
             const folders = demoConfig.subSiteFolders
               .split(",")
               .map((folder) => folder.trim())
               .filter((folder) => folder);
-            demoUrls = folders.map((folder) => ({
-              name: folder,
+            demoUrls = folders.map((folder, index) => ({
+              name: folderNames[index] || folder,
               url: `${baseUrl}/${folder}`,
             }));
           }

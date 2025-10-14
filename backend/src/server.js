@@ -82,6 +82,7 @@ async function createDefaultProject() {
         displayName: "webhooktest",
         description: "webhooktest",
         subSiteFolders: "rc1,rc2",
+        subSiteDisplayName: "RC1,RC2",
         isActive: 1,
       });
       logger.info("✅ Default demo config created:", {
