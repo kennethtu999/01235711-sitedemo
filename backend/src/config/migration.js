@@ -107,6 +107,21 @@ async function needsMigration() {
       return true;
     }
 
+    // Check if demo_configs table has the subSiteDisplayName column
+    if (existingTables.includes("demo_configs")) {
+      const demoConfigsSchema = await sequelize.query(
+        "PRAGMA table_info(demo_configs);"
+      );
+      const columns = demoConfigsSchema[0].map((row) => row.name);
+
+      if (!columns.includes("sub_site_display_name")) {
+        logger.info(
+          "📋 'subSiteDisplayName' column is missing in 'demo_configs' table"
+        );
+        return true;
+      }
+    }
+
     logger.info("✅ All required tables exist");
     return false;
   } catch (error) {
