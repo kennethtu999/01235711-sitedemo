@@ -13,7 +13,7 @@
           <h2>Hook Log 列表</h2>
           <div class="action-buttons">
             <button @click="refreshData" :disabled="loading" class="btn btn-md btn-secondary">
-              <span v-if="isLoading">載入中...</span>
+              <span v-if="loading">載入中...</span>
               <template v-else>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
