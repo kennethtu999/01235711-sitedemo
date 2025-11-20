@@ -84,7 +84,7 @@
                   </span>
                 </div>
               </div>
-              <div class="project-actions">
+              <div class="action-buttons">
                 <button
                   @click="triggerProjectHook(project)"
                   class="btn btn-sm btn-outline"
@@ -168,11 +168,9 @@
                     </div>
                   </div>
 
-                  <div class="demo-config-actions">
-                    <div class="demo-config-buttons">
-                      <button @click="editDemoConfig(demoConfig)" class="btn btn-sm btn-outline">編輯</button>
-                      <button @click="deleteDemoConfig(demoConfig)" class="btn btn-sm btn-danger">刪除</button>
-                    </div>
+                  <div class="action-buttons">
+                    <button @click="editDemoConfig(demoConfig)" class="btn btn-sm btn-outline">編輯</button>
+                    <button @click="deleteDemoConfig(demoConfig)" class="btn btn-sm btn-danger">刪除</button>
                   </div>
                 </div>
               </div>
@@ -999,11 +997,6 @@ const formatDate = (dateString: string) => {
   color: #721c24;
 }
 
-.project-actions {
-  display: flex;
-  gap: 8px;
-}
-
 .edit-button,
 .delete-button {
   padding: 6px 12px;
@@ -1030,10 +1023,6 @@ const formatDate = (dateString: string) => {
 
 .delete-button:hover {
   background: #c82333;
-}
-
-.demo-configs-section {
-  padding: 20px;
 }
 
 .demo-configs-header {
@@ -1134,19 +1123,6 @@ const formatDate = (dateString: string) => {
   margin: 0 0 4px 0;
   font-size: 12px;
   color: #666;
-}
-
-.demo-config-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-}
-
-.demo-config-buttons {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
 }
 
 .trigger-hook-button,

@@ -153,9 +153,8 @@ a,
   border-bottom: 1px solid #e9ecef;
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
+  align-items: baseline;
+  column-gap: 12px;
 }
 
 .section-header h2 {
@@ -205,6 +204,39 @@ a,
   padding: 24px;
 }
 
+@media screen and (max-width: 1180px) {
+  .projects-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media screen and (max-width: 768px) {
+  /* Dashboard 響應式 */
+  .projects-grid {
+    grid-template-columns: 1fr;
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .project-card {
+    padding: 16px;
+  }
+
+  .project-header {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .project-title {
+    font-size: 16px;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 8px 12px;
+  }
+}
+
 .project-card {
   background: white;
   border: 1px solid #e9ecef;
@@ -219,8 +251,10 @@ a,
 }
 
 .project-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto;
   justify-content: space-between;
+  column-gap: 12px;
   align-items: flex-start;
   margin-bottom: 12px;
   padding-bottom: 12px;
@@ -231,6 +265,7 @@ a,
   margin: 0;
   font-size: 18px;
   font-weight: 600;
+  word-break: break-word;
 }
 
 .status-badge {
@@ -239,6 +274,7 @@ a,
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .status-badge.active {
@@ -316,11 +352,13 @@ a,
 .table-container {
   overflow-x: auto;
   margin-bottom: 20px;
+  max-height: calc(100vh - 240px);
 }
 
 .data-table {
   --n-font-size: 14px;
   width: 100%;
+  min-width: 800px;
   border-collapse: collapse;
   font-size: var(--n-font-size);
 }
@@ -341,6 +379,10 @@ a,
 
 .data-table td {
   padding: 12px 16px;
+}
+
+.data-table .project-title {
+  font-size: 14px;
 }
 
 /* ========================================
@@ -424,6 +466,7 @@ a,
   border-radius: 4px;
   font-size: 12px;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .role-badge.admin {
@@ -581,48 +624,5 @@ a,
 
   .form-actions {
     flex-direction: column;
-  }
-
-  /* Dashboard 響應式 */
-  .projects-grid {
-    grid-template-columns: 1fr;
-    padding: 16px;
-    gap: 16px;
-  }
-
-  .project-card {
-    padding: 16px;
-  }
-
-  .project-header {
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .project-title {
-    font-size: 16px;
-  }
-
-  .demo-buttons {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .demo-buttons .btn {
-    width: 100%;
-  }
-
-  .view-mode-toggle {
-    margin-top: 12px;
-  }
-
-  .action-buttons {
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .data-table th,
-  .data-table td {
-    padding: 8px 12px;
   }
 }

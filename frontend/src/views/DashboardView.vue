@@ -80,9 +80,7 @@
                 <div v-if="project.description" class="project-description">
                   {{ project.description }}
                 </div>
-                <div class="project-last-sync">
-                  最近更新時間: {{ project.lastSyncAt ? formatDateTime(project.lastSyncAt) : '-' }}
-                </div>
+                <div class="project-last-sync"> 最後部署時間：{{ getLatestDeploymentTime(project) }} </div>
               </div>
               <span :class="['status-badge', project.isActive ? 'active' : 'inactive']">
                 {{ project.isActive ? '啟用' : '停用' }}
@@ -127,17 +125,17 @@
               <tr>
                 <th>專案名稱</th>
                 <th>說明</th>
-                <th>狀態</th>
-                <th>最近更新時間</th>
+                <th width="80">狀態</th>
+                <th>最後部署時間</th>
                 <th>分支</th>
-                <th>檢視</th>
+                <th width="400">檢視</th>
               </tr>
             </thead>
             <tbody>
               <template v-for="project in userProjects" :key="project.id">
                 <tr v-if="!project.demoConfigs || project.demoConfigs.length === 0">
                   <td>
-                    <span>{{ project.name }}</span>
+                    <span class="project-title">{{ project.name }}</span>
                   </td>
                   <td>
                     {{ project.description || '-' }}
@@ -148,7 +146,7 @@
                     </span>
                   </td>
                   <td>
-                    {{ project.lastSyncAt ? formatDateTime(project.lastSyncAt) : '-' }}
+                    {{ getLatestDeploymentTime(project) }}
                   </td>
                   <td>-</td>
                   <td>-</td>
@@ -156,7 +154,7 @@
 
                 <tr v-for="(demo, index) in project.demoConfigs" :key="`${project.id}-${demo.id}`">
                   <td v-if="index === 0" :rowspan="project.demoConfigs?.length || 1">
-                    <span>{{ project.name }}</span>
+                    <span class="project-title">{{ project.name }}</span>
                   </td>
                   <td v-if="index === 0" :rowspan="project.demoConfigs?.length || 1">
                     {{ project.description || '-' }}
@@ -167,7 +165,7 @@
                     </span>
                   </td>
                   <td v-if="index === 0" :rowspan="project.demoConfigs?.length || 1">
-                    {{ project.lastSyncAt ? formatDateTime(project.lastSyncAt) : '-' }}
+                    {{ getLatestDeploymentTime(project) }}
                   </td>
                   <td>{{ demo.branchName || (demo as any).dataValues?.branchName || '未定義' }}</td>
                   <td>
@@ -290,5 +288,17 @@ const openDemo = (demoUrl: string) => {
 // 格式化日期時間
 const formatDateTime = (dateTime: string) => {
   return new Date(dateTime).toLocaleString('zh-TW')
+}
+
+// 取得專案最新部署時間
+const getLatestDeploymentTime = (project: Project) => {
+  if (!project.demoConfigs || project.demoConfigs.length === 0) return '-'
+  const times = project.demoConfigs
+    .map((d) => d.lastDeploymentTime)
+    .filter(Boolean)
+    .map((t) => new Date(t).getTime())
+  if (!times.length) return '-'
+  const maxTime = Math.max(...times)
+  return formatDateTime(new Date(maxTime).toISOString())
 }
 </script>

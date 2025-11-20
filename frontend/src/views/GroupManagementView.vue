@@ -355,7 +355,6 @@ onMounted(() => {
 <style scoped>
 .main-content {
   display: flex;
-  gap: 20px;
   height: calc(100vh - 70.4px);
   padding-left: 0;
 }
@@ -363,24 +362,36 @@ onMounted(() => {
 .groups-panel {
   flex: 0 0 300px;
   border-right: 1px solid #e0e0e0;
+  overflow-y: auto;
+  padding: 2px 20px 20px 20px;
+}
+
+@media screen and (max-width: 768px) {
+  .main-content {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .groups-panel {
+    max-height: 400px;
+    border-color: transparent;
+  }
 }
 
 .groups-panel h2 {
   margin-bottom: 20px;
-  margin-left: 20px;
 }
 
 .groups-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-height: calc(100vh - 200px);
-  overflow-y: auto;
-  padding: 2px 20px 20px 20px;
 }
 
 .users-panel {
   flex: 1;
+  padding-left: 20px;
+  padding-right: 20px;
 }
 
 .users-panel h2 {
@@ -406,6 +417,7 @@ onMounted(() => {
 
 .group-card {
   padding: 12px;
+  flex-shrink: 0;
 }
 
 .group-card.active {
@@ -417,7 +429,6 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
 }
 
 .group-actions {
@@ -432,7 +443,6 @@ onMounted(() => {
 .group-badges {
   display: flex;
   gap: 10px;
-  margin-top: 10px;
 }
 
 .badge {
