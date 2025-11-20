@@ -2,9 +2,7 @@
   <div class="import-export-view">
     <div class="header">
       <h1>資料匯入/匯出管理</h1>
-      <p class="description">
-        管理系統資料的匯入與匯出功能，支援 Project 和 Demo 資料的備份與還原
-      </p>
+      <p class="description"> 管理系統資料的匯入與匯出功能，支援 Project 和 Demo 資料的備份與還原 </p>
     </div>
 
     <div class="content">
@@ -16,43 +14,26 @@
             <h3>匯出選項</h3>
             <div class="checkbox-group">
               <label class="checkbox-label">
-                <input
-                  v-model="exportOptions.includeUsers"
-                  type="checkbox"
-                />
+                <input v-model="exportOptions.includeUsers" type="checkbox" />
                 包含用戶資料
               </label>
               <label class="checkbox-label">
-                <input
-                  v-model="exportOptions.includeGroups"
-                  type="checkbox"
-                />
+                <input v-model="exportOptions.includeGroups" type="checkbox" />
                 包含群組資料
               </label>
               <label class="checkbox-label">
-                <input
-                  v-model="exportOptions.includePermissions"
-                  type="checkbox"
-                />
+                <input v-model="exportOptions.includePermissions" type="checkbox" />
                 包含權限關係
               </label>
             </div>
           </div>
 
           <div class="action-buttons">
-            <button
-              @click="exportAllData"
-              :disabled="isExporting"
-              class="btn btn-primary"
-            >
+            <button @click="exportAllData" :disabled="isExporting" class="btn btn-primary">
               <i class="icon">📤</i>
-              {{ isExporting ? "匯出中..." : "匯出所有資料" }}
+              {{ isExporting ? '匯出中...' : '匯出所有資料' }}
             </button>
-            <button
-              @click="downloadExportFile"
-              :disabled="isExporting"
-              class="btn btn-secondary"
-            >
+            <button @click="downloadExportFile" :disabled="isExporting" class="btn btn-secondary">
               <i class="icon">💾</i>
               下載匯出檔案
             </button>
@@ -65,19 +46,11 @@
           <div class="project-selector">
             <select v-model="selectedProjectId" class="form-select">
               <option value="">選擇專案</option>
-              <option
-                v-for="project in projects"
-                :key="project.id"
-                :value="project.id"
-              >
+              <option v-for="project in projects" :key="project.id" :value="project.id">
                 {{ project.name }}
               </option>
             </select>
-            <button
-              @click="exportProjectData"
-              :disabled="!selectedProjectId || isExporting"
-              class="btn btn-outline"
-            >
+            <button @click="exportProjectData" :disabled="!selectedProjectId || isExporting" class="btn btn-outline">
               匯出專案資料
             </button>
           </div>
@@ -92,24 +65,15 @@
             <h3>匯入選項</h3>
             <div class="checkbox-group">
               <label class="checkbox-label">
-                <input
-                  v-model="importOptions.overwriteExisting"
-                  type="checkbox"
-                />
+                <input v-model="importOptions.overwriteExisting" type="checkbox" />
                 覆蓋現有資料
               </label>
               <label class="checkbox-label">
-                <input
-                  v-model="importOptions.skipDuplicates"
-                  type="checkbox"
-                />
+                <input v-model="importOptions.skipDuplicates" type="checkbox" />
                 跳過重複資料
               </label>
               <label class="checkbox-label">
-                <input
-                  v-model="importOptions.dryRun"
-                  type="checkbox"
-                />
+                <input v-model="importOptions.dryRun" type="checkbox" />
                 試運行（不實際執行）
               </label>
             </div>
@@ -117,13 +81,7 @@
 
           <div class="file-upload">
             <div class="upload-area" @click="triggerFileInput" @dragover.prevent @drop.prevent="handleFileDrop">
-              <input
-                ref="fileInput"
-                type="file"
-                accept=".json"
-                @change="handleFileSelect"
-                style="display: none"
-              />
+              <input ref="fileInput" type="file" accept=".json" @change="handleFileSelect" style="display: none" />
               <div class="upload-content">
                 <i class="icon">📁</i>
                 <p>點擊選擇檔案或拖拽檔案到此處</p>
@@ -138,21 +96,13 @@
           </div>
 
           <div class="action-buttons">
-            <button
-              @click="validateImportData"
-              :disabled="!importData || isImporting"
-              class="btn btn-outline"
-            >
+            <button @click="validateImportData" :disabled="!importData || isImporting" class="btn btn-outline">
               <i class="icon">🔍</i>
               驗證資料
             </button>
-            <button
-              @click="importDataAction"
-              :disabled="!importData || isImporting"
-              class="btn btn-primary"
-            >
+            <button @click="importDataAction" :disabled="!importData || isImporting" class="btn btn-primary">
               <i class="icon">📥</i>
-              {{ isImporting ? "匯入中..." : "開始匯入" }}
+              {{ isImporting ? '匯入中...' : '開始匯入' }}
             </button>
           </div>
         </div>
@@ -170,7 +120,7 @@
         <div class="result-content">
           <div class="result-summary">
             <div class="summary-item" :class="{ success: result.success, error: !result.success }">
-              <i class="icon">{{ result.success ? "✅" : "❌" }}</i>
+              <i class="icon">{{ result.success ? '✅' : '❌' }}</i>
               <span>{{ result.message }}</span>
             </div>
           </div>
@@ -254,14 +204,14 @@ const selectedProjectId = ref('')
 const exportOptions = ref({
   includeUsers: true,
   includeGroups: true,
-  includePermissions: true
+  includePermissions: true,
 })
 
 // 匯入選項
 const importOptions = ref({
   overwriteExisting: false,
   skipDuplicates: true,
-  dryRun: false
+  dryRun: false,
 })
 
 // 載入專案列表
@@ -281,11 +231,11 @@ const exportAllData = async () => {
     const params = new URLSearchParams({
       includeUsers: exportOptions.value.includeUsers.toString(),
       includeGroups: exportOptions.value.includeGroups.toString(),
-      includePermissions: exportOptions.value.includePermissions.toString()
+      includePermissions: exportOptions.value.includePermissions.toString(),
     })
-    
+
     const response = await api.get(`/import-export/export?${params}`)
-    
+
     // 下載檔案
     const blob = new Blob([JSON.stringify(response.data.data, null, 2)], { type: 'application/json' })
     const url = window.URL.createObjectURL(blob)
@@ -296,16 +246,16 @@ const exportAllData = async () => {
     link.click()
     document.body.removeChild(link)
     window.URL.revokeObjectURL(url)
-    
+
     result.value = {
       success: true,
-      message: '資料匯出成功'
+      message: '資料匯出成功',
     }
   } catch (error: any) {
     console.error('匯出失敗:', error)
     result.value = {
       success: false,
-      message: error.response?.data?.message || '匯出失敗'
+      message: error.response?.data?.message || '匯出失敗',
     }
   } finally {
     isExporting.value = false
@@ -317,9 +267,9 @@ const downloadExportFile = async () => {
   try {
     isExporting.value = true
     const response = await api.get('/import-export/download', {
-      responseType: 'blob'
+      responseType: 'blob',
     })
-    
+
     const blob = new Blob([response.data], { type: 'application/json' })
     const url = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
@@ -329,16 +279,16 @@ const downloadExportFile = async () => {
     link.click()
     document.body.removeChild(link)
     window.URL.revokeObjectURL(url)
-    
+
     result.value = {
       success: true,
-      message: '檔案下載成功'
+      message: '檔案下載成功',
     }
   } catch (error: any) {
     console.error('下載失敗:', error)
     result.value = {
       success: false,
-      message: error.response?.data?.message || '下載失敗'
+      message: error.response?.data?.message || '下載失敗',
     }
   } finally {
     isExporting.value = false
@@ -348,17 +298,17 @@ const downloadExportFile = async () => {
 // 匯出專案資料
 const exportProjectData = async () => {
   if (!selectedProjectId.value) return
-  
+
   try {
     isExporting.value = true
     const params = new URLSearchParams({
       includeUsers: exportOptions.value.includeUsers.toString(),
       includeGroups: exportOptions.value.includeGroups.toString(),
-      includePermissions: exportOptions.value.includePermissions.toString()
+      includePermissions: exportOptions.value.includePermissions.toString(),
     })
-    
+
     const response = await api.get(`/import-export/export/project/${selectedProjectId.value}?${params}`)
-    
+
     // 下載檔案
     const blob = new Blob([JSON.stringify(response.data.data, null, 2)], { type: 'application/json' })
     const url = window.URL.createObjectURL(blob)
@@ -369,16 +319,16 @@ const exportProjectData = async () => {
     link.click()
     document.body.removeChild(link)
     window.URL.revokeObjectURL(url)
-    
+
     result.value = {
       success: true,
-      message: '專案資料匯出成功'
+      message: '專案資料匯出成功',
     }
   } catch (error: any) {
     console.error('專案匯出失敗:', error)
     result.value = {
       success: false,
-      message: error.response?.data?.message || '專案匯出失敗'
+      message: error.response?.data?.message || '專案匯出失敗',
     }
   } finally {
     isExporting.value = false
@@ -420,7 +370,7 @@ const readFile = (file: File) => {
       console.error('檔案解析失敗:', error)
       result.value = {
         success: false,
-        message: '檔案格式錯誤，請選擇有效的 JSON 檔案'
+        message: '檔案格式錯誤，請選擇有效的 JSON 檔案',
       }
     }
   }
@@ -449,15 +399,15 @@ const clearImportState = () => {
 // 驗證匯入資料
 const validateImportData = async () => {
   if (!importData.value) return
-  
+
   try {
     isImporting.value = true
     const response = await api.post('/import-export/validate', {
-      importData: importData.value
+      importData: importData.value,
     })
-    
+
     result.value = response.data
-    
+
     // 如果驗證成功，顯示成功訊息但不清空狀態（用戶可能還想匯入）
     if (response.data.success) {
       console.log('資料驗證成功')
@@ -466,7 +416,7 @@ const validateImportData = async () => {
     console.error('驗證失敗:', error)
     result.value = {
       success: false,
-      message: error.response?.data?.message || '驗證失敗'
+      message: error.response?.data?.message || '驗證失敗',
     }
   } finally {
     isImporting.value = false
@@ -476,16 +426,16 @@ const validateImportData = async () => {
 // 匯入資料
 const importDataAction = async () => {
   if (!importData.value) return
-  
+
   try {
     isImporting.value = true
     const response = await api.post('/import-export/import', {
       importData: importData.value,
-      ...importOptions.value
+      ...importOptions.value,
     })
-    
+
     result.value = response.data
-    
+
     // 如果匯入成功，清空狀態
     if (response.data.success) {
       // 延遲清空，讓用戶看到成功訊息
@@ -497,7 +447,7 @@ const importDataAction = async () => {
     console.error('匯入失敗:', error)
     result.value = {
       success: false,
-      message: error.response?.data?.message || '匯入失敗'
+      message: error.response?.data?.message || '匯入失敗',
     }
   } finally {
     isImporting.value = false
@@ -578,15 +528,9 @@ onMounted(() => {
   font-size: 0.9rem;
 }
 
-.checkbox-label input[type="checkbox"] {
+.checkbox-label input[type='checkbox'] {
   width: 16px;
   height: 16px;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
 }
 
 .btn {
@@ -822,16 +766,16 @@ onMounted(() => {
   .import-export-view {
     padding: 1rem;
   }
-  
+
   .action-buttons {
     flex-direction: column;
   }
-  
+
   .project-selector {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .stats-grid {
     grid-template-columns: 1fr;
   }

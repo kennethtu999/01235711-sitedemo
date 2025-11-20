@@ -1,12 +1,35 @@
 <template>
-  <div class="group-management">
-    <div class="header">
-      <h1>群組管理</h1>
-      <button @click="showCreateGroupModal = true" class="btn btn-primary"> 新增群組 </button>
-    </div>
+  <div class="inner-wrapper">
+    <header class="page-header">
+      <div class="header-content">
+        <div class="header-left">
+          <h1>群組管理</h1>
+        </div>
+        <div class="header-right">
+          <button @click="showCreateGroupModal = true" class="btn btn-md btn-primary">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="feather feather-plus mr-1"
+            >
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>新增群組</span>
+          </button>
+        </div>
+      </div>
+    </header>
 
     <!-- 主要內容區域：左右分欄 -->
-    <div class="main-content">
+    <div class="page-main main-content">
       <!-- 左側：群組列表 -->
       <div class="groups-panel">
         <h2>群組列表</h2>
@@ -14,7 +37,7 @@
           <div
             v-for="group in groups"
             :key="group.id"
-            class="group-card"
+            class="card group-card"
             :class="{ active: selectedGroup?.id === group.id }"
             @click="selectGroup(group)"
           >
@@ -47,12 +70,11 @@
 
       <!-- 右側：選中群組的使用者管理 -->
       <div class="users-panel">
-        <div v-if="selectedGroup" class="selected-group">
-          <div class="panel-header">
+        <div v-if="selectedGroup">
+          <div class="users-panel-header">
             <h2>{{ selectedGroup.name }} - 使用者管理</h2>
-            <button @click="showAddUserModal(selectedGroup)" class="btn btn-primary"> 新增使用者 </button>
+            <button @click="showAddUserModal(selectedGroup)" class="btn btn-md btn-outline"> 新增使用者 </button>
           </div>
-
           <!-- 使用者列表 -->
           <div class="users-list">
             <div v-for="user in selectedGroup.users" :key="user.id" class="user-item">
@@ -95,9 +117,9 @@
             </select>
             <small class="form-help"> 管理員角色擁有所有專案權限，等同於管理員群組 </small>
           </div>
-          <div class="form-actions">
-            <button type="button" @click="closeModals" class="btn btn-secondary"> 取消 </button>
-            <button type="submit" class="btn btn-primary"> 儲存 </button>
+          <div class="action-buttons">
+            <button type="button" @click="closeModals" class="btn btn-md btn-secondary"> 取消 </button>
+            <button type="submit" class="btn btn-md btn-primary"> 儲存 </button>
           </div>
         </form>
       </div>
@@ -115,10 +137,16 @@
                 <tbody>
                   <tr v-for="user in sortedAvailableUsers" :key="user.id" class="user-row">
                     <td class="checkbox-cell">
-                      <input type="checkbox" :value="user.id" v-model="selectedUserIds" class="user-checkbox" />
+                      <input
+                        type="checkbox"
+                        :id="`user-${user.id}`"
+                        :value="user.id"
+                        v-model="selectedUserIds"
+                        class="user-checkbox"
+                      />
                     </td>
                     <td class="username-cell">
-                      <span class="username">{{ user.username }} ({{ user.email }})</span>
+                      <label :for="`user-${user.id}`" class="username">{{ user.username }} ({{ user.email }})</label>
                     </td>
                   </tr>
                 </tbody>
@@ -126,9 +154,9 @@
               <div v-if="sortedAvailableUsers.length === 0" class="no-users"> 沒有可新增的使用者 </div>
             </div>
           </div>
-          <div class="form-actions">
-            <button type="button" @click="closeModals" class="btn btn-secondary"> 取消 </button>
-            <button type="submit" :disabled="selectedUserIds.length === 0" class="btn btn-primary">
+          <div class="action-buttons">
+            <button type="button" @click="closeModals" class="btn btn-md btn-secondary"> 取消 </button>
+            <button type="submit" :disabled="selectedUserIds.length === 0" class="btn btn-md btn-primary">
               {{ selectedUserIds.length > 0 ? `新增 ${selectedUserIds.length} 個使用者` : '新增' }}
             </button>
           </div>
@@ -325,32 +353,21 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.group-management {
-  padding: 20px;
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-}
-
 .main-content {
   display: flex;
   gap: 20px;
-  height: calc(100vh - 120px);
+  height: calc(100vh - 70.4px);
+  padding-left: 0;
 }
 
 .groups-panel {
   flex: 0 0 300px;
   border-right: 1px solid #e0e0e0;
-  padding-right: 20px;
 }
 
 .groups-panel h2 {
   margin-bottom: 20px;
-  color: #333;
+  margin-left: 20px;
 }
 
 .groups-list {
@@ -359,19 +376,18 @@ onMounted(() => {
   gap: 10px;
   max-height: calc(100vh - 200px);
   overflow-y: auto;
+  padding: 2px 20px 20px 20px;
 }
 
 .users-panel {
   flex: 1;
-  padding-left: 20px;
 }
 
 .users-panel h2 {
   margin-bottom: 20px;
-  color: #333;
 }
 
-.panel-header {
+.users-panel-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -386,27 +402,15 @@ onMounted(() => {
   justify-content: center;
   height: 200px;
   color: #666;
-  font-size: 16px;
 }
 
 .group-card {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 15px;
-  background: white;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.group-card:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  transform: translateY(-1px);
+  padding: 12px;
 }
 
 .group-card.active {
   border-color: #007bff;
   background: #f8f9ff;
-  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
 }
 
 .group-header {
@@ -451,15 +455,6 @@ onMounted(() => {
 .badge-projects {
   background: #28a745;
   color: white;
-}
-
-.group-section {
-  margin-bottom: 20px;
-}
-
-.group-section h4 {
-  margin-bottom: 10px;
-  color: #333;
 }
 
 .users-list,
@@ -509,16 +504,6 @@ onMounted(() => {
   overflow-y: auto;
 }
 
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
-}
-
 .form-group input,
 .form-group textarea,
 .form-group select {
@@ -528,30 +513,8 @@ onMounted(() => {
   border-radius: 4px;
 }
 
-.form-actions {
-  display: flex;
+.action-buttons {
   justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.btn {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  text-decoration: none;
-  display: inline-block;
-}
-
-.btn-primary {
-  background: #007bff;
-  color: white;
-}
-
-.btn-secondary {
-  background: #6c757d;
-  color: white;
 }
 
 .btn-danger {
@@ -601,9 +564,9 @@ onMounted(() => {
 }
 
 .user-info {
-  display: flex;
   flex-direction: column;
   flex: 1;
+  align-items: flex-start;
 }
 
 .user-name {
@@ -665,7 +628,6 @@ onMounted(() => {
 
 .username-cell {
   padding: 4px 8px;
-  vertical-align: middle;
 }
 
 .user-checkbox {
@@ -673,9 +635,8 @@ onMounted(() => {
 }
 
 .username {
-  font-weight: 500;
-  color: #333;
   margin: 0;
+  cursor: pointer;
 }
 
 .form-help {

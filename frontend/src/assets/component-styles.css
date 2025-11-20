@@ -34,14 +34,14 @@
 .btn-sm {
   height: var(--button-height-sm);
   padding: var(--button-padding-sm);
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-sm);
   line-height: var(--line-height-tight);
 }
 
 .btn-md {
   height: var(--button-height-md);
   padding: var(--button-padding-md);
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-md);
   line-height: var(--line-height-normal);
 }
 
@@ -416,44 +416,124 @@
 }
 
 /* === 間距工具類 === */
-.m-0 { margin: 0 !important; }
-.m-1 { margin: var(--spacing-xs) !important; }
-.m-2 { margin: var(--spacing-sm) !important; }
-.m-3 { margin: var(--spacing-md) !important; }
-.m-4 { margin: var(--spacing-lg) !important; }
-.m-5 { margin: var(--spacing-xl) !important; }
-.m-6 { margin: var(--spacing-2xl) !important; }
+.m-0 {
+  margin: 0;
+}
+.m-1 {
+  margin: var(--spacing-xs);
+}
+.m-2 {
+  margin: var(--spacing-sm);
+}
+.m-3 {
+  margin: var(--spacing-md);
+}
+.m-4 {
+  margin: var(--spacing-lg);
+}
+.m-5 {
+  margin: var(--spacing-xl);
+}
+.m-6 {
+  margin: var(--spacing-2xl);
+}
+.mx-4 {
+  margin-left: var(--spacing-lg);
+  margin-right: var(--spacing-lg);
+}
+.mr-1 {
+  margin-right: var(--spacing-xs);
+}
+.mt-4 {
+  margin-top: var(--spacing-lg);
+}
 
-.p-0 { padding: 0 !important; }
-.p-1 { padding: var(--spacing-xs) !important; }
-.p-2 { padding: var(--spacing-sm) !important; }
-.p-3 { padding: var(--spacing-md) !important; }
-.p-4 { padding: var(--spacing-lg) !important; }
-.p-5 { padding: var(--spacing-xl) !important; }
-.p-6 { padding: var(--spacing-2xl) !important; }
+.p-0 {
+  padding: 0 !important;
+}
+.p-1 {
+  padding: var(--spacing-xs) !important;
+}
+.p-2 {
+  padding: var(--spacing-sm) !important;
+}
+.p-3 {
+  padding: var(--spacing-md) !important;
+}
+.p-4 {
+  padding: var(--spacing-lg) !important;
+}
+.p-5 {
+  padding: var(--spacing-xl) !important;
+}
+.p-6 {
+  padding: var(--spacing-2xl) !important;
+}
 
 /* === 文字工具類 === */
-.text-xs { font-size: var(--font-size-xs) !important; }
-.text-sm { font-size: var(--font-size-sm) !important; }
-.text-md { font-size: var(--font-size-md) !important; }
-.text-lg { font-size: var(--font-size-lg) !important; }
-.text-xl { font-size: var(--font-size-xl) !important; }
-.text-2xl { font-size: var(--font-size-2xl) !important; }
+.text-xs {
+  font-size: var(--font-size-xs) !important;
+}
+.text-sm {
+  font-size: var(--font-size-sm) !important;
+}
+.text-md {
+  font-size: var(--font-size-md) !important;
+}
+.text-lg {
+  font-size: var(--font-size-lg) !important;
+}
+.text-xl {
+  font-size: var(--font-size-xl) !important;
+}
+.text-2xl {
+  font-size: var(--font-size-2xl) !important;
+}
 
-.font-normal { font-weight: var(--font-weight-normal) !important; }
-.font-medium { font-weight: var(--font-weight-medium) !important; }
-.font-semibold { font-weight: var(--font-weight-semibold) !important; }
-.font-bold { font-weight: var(--font-weight-bold) !important; }
+.font-normal {
+  font-weight: var(--font-weight-normal) !important;
+}
+.font-medium {
+  font-weight: var(--font-weight-medium) !important;
+}
+.font-semibold {
+  font-weight: var(--font-weight-semibold) !important;
+}
+.font-bold {
+  font-weight: var(--font-weight-bold) !important;
+}
 
-.text-primary { color: var(--color-text-primary) !important; }
-.text-secondary { color: var(--color-text-secondary) !important; }
-.text-tertiary { color: var(--color-text-tertiary) !important; }
-.text-disabled { color: var(--color-text-disabled) !important; }
-.text-success { color: var(--color-success) !important; }
-.text-warning { color: var(--color-warning) !important; }
-.text-error { color: var(--color-error) !important; }
-.text-info { color: var(--color-info) !important; }
+.text-primary {
+  color: var(--color-text-primary) !important;
+}
+.text-secondary {
+  color: var(--color-text-secondary) !important;
+}
+.text-tertiary {
+  color: var(--color-text-tertiary) !important;
+}
+.text-disabled {
+  color: var(--color-text-disabled) !important;
+}
+.text-success {
+  color: var(--color-success) !important;
+}
+.text-warning {
+  color: var(--color-warning) !important;
+}
+.text-error {
+  color: var(--color-error) !important;
+}
+.text-info {
+  color: var(--color-info) !important;
+}
 
-.text-center { text-align: center !important; }
-.text-left { text-align: left !important; }
-.text-right { text-align: right !important; }
+.text-center {
+  text-align: center !important;
+}
+.text-left {
+  text-align: left !important;
+}
+.text-right {
+  text-align: right !important;
+}

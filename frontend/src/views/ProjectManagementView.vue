@@ -1,25 +1,60 @@
 <template>
-  <div class="project-management-container">
+  <div class="inner-wrapper">
     <header class="page-header">
       <div class="header-content">
         <div class="header-left">
-          <button @click="goBack" class="btn btn-md btn-secondary"> <span>←</span> 返回儀表板 </button>
           <h1>專案管理</h1>
         </div>
         <div class="header-right">
-          <button @click="showCreateProjectModal = true" class="btn btn-md btn-primary"> + 新增專案 </button>
+          <button @click="showCreateProjectModal = true" class="btn btn-md btn-primary">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="feather feather-plus mr-1"
+            >
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>新增專案</span>
+          </button>
         </div>
       </div>
     </header>
 
     <main class="page-main">
       <!-- 專案列表 -->
-      <div class="projects-section">
-        <div class="section-header">
+      <div class="panel">
+        <div class="panel-header">
           <h2>專案列表</h2>
-          <div class="section-actions">
+          <div class="action-buttons">
             <button @click="refreshProjects" :disabled="isLoading" class="btn btn-md btn-secondary">
-              {{ isLoading ? '載入中...' : '重新整理' }}
+              <span v-if="isLoading">載入中...</span>
+              <template v-else>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="feather feather-refresh-cw mr-1"
+                >
+                  <polyline points="23 4 23 10 17 10"></polyline>
+                  <polyline points="1 20 1 14 7 14"></polyline>
+                  <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                </svg>
+                <span>重新整理</span>
+              </template>
             </button>
           </div>
         </div>
@@ -71,7 +106,22 @@
               <div class="demo-configs-header">
                 <h4>Demo 配置</h4>
                 <button @click="openCreateDemoConfigModal(project)" class="btn btn-sm btn-success">
-                  + 新增 Demo 配置
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="feather feather-plus mr-1"
+                  >
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  <span>新增 Demo 配置</span>
                 </button>
               </div>
 
@@ -554,11 +604,6 @@ const updateCurrentProject = () => {
   }
 }
 
-// 返回儀表板
-const goBack = () => {
-  router.push('/dashboard')
-}
-
 // 群組管理方法
 const manageProjectGroups = async (project: Project) => {
   currentProject.value = project
@@ -845,120 +890,6 @@ const formatDate = (dateString: string) => {
 </script>
 
 <style scoped>
-.project-management-container {
-  min-height: 100vh;
-  background: #f8f9fa;
-}
-
-.page-header {
-  background: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 16px 20px;
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.back-button {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 8px 12px;
-  background: #6c757d;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.back-button:hover {
-  background: #5a6268;
-}
-
-.header-left h1 {
-  margin: 0;
-  color: #333;
-  font-size: 24px;
-  font-weight: 600;
-}
-
-.create-button {
-  padding: 10px 16px;
-  background: #28a745;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.create-button:hover {
-  background: #218838;
-}
-
-.page-main {
-  padding: 24px 20px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.projects-section {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid #e9ecef;
-}
-
-.section-header h2 {
-  margin: 0;
-  color: #333;
-  font-size: 20px;
-  font-weight: 600;
-}
-
-.refresh-button {
-  padding: 8px 16px;
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.refresh-button:hover:not(:disabled) {
-  background: #0056b3;
-}
-
-.refresh-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
 .loading-state {
   display: flex;
   flex-direction: column;
@@ -1615,207 +1546,5 @@ const formatDate = (dateString: string) => {
   color: #666;
   line-height: 1.3;
   margin-top: 2px;
-}
-
-/* 響應式設計 */
-@media (max-width: 768px) {
-  .header-content {
-    flex-direction: column;
-    gap: 16px;
-    align-items: flex-start;
-  }
-
-  .header-left {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .page-main {
-    padding: 16px;
-  }
-
-  .section-header {
-    flex-direction: column;
-    gap: 16px;
-    align-items: flex-start;
-  }
-
-  .project-header {
-    flex-direction: column;
-    gap: 16px;
-    align-items: flex-start;
-  }
-
-  .project-actions {
-    width: 100%;
-    justify-content: flex-end;
-  }
-
-  .demo-configs-header {
-    flex-direction: column;
-    gap: 12px;
-    align-items: flex-start;
-  }
-
-  .demo-config-actions {
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .demo-config-buttons {
-    justify-content: flex-start;
-  }
-
-  .modal-content {
-    width: 95%;
-    margin: 20px;
-  }
-
-  .form-actions {
-    flex-direction: column;
-  }
-}
-
-/* 大螢幕優化 */
-@media (min-width: 1200px) {
-  .page-main {
-    max-width: 1400px;
-    padding: 32px 40px;
-  }
-
-  .header-content {
-    max-width: 1400px;
-  }
-
-  .page-header {
-    padding: 20px 40px;
-  }
-
-  .header-left h1 {
-    font-size: 28px;
-  }
-
-  .section-header h2 {
-    font-size: 24px;
-  }
-
-  .project-name {
-    font-size: 20px;
-  }
-
-  .project-description {
-    font-size: 15px;
-  }
-
-  .demo-configs-header h4 {
-    font-size: 18px;
-  }
-
-  .demo-config-name {
-    font-size: 16px;
-  }
-
-  .modal-content {
-    max-width: 600px;
-  }
-
-  .large-modal {
-    max-width: 700px;
-  }
-}
-
-@media (min-width: 1440px) {
-  .page-main {
-    max-width: 1600px;
-    padding: 40px 60px;
-  }
-
-  .header-content {
-    max-width: 1600px;
-  }
-
-  .page-header {
-    padding: 24px 60px;
-  }
-
-  .header-left h1 {
-    font-size: 32px;
-  }
-
-  .section-header h2 {
-    font-size: 28px;
-  }
-
-  .project-name {
-    font-size: 22px;
-  }
-
-  .project-description {
-    font-size: 16px;
-  }
-
-  .demo-configs-header h4 {
-    font-size: 20px;
-  }
-
-  .demo-config-name {
-    font-size: 17px;
-  }
-
-  .modal-content {
-    max-width: 700px;
-  }
-
-  .large-modal {
-    max-width: 800px;
-  }
-}
-
-@media (min-width: 1920px) {
-  .page-main {
-    max-width: 1800px;
-    padding: 48px 80px;
-  }
-
-  .header-content {
-    max-width: 1800px;
-  }
-
-  .page-header {
-    padding: 32px 80px;
-  }
-
-  .header-left h1 {
-    font-size: 36px;
-  }
-
-  .section-header h2 {
-    font-size: 32px;
-  }
-
-  .project-name {
-    font-size: 24px;
-  }
-
-  .project-description {
-    font-size: 17px;
-  }
-
-  .demo-configs-header h4 {
-    font-size: 22px;
-  }
-
-  .demo-config-name {
-    font-size: 18px;
-  }
-
-  .modal-content {
-    max-width: 800px;
-  }
-
-  .large-modal {
-    max-width: 900px;
-  }
 }
 </style>

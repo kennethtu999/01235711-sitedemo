@@ -1,25 +1,60 @@
 <template>
-  <div class="user-management-container">
+  <div class="inner-wrapper">
     <header class="page-header">
       <div class="header-content">
         <div class="header-left">
-          <button @click="goBack" class="btn btn-md btn-secondary"> <span>←</span> 返回儀表板 </button>
           <h1>使用者管理</h1>
         </div>
         <div class="header-right">
-          <button @click="showCreateModal = true" class="btn btn-md btn-primary"> + 新增使用者 </button>
+          <button @click="showCreateModal = true" class="btn btn-md btn-primary">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="feather feather-plus mr-1"
+            >
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>新增使用者</span>
+          </button>
         </div>
       </div>
     </header>
 
     <main class="page-main">
       <!-- 使用者列表 -->
-      <div class="users-section">
-        <div class="section-header">
+      <div class="panel">
+        <div class="panel-header">
           <h2>使用者列表</h2>
-          <div class="section-actions">
+          <div class="action-buttons">
             <button @click="refreshUsers" :disabled="isLoading" class="btn btn-md btn-secondary">
-              {{ isLoading ? '載入中...' : '重新整理' }}
+              <span v-if="isLoading">載入中...</span>
+              <template v-else>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="feather feather-refresh-cw mr-1"
+                >
+                  <polyline points="23 4 23 10 17 10"></polyline>
+                  <polyline points="1 20 1 14 7 14"></polyline>
+                  <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                </svg>
+                <span>重新整理</span>
+              </template>
             </button>
           </div>
         </div>
@@ -33,8 +68,8 @@
           <p>目前沒有使用者</p>
         </div>
 
-        <div v-else class="users-table-container">
-          <table class="users-table">
+        <div v-else class="table-container">
+          <table class="data-table">
             <thead>
               <tr>
                 <th>使用者名稱</th>
@@ -46,26 +81,24 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="user in users" :key="user.id" class="user-row">
-                <td class="username-cell">
-                  <div class="user-info">
-                    <span class="username">{{ user.username }}</span>
-                    <span v-if="user.twoFactorEnabled" class="two-factor-badge">2FA</span>
-                  </div>
+              <tr v-for="user in users" :key="user.id">
+                <td>
+                  <span>{{ user.username }}</span>
+                  <span v-if="user.twoFactorEnabled" class="two-factor-badge">2FA</span>
                 </td>
-                <td class="email-cell">{{ user.email || '-' }}</td>
-                <td class="role-cell">
+                <td>{{ user.email || '-' }}</td>
+                <td>
                   <span :class="['role-badge', user.role]">{{ user.role === 'admin' ? '管理員' : '使用者' }}</span>
                 </td>
-                <td class="status-cell">
+                <td>
                   <span :class="['status-badge', user.isActive ? 'active' : 'inactive']">
                     {{ user.isActive ? '啟用' : '停用' }}
                   </span>
                 </td>
-                <td class="last-login-cell">
+                <td>
                   {{ user.lastLoginAt ? formatDate(user.lastLoginAt) : '從未登入' }}
                 </td>
-                <td class="actions-cell">
+                <td>
                   <div class="action-buttons">
                     <button @click="editUser(user)" class="btn btn-sm btn-outline" title="編輯使用者"> 編輯 </button>
                     <button
@@ -230,11 +263,6 @@ const refreshUsers = () => {
   loadUsers()
 }
 
-// 返回儀表板
-const goBack = () => {
-  router.push('/dashboard')
-}
-
 // 編輯使用者
 const editUser = (user: User) => {
   formData.value = {
@@ -336,584 +364,3 @@ const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleString('zh-TW')
 }
 </script>
-
-<style scoped>
-.user-management-container {
-  min-height: 100vh;
-  background: #f8f9fa;
-}
-
-.page-header {
-  background: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 16px 20px;
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.back-button {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 8px 12px;
-  background: #6c757d;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.back-button:hover {
-  background: #5a6268;
-}
-
-.header-left h1 {
-  margin: 0;
-  color: #333;
-  font-size: 24px;
-  font-weight: 600;
-}
-
-.create-button {
-  padding: 10px 16px;
-  background: #28a745;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.create-button:hover {
-  background: #218838;
-}
-
-.page-main {
-  padding: 24px 20px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.users-section {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid #e9ecef;
-}
-
-.section-header h2 {
-  margin: 0;
-  color: #333;
-  font-size: 20px;
-  font-weight: 600;
-}
-
-.refresh-button {
-  padding: 8px 16px;
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.refresh-button:hover:not(:disabled) {
-  background: #0056b3;
-}
-
-.refresh-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.loading-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 40px;
-  color: #666;
-}
-
-.loading-spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #007bff;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 16px;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-.empty-state {
-  text-align: center;
-  padding: 40px;
-  color: #666;
-}
-
-.users-table-container {
-  overflow-x: auto;
-}
-
-.users-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.users-table th,
-.users-table td {
-  padding: 12px 16px;
-  text-align: left;
-  border-bottom: 1px solid #e9ecef;
-}
-
-.users-table th {
-  background: #f8f9fa;
-  font-weight: 600;
-  color: #495057;
-  font-size: 14px;
-}
-
-.users-table td {
-  font-size: 14px;
-  color: #333;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.username {
-  font-weight: 500;
-}
-
-.two-factor-badge {
-  background: #17a2b8;
-  color: white;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 10px;
-  font-weight: 600;
-}
-
-.role-badge {
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.role-badge.admin {
-  background: #dc3545;
-  color: white;
-}
-
-.role-badge.user {
-  background: #6c757d;
-  color: white;
-}
-
-.status-badge {
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.status-badge.active {
-  background: #d4edda;
-  color: #155724;
-}
-
-.status-badge.inactive {
-  background: #f8d7da;
-  color: #721c24;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 8px;
-}
-
-.edit-button,
-.delete-button {
-  padding: 6px 12px;
-  border: none;
-  border-radius: 4px;
-  font-size: 12px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.edit-button {
-  background: #ffc107;
-  color: #212529;
-}
-
-.edit-button:hover {
-  background: #e0a800;
-}
-
-.delete-button {
-  background: #dc3545;
-  color: white;
-}
-
-.delete-button:hover:not(:disabled) {
-  background: #c82333;
-}
-
-.delete-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* 模態框樣式 */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background: white;
-  border-radius: 12px;
-  width: 90%;
-  max-width: 500px;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid #e9ecef;
-}
-
-.modal-header h3 {
-  margin: 0;
-  color: #333;
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.close-button {
-  background: none;
-  border: none;
-  font-size: 24px;
-  color: #666;
-  cursor: pointer;
-  padding: 0;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.close-button:hover {
-  color: #333;
-}
-
-.modal-form {
-  padding: 24px;
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 6px;
-  color: #333;
-  font-weight: 500;
-  font-size: 14px;
-}
-
-.form-group input,
-.form-group select {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #ced4da;
-  border-radius: 6px;
-  font-size: 14px;
-  transition: border-color 0.2s ease;
-}
-
-.form-group input:focus,
-.form-group select:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-}
-
-.checkbox-label input[type='checkbox'] {
-  width: auto;
-  margin: 0;
-}
-
-.form-actions {
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  margin-top: 24px;
-}
-
-.cancel-button,
-.submit-button {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.cancel-button {
-  background: #6c757d;
-  color: white;
-}
-
-.cancel-button:hover {
-  background: #5a6268;
-}
-
-.submit-button {
-  background: #007bff;
-  color: white;
-}
-
-.submit-button:hover:not(:disabled) {
-  background: #0056b3;
-}
-
-.submit-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.delete-modal .modal-body {
-  padding: 24px;
-}
-
-.delete-modal .modal-body p {
-  margin: 0 0 12px 0;
-  color: #333;
-}
-
-.warning-text {
-  color: #dc3545;
-  font-weight: 500;
-}
-
-.delete-modal .delete-button {
-  background: #dc3545;
-  color: white;
-}
-
-.delete-modal .delete-button:hover:not(:disabled) {
-  background: #c82333;
-}
-
-/* 響應式設計 */
-@media (max-width: 768px) {
-  .header-content {
-    flex-direction: column;
-    gap: 16px;
-    align-items: flex-start;
-  }
-
-  .header-left {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .page-main {
-    padding: 16px;
-  }
-
-  .section-header {
-    flex-direction: column;
-    gap: 16px;
-    align-items: flex-start;
-  }
-
-  .users-table-container {
-    font-size: 12px;
-  }
-
-  .users-table th,
-  .users-table td {
-    padding: 8px 12px;
-  }
-
-  .action-buttons {
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .modal-content {
-    width: 95%;
-    margin: 20px;
-  }
-
-  .form-actions {
-    flex-direction: column;
-  }
-}
-
-/* 大螢幕優化 */
-@media (min-width: 1200px) {
-  .page-main {
-    max-width: 1400px;
-    padding: 32px 40px;
-  }
-
-  .header-content {
-    max-width: 1400px;
-  }
-
-  .page-header {
-    padding: 20px 40px;
-  }
-
-  .header-left h1 {
-    font-size: 28px;
-  }
-
-  .section-header h2 {
-    font-size: 24px;
-  }
-
-  .users-table th,
-  .users-table td {
-    padding: 16px 20px;
-    font-size: 15px;
-  }
-
-  .modal-content {
-    max-width: 600px;
-  }
-}
-
-@media (min-width: 1440px) {
-  .page-main {
-    max-width: 1600px;
-    padding: 40px 60px;
-  }
-
-  .header-content {
-    max-width: 1600px;
-  }
-
-  .page-header {
-    padding: 24px 60px;
-  }
-
-  .header-left h1 {
-    font-size: 32px;
-  }
-
-  .section-header h2 {
-    font-size: 28px;
-  }
-
-  .users-table th,
-  .users-table td {
-    padding: 18px 24px;
-    font-size: 16px;
-  }
-
-  .modal-content {
-    max-width: 700px;
-  }
-}
-
-@media (min-width: 1920px) {
-  .page-main {
-    max-width: 1800px;
-    padding: 48px 80px;
-  }
-
-  .header-content {
-    max-width: 1800px;
-  }
-
-  .page-header {
-    padding: 32px 80px;
-  }
-
-  .header-left h1 {
-    font-size: 36px;
-  }
-
-  .section-header h2 {
-    font-size: 32px;
-  }
-
-  .users-table th,
-  .users-table td {
-    padding: 20px 28px;
-    font-size: 17px;
-  }
-
-  .modal-content {
-    max-width: 800px;
-  }
-}
-</style>

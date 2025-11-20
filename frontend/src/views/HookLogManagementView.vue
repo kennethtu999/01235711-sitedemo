@@ -1,69 +1,94 @@
 <template>
-  <div class="hook-log-management">
-    <n-card title="Hook Log 管理" class="mb-4">
-      <template #header-extra>
-        <n-space>
-          <button @click="refreshData" :disabled="loading" class="btn btn-md btn-secondary">
-            <span v-if="loading" class="loading-spinner"></span>
-            <svg v-else viewBox="0 0 24 24" width="16" height="16" style="margin-right: 8px;">
-              <path fill="currentColor" d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
-            </svg>
-            {{ loading ? '載入中...' : '刷新' }}
+  <div class="inner-wrapper">
+    <header class="page-header">
+      <div class="header-content">
+        <div class="header-left">
+          <h1>Hook Log 管理</h1>
+        </div>
+      </div>
+    </header>
+    <main class="page-main">
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Hook Log 列表</h2>
+          <div class="action-buttons">
+            <button @click="refreshData" :disabled="loading" class="btn btn-md btn-secondary">
+              <span v-if="isLoading">載入中...</span>
+              <template v-else>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="feather feather-refresh-cw mr-1"
+                >
+                  <polyline points="23 4 23 10 17 10"></polyline>
+                  <polyline points="1 20 1 14 7 14"></polyline>
+                  <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                </svg>
+                <span>重新整理</span>
+              </template>
+            </button>
+          </div>
+        </div>
+
+        <!-- 統計卡片 -->
+        <n-grid :cols="4" :x-gap="16" class="mx-4 mt-4">
+          <n-grid-item>
+            <n-statistic label="總計" :value="stats.total" />
+          </n-grid-item>
+          <n-grid-item>
+            <n-statistic label="成功" :value="stats.success" class="text-green-600" />
+          </n-grid-item>
+          <n-grid-item>
+            <n-statistic label="失敗" :value="stats.failed" class="text-red-600" />
+          </n-grid-item>
+          <n-grid-item>
+            <n-statistic label="成功率" :value="`${stats.successRate}%`" />
+          </n-grid-item>
+        </n-grid>
+
+        <!-- 篩選器 -->
+        <n-space class="m-4">
+          <n-select
+            v-model:value="filters.status"
+            placeholder="選擇狀態"
+            clearable
+            :options="statusOptions"
+            style="width: 120px"
+          />
+          <n-select
+            v-model:value="filters.projectId"
+            placeholder="選擇專案"
+            clearable
+            :options="projectOptions"
+            style="width: 200px"
+          />
+          <button @click="applyFilters" class="btn btn-md btn-primary">篩選</button>
+          <button @click="clearFilters" class="btn btn-md btn-secondary">清除</button>
+          <button @click="showTriggerHookModal = true" v-if="projects.length > 0" class="btn btn-md btn-secondary">
+            觸發 Hook
           </button>
         </n-space>
-      </template>
 
-      <!-- 統計卡片 -->
-      <n-grid :cols="4" :x-gap="16" class="mb-4">
-        <n-grid-item>
-          <n-statistic label="總計" :value="stats.total" />
-        </n-grid-item>
-        <n-grid-item>
-          <n-statistic label="成功" :value="stats.success" class="text-green-600" />
-        </n-grid-item>
-        <n-grid-item>
-          <n-statistic label="失敗" :value="stats.failed" class="text-red-600" />
-        </n-grid-item>
-        <n-grid-item>
-          <n-statistic label="成功率" :value="`${stats.successRate}%`" />
-        </n-grid-item>
-      </n-grid>
-
-      <!-- 篩選器 -->
-      <n-space class="mb-4">
-        <n-select
-          v-model:value="filters.status"
-          placeholder="選擇狀態"
-          clearable
-          :options="statusOptions"
-          style="width: 120px"
+        <!-- Hook Log 表格 -->
+        <n-data-table
+          :columns="columns"
+          :data="hookLogs"
+          :loading="loading"
+          :pagination="pagination"
+          @update:page="handlePageChange"
+          @update:page-size="handlePageSizeChange"
+          :row-key="(row) => row.id"
+          :max-height="600"
         />
-        <n-select
-          v-model:value="filters.projectId"
-          placeholder="選擇專案"
-          clearable
-          :options="projectOptions"
-          style="width: 200px"
-        />
-        <button @click="applyFilters" class="btn btn-md btn-primary">篩選</button>
-        <button @click="clearFilters" class="btn btn-md btn-secondary">清除</button>
-        <button @click="showTriggerHookModal = true" v-if="projects.length > 0" class="btn btn-md btn-secondary">
-          觸發 Hook
-        </button>
-      </n-space>
-
-      <!-- Hook Log 表格 -->
-      <n-data-table
-        :columns="columns"
-        :data="hookLogs"
-        :loading="loading"
-        :pagination="pagination"
-        @update:page="handlePageChange"
-        @update:page-size="handlePageSizeChange"
-        :row-key="(row) => row.id"
-        :max-height="600"
-      />
-    </n-card>
+      </div>
+    </main>
 
     <!-- 觸發 Hook 模態框 -->
     <n-modal v-model:show="showTriggerHookModal" preset="card" title="觸發專案 Hook" style="width: 500px">
@@ -72,39 +97,32 @@
           <n-select
             v-model:value="triggerHookForm.projectId"
             placeholder="請選擇專案"
-            :options="projectOptions.filter(p => p.value !== '')"
+            :options="projectOptions.filter((p) => p.value !== '')"
             @update:value="onProjectChange"
           />
         </n-form-item>
         <n-form-item label="分支名稱" path="branch">
-          <n-input
-            v-model:value="triggerHookForm.branch"
-            placeholder="例如: main, develop, feature/xxx"
-          />
-          <template #feedback>
-            留空將使用 main 分支
-          </template>
+          <n-input v-model:value="triggerHookForm.branch" placeholder="例如: main, develop, feature/xxx" />
+          <template #feedback> 留空將使用 main 分支 </template>
         </n-form-item>
         <n-form-item v-if="selectedProject">
           <n-alert type="info" title="專案資訊">
             <template #header>
-              <strong>專案:</strong> {{ selectedProject.name }}<br>
+              <strong>專案:</strong> {{ selectedProject.name }}<br />
               <strong>倉庫:</strong> {{ selectedProject.githubRepoName }}
             </template>
           </n-alert>
         </n-form-item>
         <n-form-item>
-          <n-alert type="warning" title="注意事項">
-            此操作將觸發專案的所有匹配 Demo 配置進行部署。
-          </n-alert>
+          <n-alert type="warning" title="注意事項"> 此操作將觸發專案的所有匹配 Demo 配置進行部署。 </n-alert>
         </n-form-item>
       </n-form>
-      
+
       <template #action>
         <n-space>
           <button @click="closeTriggerHookModal" class="btn btn-md btn-secondary">取消</button>
-          <button 
-            @click="submitTriggerHook" 
+          <button
+            @click="submitTriggerHook"
             :disabled="!triggerHookForm.projectId || isTriggeringHook"
             class="btn btn-md btn-primary"
           >
@@ -128,8 +146,12 @@
             </n-tag>
           </n-descriptions-item>
           <n-descriptions-item label="事件類型">{{ selectedHookLog.webhookEventType || 'N/A' }}</n-descriptions-item>
-          <n-descriptions-item label="開始時間">{{ formatDateTime(selectedHookLog.startDateTime) }}</n-descriptions-item>
-          <n-descriptions-item label="結束時間">{{ selectedHookLog.endDateTime ? formatDateTime(selectedHookLog.endDateTime) : '-' }}</n-descriptions-item>
+          <n-descriptions-item label="開始時間">{{
+            formatDateTime(selectedHookLog.startDateTime)
+          }}</n-descriptions-item>
+          <n-descriptions-item label="結束時間">{{
+            selectedHookLog.endDateTime ? formatDateTime(selectedHookLog.endDateTime) : '-'
+          }}</n-descriptions-item>
           <n-descriptions-item label="處理時間">
             {{ selectedHookLog.processingTimeMs ? `${selectedHookLog.processingTimeMs}ms` : 'N/A' }}
           </n-descriptions-item>
@@ -150,7 +172,26 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed, h } from 'vue'
-import { NCard, NSpace, NGrid, NGridItem, NStatistic, NSelect, NDataTable, NModal, NDescriptions, NDescriptionsItem, NTag, NText, NDivider, NCode, NForm, NFormItem, NInput, NAlert, useMessage } from 'naive-ui'
+import {
+  NSpace,
+  NGrid,
+  NGridItem,
+  NStatistic,
+  NSelect,
+  NDataTable,
+  NModal,
+  NDescriptions,
+  NDescriptionsItem,
+  NTag,
+  NText,
+  NDivider,
+  NCode,
+  NForm,
+  NFormItem,
+  NInput,
+  NAlert,
+  useMessage,
+} from 'naive-ui'
 import { apiService, type HookLog, type HookLogStats, type Project } from '@/api'
 
 // 響應式數據
@@ -163,7 +204,7 @@ const stats = ref<HookLogStats>({
   pending: 0,
   successRate: '0',
   avgProcessingTimeMs: 0,
-  period: '7 days'
+  period: '7 days',
 })
 const projects = ref<Project[]>([])
 const showDetailModal = ref(false)
@@ -204,10 +245,10 @@ const statusOptions = [
 // 專案選項
 const projectOptions = computed(() => [
   { label: '全部', value: '', type: 'ignored' as const },
-  ...projects.value.map(project => ({
+  ...projects.value.map((project) => ({
     label: project.name,
-    value: project.id
-  }))
+    value: project.id,
+  })),
 ])
 
 const message = useMessage()
@@ -232,7 +273,7 @@ const columns = [
     width: 100,
     render: (row: HookLog) => {
       return h(NTag, { type: getStatusType(row.status) }, { default: () => getStatusText(row.status) })
-    }
+    },
   },
   {
     title: '開始時間',
@@ -244,7 +285,7 @@ const columns = [
     title: '處理時間',
     key: 'processingTimeMs',
     width: 100,
-    render: (row: HookLog) => row.processingTimeMs ? `${row.processingTimeMs}ms` : '-',
+    render: (row: HookLog) => (row.processingTimeMs ? `${row.processingTimeMs}ms` : '-'),
   },
   {
     title: '操作',
@@ -252,18 +293,26 @@ const columns = [
     width: 150,
     render: (row: HookLog) => {
       return h('div', { class: 'action-buttons', style: 'display: flex; gap: 8px; align-items: center;' }, [
-        h('button', {
-          class: 'btn btn-sm btn-outline',
-          onClick: () => showDetail(row)
-        }, '詳情'),
-        h('button', {
-          class: 'btn btn-sm btn-outline',
-          onClick: () => reExecute(row.id),
-          disabled: reExecutingIds.value.includes(row.id)
-        }, reExecutingIds.value.includes(row.id) ? '執行中...' : '重新執行')
+        h(
+          'button',
+          {
+            class: 'btn btn-sm btn-outline',
+            onClick: () => showDetail(row),
+          },
+          '詳情'
+        ),
+        h(
+          'button',
+          {
+            class: 'btn btn-sm btn-outline',
+            onClick: () => reExecute(row.id),
+            disabled: reExecutingIds.value.includes(row.id),
+          },
+          reExecutingIds.value.includes(row.id) ? '執行中...' : '重新執行'
+        ),
       ])
-    }
-  }
+    },
+  },
 ]
 
 const reExecutingIds = ref<number[]>([])
@@ -271,19 +320,27 @@ const reExecutingIds = ref<number[]>([])
 // 方法
 const getStatusType = (status: string) => {
   switch (status) {
-    case 'success': return 'success'
-    case 'failed': return 'error'
-    case 'pending': return 'warning'
-    default: return 'default'
+    case 'success':
+      return 'success'
+    case 'failed':
+      return 'error'
+    case 'pending':
+      return 'warning'
+    default:
+      return 'default'
   }
 }
 
 const getStatusText = (status: string) => {
   switch (status) {
-    case 'success': return '成功'
-    case 'failed': return '失敗'
-    case 'pending': return '處理中'
-    default: return status
+    case 'success':
+      return '成功'
+    case 'failed':
+      return '失敗'
+    case 'pending':
+      return '處理中'
+    default:
+      return status
   }
 }
 
@@ -300,7 +357,7 @@ const loadHookLogs = async () => {
       status: filters.status || undefined,
       projectId: filters.projectId ? parseInt(filters.projectId) : undefined,
     })
-    
+
     if (response.data.success) {
       hookLogs.value = response.data.data.hookLogs
       pagination.itemCount = response.data.data.pagination.total
@@ -319,7 +376,7 @@ const loadStats = async () => {
       projectId: filters.projectId ? parseInt(filters.projectId) : undefined,
       days: 7,
     })
-    
+
     if (response.data.success) {
       stats.value = response.data.data
     }
@@ -340,10 +397,7 @@ const loadProjects = async () => {
 }
 
 const refreshData = async () => {
-  await Promise.all([
-    loadHookLogs(),
-    loadStats(),
-  ])
+  await Promise.all([loadHookLogs(), loadStats()])
 }
 
 const applyFilters = () => {
@@ -397,13 +451,13 @@ const reExecute = async (hookLogId: number) => {
     console.error('重新執行失敗:', error)
     message.error('重新執行失敗')
   } finally {
-    reExecutingIds.value = reExecutingIds.value.filter(id => id !== hookLogId)
+    reExecutingIds.value = reExecutingIds.value.filter((id) => id !== hookLogId)
   }
 }
 
 // 觸發 Hook 相關方法
 const onProjectChange = (projectId: string) => {
-  const project = projects.value.find(p => p.id.toString() === projectId)
+  const project = projects.value.find((p) => p.id.toString() === projectId)
   selectedProject.value = project || null
 }
 
@@ -420,7 +474,7 @@ const submitTriggerHook = async () => {
     return
   }
 
-  const project = projects.value.find(p => p.id.toString() === triggerHookForm.projectId)
+  const project = projects.value.find((p) => p.id.toString() === triggerHookForm.projectId)
   if (!project) {
     message.error('專案不存在')
     return
@@ -443,9 +497,10 @@ const submitTriggerHook = async () => {
     }, 1000)
   } catch (error: unknown) {
     console.error('觸發 Hook 失敗:', error)
-    const errorMessage = error instanceof Error && 'response' in error 
-      ? (error as { response?: { data?: { message?: string } } }).response?.data?.message 
-      : '觸發 Hook 失敗，請稍後再試'
+    const errorMessage =
+      error instanceof Error && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : '觸發 Hook 失敗，請稍後再試'
     message.error(errorMessage || '觸發 Hook 失敗，請稍後再試')
   } finally {
     isTriggeringHook.value = false
@@ -460,8 +515,8 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.hook-log-management {
-  padding: 20px;
+:deep(.n-data-table__pagination) {
+  margin: 16px;
 }
 
 .text-green-600 {
@@ -475,12 +530,6 @@ onMounted(() => {
 .hook-log-detail {
   max-height: 70vh;
   overflow-y: auto;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 8px;
-  align-items: center;
 }
 
 /* 載入動畫 */
