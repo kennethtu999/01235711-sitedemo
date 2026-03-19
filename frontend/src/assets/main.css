@@ -351,8 +351,7 @@ a,
 ======================================== */
 .table-container {
   overflow-x: auto;
-  margin-bottom: 20px;
-  max-height: calc(100vh - 240px);
+  max-height: calc(100vh - 200px);
 }
 
 .data-table {

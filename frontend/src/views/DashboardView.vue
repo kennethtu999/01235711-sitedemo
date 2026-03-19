@@ -126,7 +126,7 @@
                 <th>專案名稱</th>
                 <th>說明</th>
                 <th width="80">狀態</th>
-                <th>最後部署時間</th>
+                <th width="200">最後部署時間</th>
                 <th>分支</th>
                 <th width="400">檢視</th>
               </tr>
