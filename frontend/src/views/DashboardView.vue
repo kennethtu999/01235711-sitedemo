@@ -95,7 +95,8 @@
                   </span>
                 </div>
 
-                <div class="action-buttons">
+                <div class="action-buttons-wrapper">
+                <div :ref="(el) => setActionButtonsRef(el, `grid-${demo.id}`)" :class="['action-buttons', { 'is-expanded': expandedActionButtons.has(`grid-${demo.id}`) }]">
                   <button
                     v-if="demo.demoUrl && (!demo.demoUrls || demo.demoUrls.length === 0)"
                     @click="demo.demoUrl && openDemo(demo.demoUrl)"
@@ -112,6 +113,13 @@
                   >
                     {{ subSite.name }}
                   </button>
+                </div>
+                <button v-if="overflowingActionButtons.has(`grid-${demo.id}`) && !expandedActionButtons.has(`grid-${demo.id}`)" class="show-more" @click="expandActionButtons(`grid-${demo.id}`)">
+                  顯示全部
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="m6 9 6 6 6-6" />
+                  </svg>
+                </button>
                 </div>
               </div>
             </div>
@@ -169,7 +177,8 @@
                   </td>
                   <td>{{ demo.branchName || (demo as any).dataValues?.branchName || '未定義' }}</td>
                   <td>
-                    <div class="action-buttons">
+                    <div class="action-buttons-wrapper">
+                    <div :ref="(el) => setActionButtonsRef(el, `list-${demo.id}`)" :class="['action-buttons', 'list-action-buttons', { 'is-expanded': expandedActionButtons.has(`list-${demo.id}`) }]">
                       <button
                         v-if="demo.demoUrl && (!demo.demoUrls || demo.demoUrls.length === 0)"
                         @click="demo.demoUrl && openDemo(demo.demoUrl)"
@@ -187,6 +196,13 @@
                         {{ subSite.name }}
                       </button>
                     </div>
+                    <button v-if="overflowingActionButtons.has(`list-${demo.id}`) && !expandedActionButtons.has(`list-${demo.id}`)" class="show-more" @click="expandActionButtons(`list-${demo.id}`)">
+                      顯示全部
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="m6 9 6 6 6-6" />
+                      </svg>
+                    </button>
+                    </div>
                   </td>
                 </tr>
               </template>
@@ -200,7 +216,7 @@
 
 <script setup lang="ts">
 import { apiService, type Project } from '@/api'
-import { onMounted, ref, watch } from 'vue'
+import { nextTick, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -213,6 +229,35 @@ const isCheckingStatus = ref(false)
 const userProjects = ref<Project[]>([])
 const isLoadingProjects = ref(false)
 const viewMode = ref<'grid' | 'list'>('grid')
+const expandedActionButtons = ref(new Set<string>())
+const overflowingActionButtons = ref(new Set<string>())
+const actionButtonsElements = new Map<string, HTMLElement>()
+let actionButtonsResizeObserver: ResizeObserver | undefined
+
+const updateActionButtonsOverflow = () => {
+  const overflowing = new Set<string>()
+  actionButtonsElements.forEach((element, key) => {
+    if (element.scrollHeight > element.clientHeight + 1) overflowing.add(key)
+  })
+  overflowingActionButtons.value = overflowing
+}
+
+const setActionButtonsRef = (element: unknown, key: string) => {
+  if (!(element instanceof HTMLElement)) return
+  if (actionButtonsElements.get(key) === element) return
+  actionButtonsElements.set(key, element)
+  actionButtonsResizeObserver?.observe(element)
+  nextTick(updateActionButtonsOverflow)
+}
+
+const expandActionButtons = (key: string) => {
+  expandedActionButtons.value = new Set(expandedActionButtons.value).add(key)
+}
+
+watch([userProjects, viewMode], async () => {
+  await nextTick()
+  updateActionButtonsOverflow()
+})
 
 // 從 localStorage 初始化視圖模式
 const initViewMode = () => {
@@ -229,6 +274,8 @@ watch(viewMode, (newViewMode) => {
 
 // 組件掛載時檢查用戶登入狀態
 onMounted(() => {
+  actionButtonsResizeObserver = new ResizeObserver(updateActionButtonsOverflow)
+  actionButtonsElements.forEach((element) => actionButtonsResizeObserver?.observe(element))
   const storedUser = localStorage.getItem('user')
   if (!storedUser) {
     // 如果沒有用戶信息，重定向到登入頁
@@ -245,6 +292,8 @@ onMounted(() => {
   // 載入用戶專案
   loadUserProjects()
 })
+
+onBeforeUnmount(() => actionButtonsResizeObserver?.disconnect())
 
 // 檢查後端狀態
 const checkBackendStatus = async () => {

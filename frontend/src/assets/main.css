@@ -319,6 +319,45 @@ a,
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  max-height: 72px;
+  overflow: hidden;
+}
+
+.action-buttons.list-action-buttons {
+  max-height: 72px;
+}
+
+.action-buttons.is-expanded {
+  max-height: none;
+}
+
+.action-buttons-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.action-buttons-wrapper .show-more {
+  display: inline-flex;
+  align-self: center;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-primary);
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.action-buttons-wrapper .show-more svg {
+  flex: none;
+}
+
+.action-buttons-wrapper .show-more:hover {
+  text-decoration: underline;
 }
 
 .action-buttons .btn-sm {
