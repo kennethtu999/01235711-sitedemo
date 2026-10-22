@@ -37,7 +37,7 @@ podman run -d \
   --name sitedemo-app \
   -p 3000:3000 \
   -v ./data:/app/data \
-  -v /Users/kenneth/.ssh/id_rsa:/app/.ssh/id_rsa:ro \
+  -v /mnt/sharedata1/user/kenneth/.ssh/id_rsa:/app/.ssh/id_rsa:ro \
   -e DATABASE_PATH=/app/data/database.sqlite \
   -e GIT_SSH_PRIVATE_KEY_PATH=/app/.ssh/id_rsa \
   --restart unless-stopped \

@@ -2,11 +2,14 @@
   "name": "backend",
   "version": "1.0.0",
   "main": "src/server.js",
+  "engines": {
+    "node": ">=20.17.0"
+  },
   "scripts": {
     "start": "NODE_ENV=production LOG_LEVEL=info node src/server.js",
     "start:debug": "node src/server.js",
-    "dev": "LOG_LEVEL=info nodemon src/server.js",
-    "dev:debug": "LOG_LEVEL=debug nodemon src/server.js",
+    "dev": "LOG_LEVEL=info node --watch src/server.js",
+    "dev:debug": "LOG_LEVEL=debug node --watch src/server.js",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
@@ -15,6 +18,9 @@
   "author": "",
   "license": "ISC",
   "description": "",
+  "overrides": {
+    "uuid": "11.1.1"
+  },
   "dependencies": {
     "bcryptjs": "^3.0.2",
     "cookie-parser": "^1.4.7",
@@ -27,12 +33,9 @@
     "openid-client": "^5.4.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
-    "sequelize": "^6.37.7",
+    "sequelize": "6.37.8",
     "speakeasy": "^2.0.0",
-    "sqlite3": "^5.1.7",
+    "sqlite3": "6.0.1",
     "winston": "^3.11.0"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.10"
   }
 }

@@ -1,5 +1,5 @@
 # 簡化的 Dockerfile - 只打包後端
-FROM node:20-alpine
+FROM node:24-alpine
 
 # 安裝必要的系統依賴
 RUN apk add --no-cache \
