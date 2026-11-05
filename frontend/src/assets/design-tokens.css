@@ -26,6 +26,14 @@
   --color-info: #2080f0;
   --color-info-light: #e6f7ff;
 
+  /* 狀態標籤 */
+  --color-status-active-bg: #d4edda;
+  --color-status-active-text: #155724;
+  --color-status-inactive-bg: #f8d7da;
+  --color-status-inactive-text: #721c24;
+  --color-warning-text: #856404;
+  --color-info-text: #0c5460;
+
   /* 中性色調 */
   --color-text-primary: #18181c;
   --color-text-secondary: #5c5c5c;
@@ -148,6 +156,21 @@
     /* 邊框色彩 */
     --color-border-primary: #3a3a3f;
     --color-border-secondary: #4a4a4f;
+
+    /* 主色淺底 */
+    --color-primary-light: rgba(24, 160, 88, 0.16);
+
+    /* 狀態標籤 */
+    --color-status-active-bg: rgba(24, 160, 88, 0.2);
+    --color-status-active-text: #63e2b7;
+    --color-status-inactive-bg: rgba(208, 48, 80, 0.2);
+    --color-status-inactive-text: #e88080;
+
+    /* 提示色淺底 */
+    --color-warning-light: rgba(240, 160, 32, 0.16);
+    --color-warning-text: #f2c97d;
+    --color-info-light: rgba(32, 128, 240, 0.16);
+    --color-info-text: #70c0e8;
   }
 }
 

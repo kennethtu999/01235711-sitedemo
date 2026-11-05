@@ -44,7 +44,7 @@ a,
 }
 
 .page-header {
-  background: white;
+  background: var(--color-bg-primary);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 16px 20px;
 }
@@ -59,7 +59,7 @@ a,
 
 .inner-wrapper {
   min-height: 100vh;
-  background: #f8f9fa;
+  background: var(--color-bg-secondary);
 }
 
 .page-subtitle {
@@ -142,7 +142,7 @@ a,
 }
 
 .panel {
-  background: white;
+  background: var(--color-bg-primary);
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   overflow: hidden;
@@ -150,7 +150,7 @@ a,
 
 .panel-header {
   padding: 20px 24px;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid var(--color-border-primary);
   display: flex;
   justify-content: space-between;
   align-items: baseline;
@@ -159,7 +159,7 @@ a,
 
 .section-header h2 {
   margin: 0;
-  color: #333;
+  color: var(--color-text-primary);
   font-size: 20px;
   font-weight: 600;
 }
@@ -169,14 +169,14 @@ a,
   flex-direction: column;
   align-items: center;
   padding: 40px;
-  color: #666;
+  color: var(--color-text-secondary);
 }
 
 .loading-spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #007bff;
+  border: 3px solid var(--color-border-primary);
+  border-top: 3px solid var(--color-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 16px;
@@ -194,7 +194,7 @@ a,
 .empty-state {
   text-align: center;
   padding: 40px;
-  color: #666;
+  color: var(--color-text-secondary);
 }
 
 .projects-grid {
@@ -238,8 +238,8 @@ a,
 }
 
 .project-card {
-  background: white;
-  border: 1px solid #e9ecef;
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border-primary);
   border-radius: 12px;
   padding: 20px;
   transition: all 0.2s ease;
@@ -258,7 +258,7 @@ a,
   align-items: flex-start;
   margin-bottom: 12px;
   padding-bottom: 12px;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid var(--color-border-primary);
 }
 
 .project-title {
@@ -278,25 +278,25 @@ a,
 }
 
 .status-badge.active {
-  background: #d4edda;
-  color: #155724;
+  background: var(--color-status-active-bg);
+  color: var(--color-status-active-text);
 }
 
 .status-badge.inactive {
-  background: #f8d7da;
-  color: #721c24;
+  background: var(--color-status-inactive-bg);
+  color: var(--color-status-inactive-text);
 }
 
 .project-description {
   padding: 4px 0;
   font-size: 14px;
-  color: #666;
+  color: var(--color-text-secondary);
   line-height: 1.5;
 }
 
 .project-last-sync {
   font-size: 14px;
-  color: #888;
+  color: var(--color-text-tertiary);
   margin-top: 4px;
 }
 
@@ -456,13 +456,13 @@ a,
   padding: 8px 12px;
   border-radius: 4px;
   font-size: 14px;
-  color: #495057;
+  color: var(--color-text-secondary);
   cursor: pointer;
   white-space: nowrap;
 }
 
 .sort-menu-item:hover {
-  background: #f8f9fa;
+  background: var(--color-bg-tertiary);
 }
 
 .sort-menu-item.is-active {
@@ -490,14 +490,14 @@ a,
 .data-table th,
 .data-table td {
   text-align: left;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid var(--color-border-primary);
 }
 
 .data-table th {
   padding: 8px 16px;
-  background: #f8f9fa;
+  background: var(--color-bg-secondary);
   font-weight: 600;
-  color: #495057;
+  color: var(--color-text-secondary);
   white-space: nowrap;
 }
 
@@ -511,18 +511,18 @@ a,
 }
 
 .data-table th.sortable:hover {
-  color: #212529;
+  color: var(--color-text-primary);
 }
 
 .data-table .sort-icon {
   margin-left: 4px;
   vertical-align: middle;
-  color: #ced4da;
+  color: var(--color-text-disabled);
 }
 
 .data-table .sort-icon.is-asc,
 .data-table .sort-icon.is-desc {
-  color: #495057;
+  color: var(--color-text-secondary);
 }
 
 .data-table .sort-icon.is-asc .sort-desc,
@@ -564,7 +564,7 @@ a,
 }
 
 .modal-content {
-  background: white;
+  background: var(--color-bg-primary);
   border-radius: 12px;
   width: 90%;
   max-width: 500px;
@@ -577,12 +577,12 @@ a,
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid var(--color-border-primary);
 }
 
 .modal-header h3 {
   margin: 0;
-  color: #333;
+  color: var(--color-text-primary);
   font-size: 18px;
   font-weight: 600;
 }
@@ -605,24 +605,6 @@ a,
 /* ========================================
    共用 Badge 擴充樣式
 ======================================== */
-.status-badge {
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.status-badge.active {
-  background: #d4edda;
-  color: #155724;
-}
-
-.status-badge.inactive {
-  background: #f8d7da;
-  color: #721c24;
-}
-
 .role-badge {
   padding: 4px 8px;
   border-radius: 4px;
@@ -670,7 +652,7 @@ a,
 
 .header-left h1 {
   margin: 0;
-  color: #333;
+  color: var(--color-text-primary);
   font-size: 24px;
   font-weight: 600;
 }
@@ -699,7 +681,7 @@ a,
 .form-group label {
   display: block;
   margin-bottom: 6px;
-  color: #333;
+  color: var(--color-text-primary);
   font-weight: 500;
   font-size: 14px;
 }
@@ -708,17 +690,19 @@ a,
 .form-group select {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #ced4da;
+  border: 1px solid var(--color-border-primary);
   border-radius: 6px;
   font-size: 14px;
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
   transition: border-color 0.2s ease;
 }
 
 .form-group input:focus,
 .form-group select:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(24, 160, 88, 0.25);
 }
 
 .checkbox-label {
@@ -736,11 +720,11 @@ a,
 /* 刪除確認 Modal */
 .delete-modal .modal-body p {
   margin: 0 0 12px 0;
-  color: #333;
+  color: var(--color-text-primary);
 }
 
 .warning-text {
-  color: #dc3545;
+  color: var(--color-error);
   font-weight: 500;
 }
 

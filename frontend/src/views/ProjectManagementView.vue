@@ -663,7 +663,7 @@ const editProject = (project: Project) => {
     description: project.description || '',
     githubRepoUrl: project.githubRepoUrl,
     githubRepoName: project.githubRepoName || '',
-    isActive: project.isActive,
+    isActive: Boolean(project.isActive),
   }
   currentProject.value = project
   showEditProjectModal.value = true
@@ -700,7 +700,7 @@ const editDemoConfig = (demoConfig: DemoConfig) => {
     displayName: demoConfig.displayName || '',
     subSiteDisplayName: demoConfig.subSiteDisplayName || '',
     description: demoConfig.description || '',
-    isActive: demoConfig.isActive,
+    isActive: Boolean(demoConfig.isActive),
   }
   currentDemoConfig.value = demoConfig
   showEditDemoConfigModal.value = true
@@ -893,14 +893,14 @@ const formatDate = (dateString: string) => {
   flex-direction: column;
   align-items: center;
   padding: 40px;
-  color: #666;
+  color: var(--color-text-secondary);
 }
 
 .loading-spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #007bff;
+  border: 3px solid var(--color-border-primary);
+  border-top: 3px solid var(--color-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 16px;
@@ -918,7 +918,7 @@ const formatDate = (dateString: string) => {
 .empty-state {
   text-align: center;
   padding: 40px;
-  color: #666;
+  color: var(--color-text-secondary);
 }
 
 .projects-list {
@@ -926,7 +926,7 @@ const formatDate = (dateString: string) => {
 }
 
 .project-card {
-  border: 1px solid #e9ecef;
+  border: 1px solid var(--color-border-primary);
   border-radius: 8px;
   margin-bottom: 24px;
   overflow: hidden;
@@ -937,8 +937,8 @@ const formatDate = (dateString: string) => {
   justify-content: space-between;
   align-items: flex-start;
   padding: 20px;
-  background: #f8f9fa;
-  border-bottom: 1px solid #e9ecef;
+  background: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-border-primary);
 }
 
 .project-info {
@@ -947,14 +947,14 @@ const formatDate = (dateString: string) => {
 
 .project-name {
   margin: 0 0 8px 0;
-  color: #333;
+  color: var(--color-text-primary);
   font-size: 18px;
   font-weight: 600;
 }
 
 .project-description {
   margin: 0 0 12px 0;
-  color: #666;
+  color: var(--color-text-secondary);
   font-size: 14px;
 }
 
@@ -966,35 +966,18 @@ const formatDate = (dateString: string) => {
 }
 
 .github-url {
-  color: #007bff;
+  color: var(--color-info);
   font-size: 12px;
   font-family: monospace;
 }
 
 .github-repo-name {
-  color: #28a745;
+  color: var(--color-status-active-text);
   font-size: 12px;
   font-weight: 500;
-  background: #d4edda;
+  background: var(--color-status-active-bg);
   padding: 2px 6px;
   border-radius: 4px;
-}
-
-.status-badge {
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.status-badge.active {
-  background: #d4edda;
-  color: #155724;
-}
-
-.status-badge.inactive {
-  background: #f8d7da;
-  color: #721c24;
 }
 
 .edit-button,
@@ -1034,7 +1017,7 @@ const formatDate = (dateString: string) => {
 
 .demo-configs-header h4 {
   margin: 0;
-  color: #333;
+  color: var(--color-text-primary);
   font-size: 16px;
   font-weight: 600;
 }
@@ -1057,7 +1040,7 @@ const formatDate = (dateString: string) => {
 .no-demo-configs {
   text-align: center;
   padding: 20px;
-  color: #666;
+  color: var(--color-text-secondary);
   font-style: italic;
 }
 
@@ -1068,10 +1051,10 @@ const formatDate = (dateString: string) => {
 }
 
 .demo-config-card {
-  border: 1px solid #e9ecef;
+  border: 1px solid var(--color-border-primary);
   border-radius: 6px;
   padding: 16px;
-  background: #f8f9fa;
+  background: var(--color-bg-secondary);
 }
 
 .demo-config-header {
@@ -1083,7 +1066,7 @@ const formatDate = (dateString: string) => {
 
 .demo-config-name {
   margin: 0;
-  color: #333;
+  color: var(--color-text-primary);
   font-size: 14px;
   font-weight: 600;
 }
@@ -1096,23 +1079,23 @@ const formatDate = (dateString: string) => {
 }
 
 .deployment-status.pending {
-  background: #fff3cd;
-  color: #856404;
+  background: var(--color-warning-light);
+  color: var(--color-warning-text);
 }
 
 .deployment-status.deploying {
-  background: #d1ecf1;
-  color: #0c5460;
+  background: var(--color-info-light);
+  color: var(--color-info-text);
 }
 
 .deployment-status.success {
-  background: #d4edda;
-  color: #155724;
+  background: var(--color-status-active-bg);
+  color: var(--color-status-active-text);
 }
 
 .deployment-status.failed {
-  background: #f8d7da;
-  color: #721c24;
+  background: var(--color-status-inactive-bg);
+  color: var(--color-status-inactive-text);
 }
 
 .demo-config-details {
@@ -1122,7 +1105,7 @@ const formatDate = (dateString: string) => {
 .demo-config-details p {
   margin: 0 0 4px 0;
   font-size: 12px;
-  color: #666;
+  color: var(--color-text-secondary);
 }
 
 .trigger-hook-button,
@@ -1200,7 +1183,7 @@ const formatDate = (dateString: string) => {
 }
 
 .modal-content {
-  background: white;
+  background: var(--color-bg-primary);
   border-radius: 12px;
   width: 90%;
   max-width: 500px;
@@ -1217,12 +1200,12 @@ const formatDate = (dateString: string) => {
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid var(--color-border-primary);
 }
 
 .modal-header h3 {
   margin: 0;
-  color: #333;
+  color: var(--color-text-primary);
   font-size: 18px;
   font-weight: 600;
 }
@@ -1231,7 +1214,7 @@ const formatDate = (dateString: string) => {
   background: none;
   border: none;
   font-size: 24px;
-  color: #666;
+  color: var(--color-text-secondary);
   cursor: pointer;
   padding: 0;
   width: 32px;
@@ -1242,7 +1225,7 @@ const formatDate = (dateString: string) => {
 }
 
 .close-button:hover {
-  color: #333;
+  color: var(--color-text-primary);
 }
 
 .modal-form {
@@ -1260,7 +1243,7 @@ const formatDate = (dateString: string) => {
 .form-group label {
   display: block;
   margin-bottom: 6px;
-  color: #333;
+  color: var(--color-text-primary);
   font-weight: 500;
   font-size: 14px;
 }
@@ -1270,9 +1253,11 @@ const formatDate = (dateString: string) => {
 .form-group textarea {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #ced4da;
+  border: 1px solid var(--color-border-primary);
   border-radius: 6px;
   font-size: 14px;
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
   transition: border-color 0.2s ease;
   box-sizing: border-box;
 }
@@ -1281,8 +1266,8 @@ const formatDate = (dateString: string) => {
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(24, 160, 88, 0.25);
 }
 
 .checkbox-label {
@@ -1300,14 +1285,14 @@ const formatDate = (dateString: string) => {
 .form-help-text {
   display: block;
   margin-top: 4px;
-  color: #6c757d;
+  color: var(--color-text-secondary);
   font-size: 12px;
   font-style: italic;
 }
 
 .users-selection h4 {
   margin: 0 0 16px 0;
-  color: #333;
+  color: var(--color-text-primary);
   font-size: 16px;
   font-weight: 600;
 }
@@ -1331,7 +1316,7 @@ const formatDate = (dateString: string) => {
 }
 
 .user-checkbox-label:hover {
-  background: #f8f9fa;
+  background: var(--color-bg-tertiary);
 }
 
 .user-checkbox-label input[type='checkbox'] {
@@ -1347,11 +1332,11 @@ const formatDate = (dateString: string) => {
 
 .username {
   font-weight: 500;
-  color: #333;
+  color: var(--color-text-primary);
 }
 
 .user-role {
-  color: #666;
+  color: var(--color-text-secondary);
   font-size: 12px;
 }
 
@@ -1403,16 +1388,16 @@ const formatDate = (dateString: string) => {
 
 .delete-modal .modal-body p {
   margin: 0 0 12px 0;
-  color: #333;
+  color: var(--color-text-primary);
 }
 
 .warning-text {
-  color: #dc3545;
+  color: var(--color-error);
   font-weight: 500;
 }
 
 .hook-info {
-  background: #f8f9fa;
+  background: var(--color-bg-secondary);
   padding: 12px;
   border-radius: 6px;
   margin: 0 0 12px 0;
@@ -1421,13 +1406,13 @@ const formatDate = (dateString: string) => {
 }
 
 .hook-warning {
-  background: #fff3cd;
-  color: #856404;
+  background: var(--color-warning-light);
+  color: var(--color-warning-text);
   padding: 12px;
   border-radius: 6px;
   margin: 0;
   font-size: 14px;
-  border: 1px solid #ffeaa7;
+  border: 1px solid var(--color-warning);
 }
 
 .delete-modal .delete-button {
@@ -1443,10 +1428,10 @@ const formatDate = (dateString: string) => {
 .groups-selection {
   max-height: 300px;
   overflow-y: auto;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-border-primary);
   border-radius: 6px;
   padding: 0;
-  background: white;
+  background: var(--color-bg-primary);
 }
 
 .groups-table {
@@ -1458,11 +1443,11 @@ const formatDate = (dateString: string) => {
 .group-row {
   cursor: pointer;
   transition: background-color 0.2s ease;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--color-border-primary);
 }
 
 .group-row:hover {
-  background-color: #f8f9fa;
+  background-color: var(--color-bg-tertiary);
 }
 
 .group-row:last-child {
@@ -1495,7 +1480,7 @@ const formatDate = (dateString: string) => {
 
 .group-name {
   font-weight: 500;
-  color: #333;
+  color: var(--color-text-primary);
   margin: 0;
   line-height: 1.4;
 }
@@ -1513,13 +1498,13 @@ const formatDate = (dateString: string) => {
 
 .group-role {
   font-size: 12px;
-  color: #666;
+  color: var(--color-text-secondary);
   font-style: italic;
 }
 
 .group-description {
   font-size: 12px;
-  color: #666;
+  color: var(--color-text-secondary);
   line-height: 1.3;
   margin-top: 2px;
 }
