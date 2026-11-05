@@ -14,51 +14,58 @@
         <div class="panel-header">
           <h2>可訪問的專案</h2>
           <div class="view-mode-toggle">
-            <button
-              @click="viewMode = 'grid'"
-              :class="['btn', 'btn-sm', viewMode === 'grid' ? 'btn-primary' : 'btn-outline']"
-              title="網格視圖"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="feather feather-x-square"
+            <n-popover v-if="viewMode === 'grid'" v-model:show="showSortMenu" trigger="click" placement="bottom-end" :show-arrow="false" raw>
+              <template #trigger>
+                <button class="btn btn-sm btn-outline btn-circle" title="排序">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="m3 16 4 4 4-4" />
+                    <path d="M7 20V4" />
+                    <path d="m21 8-4-4-4 4" />
+                    <path d="M17 4v16" />
+                  </svg>
+                </button>
+              </template>
+              <ul class="sort-menu">
+                <li
+                  v-for="option in sortOptions"
+                  :key="`${option.key}-${option.order}`"
+                  :class="['sort-menu-item', { 'is-active': sortKey === option.key && sortOrder === option.order }]"
+                  @click="selectSort(option.key, option.order)"
+                >
+                  {{ option.label }}
+                </li>
+              </ul>
+            </n-popover>
+            <div :class="['view-switch', `is-${viewMode}`]" role="radiogroup" aria-label="視圖模式">
+              <span class="view-switch-thumb" aria-hidden="true"></span>
+              <button
+                :class="['view-switch-option', { 'is-active': viewMode === 'grid' }]"
+                role="radio"
+                :aria-checked="viewMode === 'grid'"
+                aria-label="網格視圖"
+                @click="viewMode = 'grid'"
               >
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-              </svg>
-            </button>
-            <button
-              @click="viewMode = 'list'"
-              :class="['btn', 'btn-sm', viewMode === 'list' ? 'btn-primary' : 'btn-outline']"
-              title="列表視圖"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="feather feather-list"
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                </svg>
+              </button>
+              <button
+                :class="['view-switch-option', { 'is-active': viewMode === 'list' }]"
+                role="radio"
+                :aria-checked="viewMode === 'list'"
+                aria-label="列表視圖"
+                @click="viewMode = 'list'"
               >
-                <line x1="8" y1="6" x2="21" y2="6"></line>
-                <line x1="8" y1="12" x2="21" y2="12"></line>
-                <line x1="8" y1="18" x2="21" y2="18"></line>
-                <line x1="3" y1="6" x2="3.01" y2="6"></line>
-                <line x1="3" y1="12" x2="3.01" y2="12"></line>
-                <line x1="3" y1="18" x2="3.01" y2="18"></line>
-              </svg>
-            </button>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <line x1="8" y1="6" x2="21" y2="6"></line>
+                  <line x1="8" y1="12" x2="21" y2="12"></line>
+                  <line x1="8" y1="18" x2="21" y2="18"></line>
+                  <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                  <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                  <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -73,7 +80,7 @@
 
         <!-- 網格視圖 -->
         <div v-else-if="viewMode === 'grid'" class="projects-grid">
-          <div v-for="project in userProjects" :key="project.id" class="project-card">
+          <div v-for="project in sortedProjects" :key="project.id" class="project-card">
             <div class="project-header">
               <div>
                 <h3 class="project-title">{{ project.name }}</h3>
@@ -82,9 +89,7 @@
                 </div>
                 <div class="project-last-sync"> 最後部署時間：{{ getLatestDeploymentTime(project) }} </div>
               </div>
-              <span :class="['status-badge', project.isActive ? 'active' : 'inactive']">
-                {{ project.isActive ? '啟用' : '停用' }}
-              </span>
+              <span v-if="!project.isActive" class="status-badge inactive">停用</span>
             </div>
 
             <div v-if="project.demoConfigs && project.demoConfigs.length > 0" class="demo-configs">
@@ -131,27 +136,34 @@
           <table class="data-table">
             <thead>
               <tr>
-                <th>專案名稱</th>
-                <th>說明</th>
-                <th width="80">狀態</th>
-                <th width="200">最後部署時間</th>
-                <th>分支</th>
-                <th width="400">檢視</th>
+                <th width="200" class="sortable" @click="toggleSort('name')">
+                  專案名稱
+                  <svg :class="['sort-icon', sortKey === 'name' ? `is-${sortOrder}` : '']" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="-9 0 32 32" fill="currentColor" aria-hidden="true">
+                    <path class="sort-asc" d="M0.281 13.063l5.969-7.438c0.531-0.688 1.406-0.688 1.938 0l5.969 7.438c0.531 0.688 0.281 1.25-0.625 1.25h-12.625c-0.906 0-1.156-0.563-0.625-1.25z" />
+                    <path class="sort-desc" d="M14.156 18.938l-5.969 7.438c-0.531 0.688-1.406 0.688-1.938 0l-5.969-7.438c-0.531-0.688-0.281-1.25 0.625-1.25h12.625c0.906 0 1.156 0.563 0.625 1.25z" />
+                  </svg>
+                </th>
+                <th width="240">說明</th>
+                <th width="200" class="sortable" @click="toggleSort('lastDeploymentTime')">
+                  最後部署時間
+                  <svg :class="['sort-icon', sortKey === 'lastDeploymentTime' ? `is-${sortOrder}` : '']" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="-9 0 32 32" fill="currentColor" aria-hidden="true">
+                    <path class="sort-asc" d="M0.281 13.063l5.969-7.438c0.531-0.688 1.406-0.688 1.938 0l5.969 7.438c0.531 0.688 0.281 1.25-0.625 1.25h-12.625c-0.906 0-1.156-0.563-0.625-1.25z" />
+                    <path class="sort-desc" d="M14.156 18.938l-5.969 7.438c-0.531 0.688-1.406 0.688-1.938 0l-5.969-7.438c-0.531-0.688-0.281-1.25 0.625-1.25h12.625c0.906 0 1.156 0.563 0.625 1.25z" />
+                  </svg>
+                </th>
+                <th width="140">分支</th>
+                <th width="460">檢視</th>
               </tr>
             </thead>
             <tbody>
-              <template v-for="project in userProjects" :key="project.id">
+              <template v-for="project in sortedProjects" :key="project.id">
                 <tr v-if="!project.demoConfigs || project.demoConfigs.length === 0">
                   <td>
                     <span class="project-title">{{ project.name }}</span>
+                    <div v-if="!project.isActive" class="project-status"><span class="status-badge inactive">停用</span></div>
                   </td>
                   <td>
                     {{ project.description || '-' }}
-                  </td>
-                  <td>
-                    <span :class="['status-badge', project.isActive ? 'active' : 'inactive']">
-                      {{ project.isActive ? '啟用' : '停用' }}
-                    </span>
                   </td>
                   <td>
                     {{ getLatestDeploymentTime(project) }}
@@ -163,14 +175,10 @@
                 <tr v-for="(demo, index) in project.demoConfigs" :key="`${project.id}-${demo.id}`">
                   <td v-if="index === 0" :rowspan="project.demoConfigs?.length || 1">
                     <span class="project-title">{{ project.name }}</span>
+                    <div v-if="!project.isActive" class="project-status"><span class="status-badge inactive">停用</span></div>
                   </td>
                   <td v-if="index === 0" :rowspan="project.demoConfigs?.length || 1">
                     {{ project.description || '-' }}
-                  </td>
-                  <td v-if="index === 0" :rowspan="project.demoConfigs?.length || 1">
-                    <span :class="['status-badge', project.isActive ? 'active' : 'inactive']">
-                      {{ project.isActive ? '啟用' : '停用' }}
-                    </span>
                   </td>
                   <td v-if="index === 0" :rowspan="project.demoConfigs?.length || 1">
                     {{ getLatestDeploymentTime(project) }}
@@ -178,7 +186,7 @@
                   <td>{{ demo.branchName || (demo as any).dataValues?.branchName || '未定義' }}</td>
                   <td>
                     <div class="action-buttons-wrapper">
-                    <div :ref="(el) => setActionButtonsRef(el, `list-${demo.id}`)" :class="['action-buttons', 'list-action-buttons', { 'is-expanded': expandedActionButtons.has(`list-${demo.id}`) }]">
+                    <div :ref="(el) => setActionButtonsRef(el, `list-${demo.id}`)" :class="['action-buttons', { 'is-expanded': expandedActionButtons.has(`list-${demo.id}`) }]">
                       <button
                         v-if="demo.demoUrl && (!demo.demoUrls || demo.demoUrls.length === 0)"
                         @click="demo.demoUrl && openDemo(demo.demoUrl)"
@@ -216,7 +224,7 @@
 
 <script setup lang="ts">
 import { apiService, type Project } from '@/api'
-import { nextTick, onMounted, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -272,6 +280,79 @@ watch(viewMode, (newViewMode) => {
   localStorage.setItem('dashboard-view-mode', newViewMode)
 })
 
+// 排序設定（專案名稱 / 最後部署時間，同時僅一個欄位排序）
+type SortKey = 'name' | 'lastDeploymentTime'
+type SortOrder = 'asc' | 'desc'
+const SORT_STORAGE_KEY = 'dashboard-sort'
+const sortKey = ref<SortKey>('name')
+const sortOrder = ref<SortOrder>('asc')
+
+const initSort = () => {
+  try {
+    const saved = JSON.parse(localStorage.getItem(SORT_STORAGE_KEY) || 'null')
+    if ((saved?.key === 'name' || saved?.key === 'lastDeploymentTime') && (saved?.order === 'asc' || saved?.order === 'desc')) {
+      sortKey.value = saved.key
+      sortOrder.value = saved.order
+    }
+  } catch {
+    // 忽略無效的儲存值
+  }
+}
+
+const showSortMenu = ref(false)
+const sortOptions: { key: SortKey; order: SortOrder; label: string }[] = [
+  { key: 'name', order: 'asc', label: '專案名稱（A-Z）' },
+  { key: 'name', order: 'desc', label: '專案名稱（Z-A）' },
+  { key: 'lastDeploymentTime', order: 'asc', label: '最後部署時間（舊到新）' },
+  { key: 'lastDeploymentTime', order: 'desc', label: '最後部署時間（新到舊）' },
+]
+
+const saveSort = () => {
+  localStorage.setItem(SORT_STORAGE_KEY, JSON.stringify({ key: sortKey.value, order: sortOrder.value }))
+}
+
+// 網格視圖排序選單
+const selectSort = (key: SortKey, order: SortOrder) => {
+  sortKey.value = key
+  sortOrder.value = order
+  saveSort()
+  showSortMenu.value = false
+}
+
+// 點擊同欄位切換升冪/降冪，點擊其他欄位則改為該欄位升冪
+const toggleSort = (key: SortKey) => {
+  if (sortKey.value === key) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortKey.value = key
+    sortOrder.value = 'asc'
+  }
+  saveSort()
+}
+
+// 取得專案最新部署時間戳記，無部署紀錄回傳 null
+const getLatestDeploymentTimestamp = (project: Project) => {
+  const times = (project.demoConfigs || [])
+    .map((d) => d.lastDeploymentTime)
+    .filter(Boolean)
+    .map((t) => new Date(t).getTime())
+  return times.length ? Math.max(...times) : null
+}
+
+const sortedProjects = computed(() => {
+  const direction = sortOrder.value === 'asc' ? 1 : -1
+  return [...userProjects.value].sort((a, b) => {
+    if (sortKey.value === 'name') {
+      return a.name.localeCompare(b.name, 'zh-Hant', { sensitivity: 'base', numeric: true }) * direction
+    }
+    const timeA = getLatestDeploymentTimestamp(a)
+    const timeB = getLatestDeploymentTimestamp(b)
+    // 無部署紀錄的專案固定排在最後
+    if (timeA === null || timeB === null) return timeA === timeB ? 0 : timeA === null ? 1 : -1
+    return (timeA - timeB) * direction
+  })
+})
+
 // 組件掛載時檢查用戶登入狀態
 onMounted(() => {
   actionButtonsResizeObserver = new ResizeObserver(updateActionButtonsOverflow)
@@ -285,6 +366,7 @@ onMounted(() => {
 
   // 初始化視圖模式
   initViewMode()
+  initSort()
 
   // 自動檢查後端狀態
   checkBackendStatus()
@@ -341,13 +423,8 @@ const formatDateTime = (dateTime: string) => {
 
 // 取得專案最新部署時間
 const getLatestDeploymentTime = (project: Project) => {
-  if (!project.demoConfigs || project.demoConfigs.length === 0) return '-'
-  const times = project.demoConfigs
-    .map((d) => d.lastDeploymentTime)
-    .filter(Boolean)
-    .map((t) => new Date(t).getTime())
-  if (!times.length) return '-'
-  const maxTime = Math.max(...times)
+  const maxTime = getLatestDeploymentTimestamp(project)
+  if (maxTime === null) return '-'
   return formatDateTime(new Date(maxTime).toISOString())
 }
 </script>
